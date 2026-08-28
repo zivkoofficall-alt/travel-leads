@@ -1,0 +1,9 @@
+{
+  "name": "waylen-pets-landing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Waylen Travel — лендинг путешествий с животными. Статический сайт + Vercel Serverless Function для приёма заявок (Supabase + Telegram).",
+  "engines": {
+    "node": ">=18"
+  }
+}
