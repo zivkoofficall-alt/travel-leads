@@ -648,6 +648,7 @@
   @media (prefers-reduced-motion: reduce){ .reveal.is-visible .pl-price-tier::before, .reveal.is-visible .pl-price-tier::after{ animation:none; } }
   footer .footer-col a{ display:block; width:fit-content; padding:6px 0; margin-bottom:2px; }
   .pl-price-tier:nth-child(2):hover span.tier-arrow, .pl-price-tier:nth-child(2):active span.tier-arrow, .pl-price-tier:nth-child(2):focus-within span.tier-arrow{ background:var(--ink) !important; color:#fff !important; }
+  .hp{ position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
 
 </style>
 <script type="text/javascript">
@@ -964,6 +965,7 @@
           <label>Как к вам обращаться</label>
           <input type="text" id="leadName" class="ym-disable-keys" placeholder="Имя">
         </div>
+        <div class="hp" aria-hidden="true"><label>Сайт компании</label><input type="text" id="leadCompany" name="company" tabindex="-1" autocomplete="off"></div>
         <div class="lead-field">
           <label>Телефон</label>
           <div class="phone-field" id="phoneField">
@@ -2090,7 +2092,7 @@
           'Content-Type': 'application/json',
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnenBua2x3ZGhxem1yaWZ3bmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NTEzNDksImV4cCI6MjEwMzUyNzM0OX0.xD7zcgIZTZXCgJmvf-DQ6j89Ce2TMETVQEu1ea8e5z0'
         },
-        body: JSON.stringify({ name: name, contact_phone: phone, contact_telegram: telegram, pet: pet, message: message })
+        body: JSON.stringify({ name: name, contact_phone: phone, contact_telegram: telegram, pet: pet, message: message, company: (document.getElementById('leadCompany') || {}).value || '' })
       })
       .then(function(resp){ return resp.json().then(function(data){ return { ok: resp.ok, data: data }; }); })
       .then(function(result){
@@ -2100,11 +2102,13 @@
         }
         form.classList.add('submitted');
         try{ if(window.ym) ym(113549896, 'reachGoal', 'lead_sent'); }catch(e){}
-        fetch('/api/notify-telegram', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name, contact_phone: phone, contact_telegram: telegram, pet: pet, message: message })
-        }).catch(function(){});
+        if(!(result.data && result.data.notified === true)){
+          fetch('/api/notify-telegram', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, contact_phone: phone, contact_telegram: telegram, pet: pet, message: message })
+          }).catch(function(){});
+        }
       })
       .catch(function(err){ showError((err && err.message) || GENERIC_ERR); })
       .finally(function(){
