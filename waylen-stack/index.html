@@ -304,6 +304,99 @@
   .footer-social a{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; color:#fff; transition:background .2s, transform .2s var(--ease); }
   .footer-social a:hover{ background:rgba(255,255,255,0.18); transform:translateY(-2px); }
 
+  /* ===== Шейпы: крупные скруглённые блоки и круги ===== */
+  :root{ --lime:#C8F27B; --lime-soft:#E9F8C8; --gut:24px; }
+  @media (max-width:380px){ :root{ --gut:16px; } }
+  ::selection{ background:var(--lime); color:var(--ink); }
+
+  /* Первый экран — большой голубой блок с салатовым кругом */
+  .pl-hero{ padding:22px 0 10px; }
+  .pl-hero-inner{ position:relative; isolation:isolate; background:var(--blue-soft); clip-path:inset(0 var(--gut) round 40px); padding:56px calc(var(--gut) + 44px); }
+  .pl-hero-inner::before{ content:""; position:absolute; z-index:-1; width:340px; height:340px; border-radius:50%; background:var(--lime); right:-70px; bottom:-120px; }
+  .pl-hero-inner::after{ content:""; position:absolute; z-index:-1; width:120px; height:120px; border-radius:50%; border:22px solid var(--blue); opacity:.18; left:-40px; top:-40px; }
+  @media (max-width:900px){ .pl-hero-inner{ padding:32px calc(var(--gut) + 18px) 40px; clip-path:inset(0 var(--gut) round 32px); } .pl-hero-inner::before{ width:240px; height:240px; right:-80px; bottom:auto; top:40px; } }
+  .pl-hero-actions .btn-primary{ background:var(--lime); color:var(--ink); }
+  .pl-hero-actions .btn-primary:hover{ background:#B9E85F; }
+  .btn-ghost{ background:rgba(255,255,255,.7); border-color:transparent; }
+  .btn-ghost:hover{ background:#fff; border-color:transparent; }
+
+  /* Заголовки внутренних страниц — такой же блок */
+  .page-hero{ padding:22px 0 12px; }
+  .page-hero .container{ position:relative; isolation:isolate; background:var(--blue-soft); clip-path:inset(0 var(--gut) round 36px); padding-top:34px; padding-bottom:42px; padding-left:calc(var(--gut) + 36px); padding-right:calc(var(--gut) + 36px); }
+  .page-hero .container::after{ content:""; position:absolute; z-index:-1; width:260px; height:260px; border-radius:50%; background:var(--lime); right:-60px; top:-90px; }
+  @media (max-width:640px){ .page-hero .container{ clip-path:inset(0 var(--gut) round 28px); padding-left:calc(var(--gut) + 18px); padding-right:calc(var(--gut) + 18px); } .page-hero .container::after{ width:170px; height:170px; right:-50px; top:-60px; } }
+
+  /* Карточки — цветные блоки */
+  .pl-feature-card, .partner-card, .review-card, .pet-clinic-card{ border-radius:28px; }
+  .pl-feature-grid > :nth-child(1), .partner-grid > :nth-child(1), .partner-grid > :nth-child(4){ background:var(--blue-soft); border-color:transparent; }
+  .pl-feature-grid > :nth-child(2), .partner-grid > :nth-child(2), .partner-grid > :nth-child(3){ background:var(--lime); border-color:transparent; }
+  .pl-feature-grid > :nth-child(4){ background:var(--blue-deep); border-color:transparent; }
+  .pl-feature-grid > :nth-child(4) h3{ color:#fff; } .pl-feature-grid > :nth-child(4) p{ color:rgba(255,255,255,.78); }
+  .pl-feature-grid > :nth-child(1) p, .pl-feature-grid > :nth-child(2) p, .partner-grid > :nth-child(-n+4) p{ color:rgba(11,18,32,.72); }
+  .pl-feature-grid > :nth-child(2) .pl-feature-icon, .partner-grid > :nth-child(2) .pl-feature-icon, .partner-grid > :nth-child(3) .pl-feature-icon{ background:rgba(255,255,255,.65); color:var(--ink); }
+  .pl-feature-grid > :nth-child(1) .pl-feature-icon, .partner-grid > :nth-child(1) .pl-feature-icon, .partner-grid > :nth-child(4) .pl-feature-icon{ background:#fff; }
+  .pl-feature-grid > :nth-child(4) .pl-feature-icon{ background:var(--lime); color:var(--ink); }
+  .pl-feature-icon{ border-radius:50%; width:46px; height:46px; }
+  .pl-feature-card:hover .pl-feature-icon, .partner-card:hover .pl-feature-icon{ background:var(--ink) !important; color:#fff !important; }
+  .pl-feature-card:hover, .partner-card:hover{ border-color:transparent; box-shadow:0 18px 36px rgba(10,25,55,.10); }
+  .partner-tags span{ background:rgba(255,255,255,.75); border-color:transparent; }
+
+  /* Клиники — салатовый блок с кругами */
+  .pet-clinic-card{ background:var(--lime-soft); border-color:transparent; position:relative; overflow:hidden; padding:32px 30px; isolation:isolate; }
+  .pet-clinic-card::after{ content:""; position:absolute; z-index:-1; width:220px; height:220px; border-radius:50%; background:var(--lime); right:-60px; bottom:-90px; }
+  .pet-clinic-badge{ background:#fff; border-radius:50%; width:48px; height:48px; }
+  .pet-clinic-tags span{ background:#fff; border-color:transparent; }
+
+  /* Тарифы — баннер с самолётиками и тремя плитками */
+  .pl-concierge-banner{ border-radius:36px; padding:44px 40px; background-color:var(--blue-deep);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='white' opacity='0.07'%3E%3Cg transform='translate(14,20) rotate(-16)'%3E%3Cpath d='M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L7.5 20.5V22L11.5 21L15.5 22V20.5L13 19V13.5L21 16Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); background-size:140px 140px; }
+  .pl-price-tiers{ border-top:0; gap:14px; }
+  .pl-price-tier, .pl-price-tier + .pl-price-tier{ background:rgba(255,255,255,.09); border:0; border-radius:26px; padding:26px 24px 24px; }
+  .pl-price-tier:nth-child(2){ background:var(--lime); }
+  .pl-price-tier:nth-child(2) b, .pl-price-tier:nth-child(2) .pl-tier-title{ color:var(--ink); }
+  .pl-price-tier:nth-child(2) span{ color:rgba(11,18,32,.74); }
+  .pl-tier-more{ margin-top:12px; padding:9px 16px; border:0; border-radius:999px; background:rgba(255,255,255,.16); }
+  .pl-tier-more:hover{ background:rgba(255,255,255,.28); }
+  .pl-price-tier:nth-child(2) .pl-tier-more{ background:var(--ink); color:#fff; }
+  @media (max-width:860px){ .pl-price-tiers{ grid-template-columns:1fr; } .pl-price-tier + .pl-price-tier{ border:0; padding:26px 24px 24px; } .pl-concierge-banner{ padding:32px 22px; border-radius:30px; } }
+  .pl-concierge-cta{ background:var(--lime); color:var(--ink); }
+  .pl-concierge-cta:hover{ background:#B9E85F; }
+
+  /* Форма */
+  .lead-wrap{ border-radius:36px; position:relative; overflow:hidden; isolation:isolate; }
+  .lead-wrap::before{ content:""; position:absolute; z-index:-1; width:280px; height:280px; border-radius:50%; background:var(--lime-soft); left:-90px; bottom:-120px; }
+  .lead-field input, .lead-field textarea, .pet-select-btn{ border-radius:18px; }
+  .lead-point svg{ background:var(--lime); color:var(--ink); border-radius:50%; padding:3px; width:20px; height:20px; }
+
+  /* Отзывы и шаги */
+  .review-card{ border-color:transparent; background:#fff; }
+  .review-card:nth-child(3n+2){ background:var(--lime-soft); }
+  .review-card:nth-child(3n){ background:var(--blue-soft); }
+  .review-avatar{ background:var(--lime); color:var(--ink); }
+  .review-card:nth-child(3n+2) .review-avatar{ background:#fff; }
+  .info-step-num{ background:var(--lime); color:var(--ink); border-radius:50%; width:34px; height:34px; min-width:34px; display:flex; align-items:center; justify-content:center; padding:0; }
+  .tariff-for-card{ background:var(--lime-soft); border:0; border-radius:28px; }
+  .tariff-price-badge b{ background:var(--lime); color:var(--ink); border-radius:999px; padding:4px 22px 6px; }
+  .join-grid{ border-top:0; gap:14px; }
+  .join-item, .join-item + .join-item{ border:0; padding:24px; border-radius:26px; background:#fff; }
+  .join-item:nth-child(2n){ background:var(--blue-soft); }
+  @media (max-width:900px){ .join-item:nth-child(3){ padding-left:24px; } }
+
+  /* Подвал — верх скруглён */
+  footer{ border-radius:40px 40px 0 0; margin-top:40px; }
+  .footer-col a:hover{ color:var(--lime); }
+  .footer-social a:hover{ background:var(--lime); color:var(--ink); }
+  .footer-social a:hover svg path{ stroke:var(--ink); }
+  header .btn-primary{ background:var(--ink); }
+  header .btn-primary:hover{ background:var(--blue-deep); }
+  .lang-switch button.is-active{ background:var(--lime); color:var(--ink); }
+  .nav-link:hover, .nav-link.is-current{ background:var(--lime-soft); color:var(--ink); }
+  .pl-hero-inner, .page-hero .container{ overflow:hidden; }
+  .lead-wrap, .pet-clinic-card, footer{ overflow:hidden; }
+  .page-hero .container::after{ width:210px; height:210px; right:-70px; top:-120px; }
+  .page-hero h1{ max-width:calc(100% - 120px); }
+  @media (max-width:640px){ .page-hero h1{ max-width:100%; } .page-hero .container::after{ width:140px; height:140px; right:-50px; top:-70px; } }
+
 </style>
 <!--
   Яндекс.Метрика — тепловая карта + аналитика.
