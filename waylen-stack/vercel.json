@@ -38,5 +38,33 @@
         }
       ]
     }
-  ]
+  ],
+  "redirects": [
+    {
+      "source": "/partners",
+      "destination": "/#partners",
+      "permanent": false
+    },
+    {
+      "source": "/partnery",
+      "destination": "/#partners",
+      "permanent": false
+    },
+    {
+      "source": "/reviews",
+      "destination": "/#team",
+      "permanent": false
+    },
+    {
+      "source": "/otzyvy",
+      "destination": "/#team",
+      "permanent": false
+    },
+    {
+      "source": "/privacy",
+      "destination": "/#legal-privacy",
+      "permanent": false
+    }
+  ],
+  "cleanUrls": true
 }

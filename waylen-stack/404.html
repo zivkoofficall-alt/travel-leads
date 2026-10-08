@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Страница не найдена — Waylen Travel</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Onest:wght@600;700;800&display=swap">
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+:root{ --ink:#0B1220; --blue:#2563EB; --blue-dark:#1D4FC4; --soft:#E2ECFF; --lime:#C8F27B; --bg:#F4F7FC; }
+body{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; background:var(--bg); color:var(--ink); font-family:'Manrope',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+.card{ position:relative; overflow:hidden; width:100%; max-width:640px; background:var(--soft); border-radius:40px; padding:56px 48px; }
+.card::after{ content:""; position:absolute; right:-70px; bottom:-90px; width:260px; height:260px; border-radius:50%; background:var(--lime); }
+.card > *{ position:relative; z-index:1; }
+.logo{ display:inline-flex; align-items:center; gap:10px; margin-bottom:36px; font-family:'Onest',sans-serif; font-weight:800; letter-spacing:.04em; font-size:15px; color:var(--ink); text-decoration:none; background:#fff; padding:9px 16px 9px 10px; border-radius:999px; }
+.logo img{ width:26px; height:26px; display:block; }
+.code{ font-family:'Onest',sans-serif; font-weight:800; font-size:clamp(72px,16vw,128px); line-height:1; color:var(--blue); letter-spacing:-.03em; }
+h1{ font-family:'Onest',sans-serif; font-weight:800; font-size:clamp(24px,5vw,34px); margin:14px 0 10px; letter-spacing:-.01em; }
+p{ font-size:16px; line-height:1.6; color:rgba(11,18,32,.7); max-width:400px; }
+.btn{ display:inline-block; margin-top:28px; background:var(--blue); color:#fff; font-weight:700; font-size:15px; padding:14px 28px; border-radius:999px; text-decoration:none; transition:background .2s, transform .2s; }
+.btn:hover{ background:var(--blue-dark); transform:translateY(-1px); }
+@media (max-width:520px){ .card{ padding:36px 26px 120px; border-radius:32px; } .card::after{ width:200px; height:200px; right:-60px; bottom:-80px; } }
+</style>
+</head>
+<body>
+<main class="card">
+  <a class="logo" href="/"><img src="/favicon.png" alt="">WAYLEN TRAVEL</a>
+  <div class="code">404</div>
+  <h1>Страница не найдена</h1>
+  <p>Такой страницы нет или она переехала. Вернитесь на главную, там всё самое нужное.</p>
+  <a class="btn" href="/">На главную</a>
+</main>
+</body>
+</html>
