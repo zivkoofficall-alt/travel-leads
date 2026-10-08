@@ -642,6 +642,12 @@
   }
   @media (max-width:560px){ .page-hero .container::after{ background-image:none; } }
 
+  /* Сначала шейп, потом животное */
+  .pl-animal-shadow{ animation:circleIn .8s var(--ease) .2s backwards, breathe 6s ease-in-out 2.2s infinite; }
+  .pl-animal-wrap:nth-child(2) .pl-animal-shadow{ animation:circleIn .8s var(--ease) .5s backwards, breathe 6s ease-in-out 3s infinite; }
+  .pl-animal-wrap.float img{ animation:petIn .9s var(--ease) 1.05s backwards, floaty 6s ease-in-out 2.2s infinite; }
+  .pl-animal-wrap.float:nth-child(2) img{ animation:petIn .9s var(--ease) 1.35s backwards, floaty 6s ease-in-out 3.3s infinite; }
+
 </style>
 </head>
 <body>
