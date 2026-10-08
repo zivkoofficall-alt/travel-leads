@@ -2227,8 +2227,9 @@
   try {
     var qs = new URLSearchParams(location.search);
     var src = (qs.get('partner') || qs.get('utm_source') || qs.get('ref') || '').replace(/[^\w.\-]/g, '').slice(0, 40);
-    if(src){ localStorage.setItem('waylen_src', src); }
-    leadSource = localStorage.getItem('waylen_src') || '';
+    try{ localStorage.removeItem('waylen_src'); }catch(e){}
+    if(src){ sessionStorage.setItem('waylen_src', src); }
+    leadSource = sessionStorage.getItem('waylen_src') || '';
   } catch(e){}
 
   /* ===== Старт ===== */
