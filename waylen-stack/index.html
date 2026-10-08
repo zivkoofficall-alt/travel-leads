@@ -397,6 +397,66 @@
   .page-hero h1{ max-width:calc(100% - 120px); }
   @media (max-width:640px){ .page-hero h1{ max-width:100%; } .page-hero .container::after{ width:140px; height:140px; right:-50px; top:-70px; } }
 
+  /* ===== Шапка-капсулы ===== */
+  header{ background:transparent; border-radius:0; box-shadow:none; padding:12px 0 0; pointer-events:none; }
+  header.is-scrolled{ box-shadow:none; }
+  header > .container{ pointer-events:none; }
+  header .hdr-pill, header .btn-primary, .mobile-menu{ pointer-events:auto; }
+  .header-row{ padding-top:0; padding-bottom:0; }
+  .hdr-pill{ background:#fff; border-radius:999px; box-shadow:0 4px 18px rgba(10,25,55,.07); transition:box-shadow .3s var(--ease), transform .3s var(--ease); }
+  header.is-scrolled .hdr-pill, header.is-scrolled .btn-primary{ box-shadow:0 8px 26px rgba(10,25,55,.14); }
+  .logo.hdr-pill{ padding:7px 18px 7px 10px; }
+  .header-right-group{ gap:8px; }
+  .hdr-menu{ display:flex; align-items:center; gap:6px; padding:5px 6px 5px 8px; }
+  .header-nav{ gap:2px; }
+  .header-social-btn{ border:0; width:36px; height:36px; }
+  header .btn-primary{ padding:15px 24px; box-shadow:0 4px 18px rgba(10,25,55,.12); }
+  .lang-switch{ position:relative; background:var(--bg); border:0; padding:3px; }
+  .lang-switch button{ position:relative; z-index:1; min-width:38px; text-align:center; }
+  .lang-switch button.is-active{ background:transparent; color:var(--ink); }
+  .lang-thumb{ position:absolute; z-index:0; top:3px; bottom:3px; left:3px; width:calc(50% - 3px); background:var(--lime); border-radius:999px; transition:transform .45s var(--ease); }
+  .lang-switch[data-active="en"] .lang-thumb{ transform:translateX(100%); }
+  .burger.hdr-pill{ border:0; width:46px; height:46px; }
+  .mobile-menu{ top:calc(100% + 10px); left:24px; right:24px; }
+  @media (max-width:760px){
+    .hdr-menu{ padding:4px; }
+    .hdr-menu .header-nav, .hdr-menu .header-social-btn{ display:none; }
+    header .btn-primary{ padding:13px 18px; }
+  }
+  @media (max-width:560px){
+    header{ padding-top:8px; }
+    .logo.hdr-pill{ padding:5px 12px 5px 8px; }
+    header .btn-primary{ padding:11px 14px; font-size:12px; }
+    .burger.hdr-pill{ width:38px; height:38px; }
+    .lang-switch button{ min-width:32px; padding:6px 7px; }
+    .mobile-menu{ left:16px; right:16px; }
+  }
+
+  /* ===== Круглая стрелка ↗ ===== */
+  .arr{ transition:transform .35s var(--ease); }
+  .pl-price-tier{ position:relative; cursor:pointer; transition:transform .35s var(--ease), background .25s var(--ease); }
+  .pl-price-tier:hover{ transform:translateY(-4px); }
+  .tier-arrow{ position:absolute; top:18px; right:18px; width:42px; height:42px; border-radius:50%; background:#fff; color:var(--ink); display:flex; align-items:center; justify-content:center; transition:background .25s var(--ease), color .25s var(--ease); }
+  .pl-price-tier:hover .tier-arrow{ background:var(--lime); }
+  .pl-price-tier:nth-child(2) .tier-arrow{ background:var(--ink); color:#fff; }
+  .pl-price-tier:nth-child(2):hover .tier-arrow{ background:#fff; color:var(--ink); }
+  .pl-price-tier:hover .tier-arrow .arr{ transform:rotate(45deg); }
+  .pl-price-tier b{ padding-right:48px; }
+  a.join-item{ position:relative; display:block; padding:24px 54px 24px 24px; transition:transform .35s var(--ease), box-shadow .3s var(--ease); }
+  a.join-item:hover{ transform:translateY(-4px); box-shadow:0 16px 32px rgba(10,25,55,.09); }
+  a.join-item .arr{ position:absolute; top:18px; right:18px; width:30px; height:30px; padding:7px; border-radius:50%; background:var(--lime); color:var(--ink); }
+  a.join-item:hover .arr{ transform:rotate(45deg); background:var(--ink); color:#fff; }
+  @media (max-width:370px){
+    .logo-word{ display:none; }
+    .logo.hdr-pill{ padding:5px 8px; }
+    .header-right-group{ gap:5px; }
+    header .btn-primary{ padding:10px 12px; }
+    .lang-switch button{ min-width:28px; padding:6px 5px; font-size:10.5px; }
+  }
+  .pl-price-tier span.tier-arrow{ color:var(--ink); }
+  .pl-price-tier:nth-child(2) span.tier-arrow{ color:#fff; }
+  .pl-price-tier:nth-child(2):hover span.tier-arrow{ color:var(--ink); }
+
 </style>
 <!--
   Яндекс.Метрика — тепловая карта + аналитика.
@@ -418,23 +478,24 @@
 
 <header>
   <div class="container header-row">
-    <button type="button" class="logo" id="logoHomeBtn" style="cursor:pointer;"><div class="logo-mark"></div>WAYLEN<span class="logo-suffix"> TRAVEL</span></button>
+    <button type="button" class="logo hdr-pill" id="logoHomeBtn" style="cursor:pointer;"><div class="logo-mark"></div><span class="logo-word">WAYLEN</span><span class="logo-suffix"> TRAVEL</span></button>
     <div class="header-right-group">
-      <nav class="header-nav">
-        <button type="button" class="nav-link" data-nav="partners">Партнёры</button>
-        <button type="button" class="nav-link" data-nav="team" id="teamPageBtn">Отзывы</button>
-      </nav>
-      <div class="header-socials">
+      <div class="hdr-pill hdr-menu">
+        <nav class="header-nav">
+          <button type="button" class="nav-link" data-nav="partners">Партнёры</button>
+          <button type="button" class="nav-link" data-nav="team" id="teamPageBtn">Отзывы</button>
+        </nav>
         <a class="header-social-btn" href="https://t.me/waylen_travel" target="_blank" rel="noopener" aria-label="Telegram">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 4L3 11.5L10.5 14.5M21 4L13.5 20L10.5 14.5M21 4L10.5 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
-      </div>
-      <div class="lang-switch" role="group" aria-label="Language">
-        <button type="button" data-lang="ru" class="is-active">RU</button>
-        <button type="button" data-lang="en">EN</button>
+        <div class="lang-switch" role="group" aria-label="Language" data-active="ru">
+          <span class="lang-thumb"></span>
+          <button type="button" data-lang="ru" class="is-active">RU</button>
+          <button type="button" data-lang="en">EN</button>
+        </div>
       </div>
       <button type="button" class="btn-primary js-goto-form"><span class="cta-long">Оставить заявку</span><span class="cta-short">Заявка</span></button>
-      <button type="button" class="burger" id="burgerBtn" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
+      <button type="button" class="burger hdr-pill" id="burgerBtn" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
     <div class="mobile-menu" id="mobileMenu">
       <button type="button" data-nav="partners">Партнёры</button>
@@ -506,19 +567,19 @@
       <p>От быстрой консультации до менеджера, который делает всё за вас — от заявки до посадки на рейс.</p>
     </div>
     <div class="pl-price-tiers stagger">
-      <div class="pl-price-tier">
+      <div class="pl-price-tier"><span class="tier-arrow" aria-hidden="true"><svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7H17V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <b>7 500 ₽</b>
         <span class="pl-tier-title">Консультация</span>
         <span>Проверим чек-лист и ответим на вопросы</span>
         <button type="button" class="pl-tier-more js-open-tariff" data-tariff="basic">Подробнее о тарифе →</button>
       </div>
-      <div class="pl-price-tier">
+      <div class="pl-price-tier"><span class="tier-arrow" aria-hidden="true"><svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7H17V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <b>21 000 ₽</b>
         <span class="pl-tier-title">Сложный кейс</span>
         <span>Запись в клинику, проверка документов, подбор жилья с учётом питомца и трансфер</span>
         <button type="button" class="pl-tier-more js-open-tariff" data-tariff="standard">Подробнее о тарифе →</button>
       </div>
-      <div class="pl-price-tier">
+      <div class="pl-price-tier"><span class="tier-arrow" aria-hidden="true"><svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7H17V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <b>до 34 000 ₽</b>
         <span class="pl-tier-title">От 10 питомцев</span>
         <span>Полное сопровождение, от и до</span>
@@ -1270,10 +1331,10 @@
     <p>Мы открыты к сотрудничеству с теми, кто работает с путешествиями с животными на маршруте Россия ↔ Вьетнам.</p>
   </div>
   <div class="join-grid stagger">
-    <div class="join-item"><h3>Клиники и ветеринары</h3><p>Вакцинация, чипирование, экспортные документы для вывоза животных.</p></div>
-    <div class="join-item"><h3>Жильё</h3><p>Отели и апартаменты, которые принимают гостей с животными.</p></div>
-    <div class="join-item"><h3>Перевозчики</h3><p>Трансфер и перевозка питомцев в аэропорт и обратно.</p></div>
-    <div class="join-item"><h3>Агентства и организации</h3><p>Релокационные компании, заводчики, приюты и корпоративные клиенты.</p></div>
+    <a class="join-item" href="https://t.me/waylen_travel" target="_blank" rel="noopener"><h3>Клиники и ветеринары</h3><p>Вакцинация, чипирование, экспортные документы для вывоза животных.</p><svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7H17V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <a class="join-item" href="https://t.me/waylen_travel" target="_blank" rel="noopener"><h3>Жильё</h3><p>Отели и апартаменты, которые принимают гостей с животными.</p><svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7H17V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <a class="join-item" href="https://t.me/waylen_travel" target="_blank" rel="noopener"><h3>Перевозчики</h3><p>Трансфер и перевозка питомцев в аэропорт и обратно.</p><svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7H17V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <a class="join-item" href="https://t.me/waylen_travel" target="_blank" rel="noopener"><h3>Агентства и организации</h3><p>Релокационные компании, заводчики, приюты и корпоративные клиенты.</p><svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7H17V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
   </div>
 </section>
 
@@ -1379,6 +1440,7 @@
     if(petBtn && petLabel){ petLabel.textContent = t(petBtn.dataset.value); }
     var err = document.getElementById('leadError');
     if(err && err.dataset.ru){ err.textContent = t(err.dataset.ru); }
+    document.querySelectorAll('.lang-switch').forEach(function(sw){ sw.dataset.active = lang; });
     document.querySelectorAll('.lang-switch button').forEach(function(b){
       b.classList.toggle('is-active', b.dataset.lang === lang);
     });
@@ -1446,6 +1508,11 @@
   });
   document.querySelectorAll('.js-back-home').forEach(function(b){ b.addEventListener('click', function(){ showPage('home'); }); });
   document.querySelectorAll('.js-open-tariff').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); showPage('tariff-' + b.dataset.tariff); }); });
+  document.querySelectorAll('.pl-price-tier').forEach(function(tile){
+    var btn = tile.querySelector('.js-open-tariff');
+    if(!btn) return;
+    tile.addEventListener('click', function(e){ if(e.target.closest('button')) return; showPage('tariff-' + btn.dataset.tariff); });
+  });
   document.querySelectorAll('.js-open-tariff-link').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); showPage('tariff-' + a.dataset.tariff); }); });
   document.querySelectorAll('.js-open-legal').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); showPage('legal-' + a.dataset.legal); }); });
 
