@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, contact_telegram, contact_phone, pet, message } = req.body || {};
+    const { name, contact_telegram, pet, message } = req.body || {};
 
     const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -27,15 +27,13 @@ export default async function handler(req, res) {
 
     const cleanName = (name || '').toString().trim().slice(0, 200) || '—';
     const cleanTelegram = (contact_telegram || '').toString().trim().slice(0, 100);
-    const cleanPhone = (contact_phone || '').toString().trim().slice(0, 50);
     const cleanPet = (pet || '').toString().trim().slice(0, 100);
     const cleanMessage = (message || '').toString().trim().slice(0, 2000);
 
     const text =
-      `🐾 Новая заявка с лендинга\n\n` +
+      `Новая заявка с лендинга\n\n` +
       `Имя: ${cleanName}\n` +
       (cleanTelegram ? `Telegram: ${cleanTelegram}\n` : '') +
-      (cleanPhone ? `Телефон: ${cleanPhone}\n` : '') +
       (cleanPet ? `Питомец: ${cleanPet}\n` : '') +
       (cleanMessage ? `Комментарий: ${cleanMessage}\n` : '');
 
