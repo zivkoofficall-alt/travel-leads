@@ -14,8 +14,37 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: 'Method not allowed' });
   }
 
+  // 1) Только запросы с нашего сайта (Origin/Referer)
+  const src = (req.headers.origin || req.headers.referer || '').toString();
+  let host = '';
+  try { host = new URL(src).hostname; } catch (e) { host = ''; }
+  const allowedHost =
+    host === 'waylen.travel' || host === 'www.waylen.travel' ||
+    /^waylen-travel[a-z0-9-]*\.vercel\.app$/.test(host);
+  if (!allowedHost) {
+    return res.status(403).json({ ok: false, error: 'Forbidden' });
+  }
+
+  // 2) Простой лимит: не больше 3 уведомлений в минуту с одного IP
+  const ip = ((req.headers['x-forwarded-for'] || '').toString().split(',')[0] || 'unknown').trim();
+  const now = Date.now();
+  globalThis.__notifyHits = globalThis.__notifyHits || new Map();
+  const hits = (globalThis.__notifyHits.get(ip) || []).filter((t) => now - t < 60000);
+  if (hits.length >= 3) {
+    return res.status(429).json({ ok: false, error: 'Too many requests' });
+  }
+  hits.push(now);
+  globalThis.__notifyHits.set(ip, hits);
+  if (globalThis.__notifyHits.size > 500) globalThis.__notifyHits.clear();
+
   try {
     const { name, contact_telegram, contact_phone, pet, message } = req.body || {};
+
+    // 3) Заявка должна выглядеть как заявка
+    const nm = (name || '').toString().trim();
+    if (nm.length < 2 || (!(contact_phone || '').toString().trim() && !(contact_telegram || '').toString().trim())) {
+      return res.status(400).json({ ok: false, error: 'Invalid lead' });
+    }
 
     const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;

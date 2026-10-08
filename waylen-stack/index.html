@@ -676,6 +676,27 @@
   .partner-link:hover{ transform:translateY(-2px); background:#fff; }
   .partner-link-note{ margin-top:10px; font-size:12px; color:rgba(255,255,255,.55); position:relative; z-index:1; }
 
+  /* ===== Животные на карточках тарифов ===== */
+  .pl-price-tier{ position:relative; overflow:hidden; }
+  .pl-price-tier > span:not(.pl-tier-title){ max-width:calc(100% - 118px); }
+  .pl-price-tier::before{ content:""; position:absolute; right:-24px; bottom:-30px; width:150px; height:150px; border-radius:50%; background:rgba(255,255,255,.16); z-index:0; }
+  .pl-price-tier:nth-child(2)::before{ background:rgba(255,255,255,.55); }
+  .pl-price-tier::after{ content:""; position:absolute; right:6px; bottom:0; width:116px; height:136px; background-repeat:no-repeat; background-position:bottom right; background-size:contain; z-index:0; pointer-events:none; }
+  .pl-price-tier:nth-child(1)::after{ background-image:url(/img/cat.png); }
+  .pl-price-tier:nth-child(2)::after{ background-image:url(/img/puppy.png); }
+  .pl-price-tier:nth-child(3)::after{ background-image:url(/img/dog.png); }
+  .pl-price-tier > *:not(.tier-arrow){ position:relative; z-index:1; }
+  .pl-price-tier .tier-arrow{ z-index:2; }
+  .reveal.is-visible .pl-price-tier::before{ animation:circleIn2 .7s var(--ease) .3s backwards; }
+  .reveal.is-visible .pl-price-tier::after{ animation:petIn .8s var(--ease) .85s backwards; }
+  .reveal.is-visible .pl-price-tier:nth-child(2)::before{ animation-delay:.45s; }
+  .reveal.is-visible .pl-price-tier:nth-child(2)::after{ animation-delay:1s; }
+  .reveal.is-visible .pl-price-tier:nth-child(3)::before{ animation-delay:.6s; }
+  .reveal.is-visible .pl-price-tier:nth-child(3)::after{ animation-delay:1.15s; }
+  @keyframes circleIn2{ from{ transform:scale(.2); opacity:0; } to{ transform:none; opacity:1; } }
+  @media (prefers-reduced-motion: reduce){ .reveal.is-visible .pl-price-tier::before, .reveal.is-visible .pl-price-tier::after{ animation:none; } }
+  footer .footer-col a, footer .footer-links a{ display:inline-block; padding:7px 0; }
+
 </style>
 <!-- Yandex.Metrika counter -->
 <script type="text/javascript">
