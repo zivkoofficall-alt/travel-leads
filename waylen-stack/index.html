@@ -615,6 +615,9 @@
   .cc-empty{ padding:14px; color:var(--muted); font-size:14px; }
   .lead-field.has-error .cc-btn{ border-color:#C9343F; }
 
+  .cc-flag{ width:22px; height:16px; object-fit:cover; border-radius:3px; box-shadow:0 0 0 1px rgba(10,25,55,.12); flex-shrink:0; background:var(--blue-soft); }
+  .cc-opt .cc-flag{ margin:0 2px; }
+
 </style>
 <!--
   Яндекс.Метрика — тепловая карта + аналитика.
@@ -939,7 +942,7 @@
           <label>Телефон</label>
           <div class="phone-field" id="phoneField">
             <button type="button" class="cc-btn" id="ccBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="Страна">
-              <span class="cc-iso" id="ccIso">RU</span><span class="cc-dial" id="ccDial">+7</span>
+              <img class="cc-flag" id="ccIso" src="https://flagcdn.com/w40/ru.png" width="22" height="16" alt="RU"><span class="cc-dial" id="ccDial">+7</span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <input type="tel" id="leadPhone" inputmode="tel" autocomplete="tel-national" placeholder="900 000-00-00">
@@ -1918,6 +1921,7 @@
   function ccName(iso){
     try{ return new Intl.DisplayNames([lang === 'en' ? 'en' : 'ru'], {type:'region'}).of(iso) || iso; }catch(e){ return iso; }
   }
+  function flagUrl(iso){ return 'https://flagcdn.com/w40/' + iso.toLowerCase() + '.png'; }
   function natLen(c){ return (c.dial === '7' || c.dial === '1') ? 10 : Math.min(12, 15 - c.dial.length); }
   function fmtNat(c, d){
     d = d.slice(0, natLen(c));
@@ -1933,7 +1937,7 @@
   }
   function ccSet(c){
     ccCur = c;
-    document.getElementById('ccIso').textContent = c.iso;
+    var fi = document.getElementById('ccIso'); fi.src = flagUrl(c.iso); fi.alt = c.iso;
     document.getElementById('ccDial').textContent = '+' + c.dial;
     phoneIn.setAttribute('placeholder', (c.dial === '7') ? '900 000-00-00' : (c.dial === '1' ? '(201) 555-0123' : '000 000 000'));
     phoneIn.value = fmtNat(c, phoneIn.value.replace(/\D/g, ''));
@@ -1949,7 +1953,7 @@
     CC.forEach(function(c){
       var n = ccName(c.iso);
       if(q && n.toLowerCase().indexOf(q) < 0 && ('+' + c.dial).indexOf(q) < 0 && c.iso.toLowerCase() !== q) return;
-      html += '<button type="button" class="cc-opt' + (c === ccCur ? ' is-active' : '') + '" data-iso="' + c.iso + '" data-dial="' + c.dial + '"><span class="cc-iso">' + c.iso + '</span><span class="cc-nm">' + n + '</span><span class="cc-d">+' + c.dial + '</span></button>';
+      html += '<button type="button" class="cc-opt' + (c === ccCur ? ' is-active' : '') + '" data-iso="' + c.iso + '" data-dial="' + c.dial + '"><img class="cc-flag" loading="lazy" src="' + flagUrl(c.iso) + '" width="22" height="16" alt=""><span class="cc-nm">' + n + '</span><span class="cc-d">+' + c.dial + '</span></button>';
     });
     ccList.innerHTML = html || '<div class="cc-empty">' + t('Ничего не найдено') + '</div>';
   }
