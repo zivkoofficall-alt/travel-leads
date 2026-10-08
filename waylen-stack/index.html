@@ -571,6 +571,25 @@
   @media (prefers-reduced-motion: reduce){ .fab-wrap{ transition:none; } .rv-track{ scroll-behavior:auto; } }
   .rv-track{ scroll-padding-left:var(--gut); }
 
+  /* ===== Единый насыщенный синий + градиент ===== */
+  :root{
+    --blue:#1F6FEB; --blue-strong:#1A5FDB; --blue-deep:#1448B8;
+    --blue-soft:#E2ECFF;
+    --sky:#1F6FEB; --sky-dark:#1448B8; --sky-logo:#2D8CFF;
+    --grad:linear-gradient(120deg,#1B54D6 0%,#2276F0 55%,#27A6F5 100%);
+    --grad-hover:linear-gradient(120deg,#1448B8 0%,#1B63D8 55%,#1F8FDB 100%);
+  }
+  .btn-primary, header .btn-primary, .lead-submit, .marquee, footer,
+  .pl-concierge-banner, .pl-feature-grid > :nth-child(4),
+  .pl-price-tier:nth-child(2) .pl-tier-more, .pl-price-tier:nth-child(2) span.tier-arrow,
+  .pl-feature-card:hover .pl-feature-icon, .partner-card:hover .pl-feature-icon,
+  a.join-item:hover .arr, .eyebrow::before, .info-steps::after{ background:var(--grad) !important; }
+  .btn-primary:hover, header .btn-primary:hover, .lead-submit:hover{ background:var(--grad-hover) !important; }
+  .pl-animal-shadow{ background-color:#2276F0; }
+  .rgba-dummy{}
+  .pl-feature-card:hover, .review-card:hover, .partner-card:hover{ border-color:rgba(31,111,235,.45); }
+  .lead-field input:focus, .lead-field textarea:focus{ box-shadow:0 0 0 4px rgba(31,111,235,.14); }
+
 </style>
 <!--
   Яндекс.Метрика — тепловая карта + аналитика.
