@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Панель агента — Waylen Travel</title>
+<link rel="icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Onest:wght@600;700;800&display=swap">
+<style>
+  :root{
+    --ink:#0B1220;
+    --ink-2:#2A3446;
+    --muted:rgba(11,18,32,0.62);
+    --blue:#3B80C3;
+    --blue-strong:#2B6CB0;
+    --blue-deep:#17446F;
+    --blue-soft:#E4EEF8;
+    --lime:#C8F27B;
+    --bg:#F4F8FC;
+    --line:rgba(11,18,32,0.09);
+    --danger:#B3261E;
+    --ease:cubic-bezier(.22,1,.36,1);
+    --font-head:'Onest','Manrope',system-ui,sans-serif;
+    --font-body:'Manrope','Onest',system-ui,sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
+  button,input{font-family:inherit;}
+  button{cursor:pointer;border:none;background:none;color:inherit;}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:8px;}
+
+  .shell{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:1.05fr 1fr;gap:20px;padding:20px;}
+  .brand{
+    position:relative;overflow:hidden;background:var(--blue-strong);color:#fff;border-radius:32px;
+    padding:36px 40px 40px;display:flex;flex-direction:column;justify-content:space-between;min-height:320px;
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:800;font-size:17px;letter-spacing:.01em;}
+  .logo-mark{width:34px;height:34px;position:relative;flex-shrink:0;}
+  .logo-mark::after{
+    content:"";position:absolute;inset:0;background:#fff;
+    -webkit-mask:url('logo.png') center/100% no-repeat;mask:url('logo.png') center/100% no-repeat;
+  }
+  .brand h1{font-family:var(--font-head);font-weight:800;font-size:clamp(34px,4.4vw,56px);line-height:1.04;letter-spacing:-.02em;margin:0 0 14px;max-width:11ch;}
+  .brand p{margin:0;font-size:15px;line-height:1.55;color:rgba(255,255,255,.82);max-width:34ch;}
+  .circle-a{position:absolute;right:-70px;top:-70px;width:240px;height:240px;border-radius:50%;background:var(--blue);opacity:.55;}
+  .circle-b{position:absolute;right:56px;bottom:46px;width:92px;height:92px;border-radius:50%;background:var(--lime);}
+  .brand-copy{position:relative;z-index:1;}
+
+  .panel{display:flex;align-items:center;justify-content:center;padding:12px;}
+  .card{width:100%;max-width:400px;}
+  .card h2{font-family:var(--font-head);font-weight:800;font-size:28px;letter-spacing:-.01em;margin:0 0 8px;}
+  .card .lead{margin:0 0 26px;color:var(--muted);font-size:15px;line-height:1.5;}
+  label{display:block;font-size:13px;font-weight:700;margin:0 0 8px;color:var(--ink-2);}
+  input{
+    width:100%;font-size:16px;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid rgba(11,18,32,.14);
+    border-radius:16px;padding:15px 18px;outline:none;transition:border-color .2s var(--ease),box-shadow .2s var(--ease);
+  }
+  input::placeholder{color:rgba(11,18,32,.35);font-weight:500;}
+  input:focus{border-color:var(--blue-strong);box-shadow:0 0 0 4px rgba(59,128,195,.14);}
+  input.code{letter-spacing:.5em;text-align:center;font-size:24px;font-weight:700;padding-left:calc(18px + .5em);}
+  .btn{
+    margin-top:16px;width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--blue-strong);color:#fff;font-size:15px;font-weight:700;padding:8px 8px 8px 24px;border-radius:999px;
+    transition:background .2s var(--ease),transform .2s var(--ease),opacity .2s;
+  }
+  .btn:hover{background:var(--blue-deep);}
+  .btn:active{transform:scale(.985);}
+  .btn[disabled]{opacity:.6;cursor:default;}
+  .btn .go{width:44px;height:44px;border-radius:50%;background:var(--lime);color:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .btn .go svg{width:18px;height:18px;}
+  .link{margin-top:18px;font-size:14px;font-weight:700;color:var(--blue-strong);padding:4px 0;}
+  .link:hover{color:var(--blue-deep);}
+  .msg{min-height:20px;margin:14px 0 0;font-size:14px;line-height:1.45;color:var(--muted);}
+  .msg.err{color:var(--danger);font-weight:600;}
+  .hidden{display:none !important;}
+
+  .done .who{margin:0 0 22px;padding:14px 18px;border-radius:16px;background:var(--blue-soft);font-weight:700;font-size:15px;word-break:break-all;}
+  .btn-ghost{
+    display:inline-flex;align-items:center;font-size:14px;font-weight:700;border:1.5px solid rgba(11,18,32,.16);
+    padding:11px 22px;border-radius:999px;transition:background .2s var(--ease),border-color .2s var(--ease);
+  }
+  .btn-ghost:hover{background:#fff;border-color:var(--ink);}
+
+  @media (max-width:860px){
+    .shell{grid-template-columns:1fr;gap:14px;padding:14px;}
+    .brand{padding:26px 24px 28px;min-height:0;border-radius:28px;gap:36px;}
+    .brand h1{font-size:34px;max-width:none;margin-bottom:10px;}
+    .circle-a{width:180px;height:180px;right:-60px;top:-60px;}
+    .circle-b{width:56px;height:56px;right:22px;bottom:26px;}
+    .brand p{max-width:25ch;}
+    .panel{align-items:flex-start;padding:14px 8px 24px;}
+    .card h2{font-size:25px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <section class="brand" aria-label="Waylen Travel">
+    <div class="logo"><div class="logo-mark"></div>WAYLEN TRAVEL</div>
+    <div class="brand-copy">
+      <h1>Панель агента</h1>
+      <p>Партнёры, переписка и вопросы агента в одном месте.</p>
+    </div>
+    <span class="circle-a"></span><span class="circle-b"></span>
+  </section>
+
+  <main class="panel">
+    <div class="card">
+
+      <form id="stepEmail" novalidate>
+        <h2>Вход</h2>
+        <p class="lead">Введите почту, мы отправим на неё код.</p>
+        <label for="email">Почта</label>
+        <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="name@example.com" required>
+        <button class="btn" type="submit" id="sendBtn"><span>Получить код</span><span class="go"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15 15 5M7 5h8v8"/></svg></span></button>
+      </form>
+
+      <form id="stepCode" class="hidden" novalidate>
+        <h2>Код из письма</h2>
+        <p class="lead" id="codeLead">Мы отправили код на вашу почту.</p>
+        <label for="code">Код</label>
+        <input id="code" class="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="••••••" required>
+        <button class="btn" type="submit" id="verifyBtn"><span>Войти</span><span class="go"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15 15 5M7 5h8v8"/></svg></span></button>
+        <button class="link" type="button" id="backBtn">Изменить почту</button>
+      </form>
+
+      <div id="stepDone" class="done hidden">
+        <h2>Вы вошли</h2>
+        <p class="lead">Экран «Сегодня» появится на следующем шаге.</p>
+        <p class="who" id="whoAmI"></p>
+        <button class="btn-ghost" type="button" id="logoutBtn">Выйти</button>
+      </div>
+
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  var URL_BASE = 'https://bgzpnklwdhqzmrifwnkj.supabase.co';
+  var KEY = 'sb_publishable_IEcdqPXsYvWd_aLcKlpzCg_2F5r6feu';
+  var STORE = 'wl_agent_session';
+
+  var $ = function(id){ return document.getElementById(id); };
+  var stepEmail = $('stepEmail'), stepCode = $('stepCode'), stepDone = $('stepDone');
+  var msg = $('msg'), emailEl = $('email'), codeEl = $('code');
+  var currentEmail = '';
+
+  function show(step){
+    [stepEmail, stepCode, stepDone].forEach(function(el){ el.classList.toggle('hidden', el !== step); });
+    setMsg('');
+  }
+  function setMsg(text, isErr){ msg.textContent = text || ''; msg.className = 'msg' + (isErr ? ' err' : ''); }
+  function busy(btn, on){ btn.disabled = on; }
+
+  function saveSession(s){ try{ localStorage.setItem(STORE, JSON.stringify(s)); }catch(e){} }
+  function loadSession(){ try{ return JSON.parse(localStorage.getItem(STORE) || 'null'); }catch(e){ return null; } }
+  function clearSession(){ try{ localStorage.removeItem(STORE); }catch(e){} }
+
+  function api(path, body, token){
+    var headers = { 'Content-Type':'application/json', 'apikey': KEY };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    return fetch(URL_BASE + path, { method: body ? 'POST' : 'GET', headers: headers, body: body ? JSON.stringify(body) : undefined })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { ok:r.ok, status:r.status, data:j }; }); });
+  }
+
+  stepEmail.addEventListener('submit', function(e){
+    e.preventDefault();
+    var email = emailEl.value.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ setMsg('Проверьте адрес почты.', true); return; }
+    var btn = $('sendBtn'); busy(btn, true); setMsg('Отправляем код…');
+    api('/auth/v1/otp', { email: email, create_user: true }).then(function(r){
+      busy(btn, false);
+      if (!r.ok){
+        setMsg(r.status === 429 ? 'Слишком часто. Подождите минуту и повторите.' : 'Не получилось отправить код. Попробуйте позже.', true);
+        return;
+      }
+      currentEmail = email;
+      $('codeLead').textContent = 'Мы отправили код на ' + email + '.';
+      show(stepCode); codeEl.value = ''; codeEl.focus();
+    }).catch(function(){ busy(btn, false); setMsg('Нет связи. Проверьте интернет.', true); });
+  });
+
+  stepCode.addEventListener('submit', function(e){
+    e.preventDefault();
+    var token = codeEl.value.replace(/\s/g, '');
+    if (token.length < 6){ setMsg('Введите код из письма.', true); return; }
+    var btn = $('verifyBtn'); busy(btn, true); setMsg('Проверяем…');
+    api('/auth/v1/verify', { type:'email', email: currentEmail, token: token }).then(function(r){
+      busy(btn, false);
+      if (!r.ok || !r.data.access_token){ setMsg('Код неверный или устарел. Запросите новый.', true); return; }
+      saveSession({ access_token:r.data.access_token, refresh_token:r.data.refresh_token, email:currentEmail });
+      enter(currentEmail);
+    }).catch(function(){ busy(btn, false); setMsg('Нет связи. Проверьте интернет.', true); });
+  });
+
+  $('backBtn').addEventListener('click', function(){ show(stepEmail); emailEl.focus(); });
+
+  $('logoutBtn').addEventListener('click', function(){
+    var s = loadSession();
+    if (s) api('/auth/v1/logout', {}, s.access_token).catch(function(){});
+    clearSession(); show(stepEmail);
+  });
+
+  function enter(email){ $('whoAmI').textContent = email; show(stepDone); }
+
+  var s = loadSession();
+  if (s && s.access_token){
+    api('/auth/v1/user', null, s.access_token).then(function(r){
+      if (r.ok && r.data.email){ enter(r.data.email); } else { clearSession(); }
+    }).catch(function(){});
+  }
+})();
+</script>
+</body>
+</html>
