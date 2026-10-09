@@ -416,7 +416,7 @@
   var KINDP = {clinic:'Клиники',carrier:'Перевозчики',blogger:'Блогеры',community:'Сообщества',client:'Клиенты'};
   var PST = {found:'Найден',contacted:'Написали',replied:'Ответили',agreed:'Договорились',declined:'Отказ',paused:'Пауза'};
   var PCOL = {found:'#5B606B',contacted:'#3B80C3',replied:'#8FD0A8',agreed:'#C8F27B',declined:'#C46A63',paused:'#3A3E46'};
-  var RK = {mail_check:'Проверка почты',partner_search:'Поиск партнёров',send:'Отправка',reply_draft:'Черновик ответа',question:'Вопрос владельцу'};
+  var RK = {mail_check:'Проверка почты',partner_search:'Поиск партнёров',send:'Отправка',reply_draft:'Черновик ответа',question:'Вопрос владельцу',market:'Рынок',budget:'Лимит расходов',tick:'Запуск'};
   var FOLD = {inbox:'Входящие',sent:'Исходящие',draft:'Черновики',spam:'Спам'};
   var TABS = [['home','Главная','home'],['mail','Почта','mail'],['partners','Партнёры','users'],['agent','Агент','bolt'],['settings','Настройки','gear']];
 
@@ -727,7 +727,7 @@
 
     var lr = lastRun('mail_check'), ls = lastRun('partner_search');
     var h = '<div class="head"><div><h1 class="pt">' + hello + ', Филипп</h1><p class="sub">' + (st.enabled ? 'Агент работает' : 'Агент выключен') + ' · режим «' + (st.send_mode === 'auto' ? 'сам отправляет' : 'через ваше утверждение') + '»' + (lr ? ' · почта проверена ' + ago(lr.created_at) + ' назад' : '') + (ls ? ' · поиск ' + ago(ls.created_at) + ' назад' : '') + ' · <button class="link" style="margin:0;padding:0;font-size:14px" data-act="help">как это работает</button></p></div>' +
-      '<div class="switch"><span>Агент</span><button class="tg' + (st.enabled ? ' on' : '') + '" data-act="toggle-agent" aria-label="Включить или выключить агента" aria-pressed="' + (st.enabled ? 'true' : 'false') + '"></button></div></div>';
+      '<div class="acts" style="margin:0"><button class="pill ghost" data-act="run-now" id="runNow">Запустить сейчас</button><div class="switch"><span>Агент</span><button class="tg' + (st.enabled ? ' on' : '') + '" data-act="toggle-agent" aria-label="Включить или выключить агента" aria-pressed="' + (st.enabled ? 'true' : 'false') + '"></button></div></div></div>';
 
     h += alertsBlock();
     h += '<div class="tiles">' +
@@ -1245,6 +1245,9 @@
       '<div class="fld"><label>Режим отправки</label><div class="seg" id="s_mode">' + [['approve','Через утверждение'],['auto','Сам отправляет']].map(function(m){ return '<button type="button" class="' + (s.send_mode === m[0] ? 'on' : '') + '" data-act="mode" data-id="' + m[0] + '">' + m[1] + '</button>'; }).join('') + '</div><p class="sub">Первую неделю лучше держать «Через утверждение».</p></div>' +
       '<div class="row2"><div class="fld"><label>Писем в день (максимум)</label><input id="s_lim" type="number" min="0" max="500" value="' + esc(s.daily_email_limit) + '"><p class="hint">Защита от спама и от лишних трат. Новым партнёрам обычно хватает 10–20 писем в день.</p></div><div class="fld"><label>Поисков партнёров в день</label><input id="s_runs" type="number" min="0" max="48" value="' + esc(s.search_runs_per_day) + '"><p class="hint">Один поиск — это несколько запросов в интернет и около $0.05–0.15.</p></div></div>' +
       '<div class="row2"><div class="fld"><label>Тихие часы: с</label>' + hrs('s_qs', s.quiet_start) + '</div><div class="fld"><label>до</label>' + hrs('s_qe', s.quiet_end) + '</div></div>' +
+      '<div class="fld"><label>Страны для поиска партнёров (через запятую)</label><input id="s_countries" value="' + esc((s.focus_countries || []).join(', ')) + '" placeholder="Турция, ОАЭ, Грузия, Таиланд"><p class="hint">Пусто — агент сам выберет популярные страны переезда с питомцами.</p></div>' +
+      '<div class="fld"><label>О компании для агента</label><textarea id="s_company" placeholder="Что мы делаем, какие страны, что предлагаем партнёрам и что хотим от них">' + esc(s.company_summary || '') + '</textarea><p class="hint">Агент опирается на это и на базу знаний, когда ищет партнёров и пишет письма.</p></div>' +
+      '<div class="fld"><label>Часовой пояс (для тихих часов и утренней сводки)</label><select id="s_tz">' + [['Europe/Moscow','Москва'],['Asia/Bangkok','Бангкок'],['Asia/Dubai','Дубай'],['Europe/Istanbul','Стамбул'],['Asia/Tbilisi','Тбилиси'],['Europe/Belgrade','Белград'],['Europe/Berlin','Берлин'],['Asia/Almaty','Алматы']].map(function(z){ return '<option value="' + z[0] + '"' + ((s.timezone || 'Europe/Moscow') === z[0] ? ' selected' : '') + '>' + z[1] + '</option>'; }).join('') + '</select></div>' +
       '<div class="fld"><label>Напоминать, если нет ответа (дней)</label><input id="s_fu" type="number" min="1" max="60" value="' + esc(s.followup_days || 4) + '"></div>' +
       '<div class="fld"><label>Кого искать</label><div class="checks">' + Object.keys(KINDP).map(function(k){ return '<button type="button" class="chip' + (fk.indexOf(k) > -1 ? ' on' : '') + '" data-act="fk" data-id="' + k + '">' + KINDP[k] + '</button>'; }).join('') + '</div></div>' +
       '<div class="fld"><label>Месячный лимит расходов, $</label><input id="s_bud" type="number" min="0" step="1" value="' + esc(s.monthly_budget_usd) + '"><p class="sub">При достижении лимита агент остановится сам.</p></div>' +
@@ -1306,6 +1309,16 @@
   }
   var ACT = {
     help: helpSheet,
+    'run-now': function(d, el){
+      if (!hasKey('anthropic_api_key')){ toast('Сначала добавьте ключ Claude API в настройках'); setTab('settings'); return; }
+      el.disabled = true; el.textContent = 'Работает…';
+      function go(){ return fetch(BASE + '/functions/v1/agent-tick', {method:'POST', headers:{'apikey':KEY, 'Authorization':'Bearer ' + sess.access_token, 'Content-Type':'application/json'}, body:'{}'}); }
+      go().then(function(r){ return r.status === 401 ? refresh().then(go) : r; }).then(function(r){ return r.json(); }).then(function(j){
+        var log = (j.log || []).join('\n') || (j.skipped === 'busy' ? 'Агент уже выполняет запуск, подождите пару минут.' : j.note || j.error || 'Готово, новых действий нет.');
+        openSheet('Запуск агента', '<div class="pv">' + esc(log) + '</div>' + (j.spent_now ? '<p class="sub">Потрачено за запуск: ' + usd(j.spent_now) + '</p>' : '') + '<div class="acts"><button class="pill" data-act="close">Закрыть</button></div>');
+        return reload();
+      }).catch(function(){ toast('Не удалось запустить. Проверьте связь', true); }).then(function(){ el.disabled = false; el.textContent = 'Запустить сейчас'; });
+    },
     more: function(d){ S.page[d.id] = parseInt(d.n, 10); var y = window.scrollY; render(); window.scrollTo(0, y); },
     'alerts-more': function(){ S.alertsAll = !S.alertsAll; render(); },
     retry: function(){ enter(); },
@@ -1441,7 +1454,7 @@
     mode: function(d, el){ D.settings.send_mode = d.id; Array.prototype.forEach.call(el.parentNode.children, function(b){ b.classList.toggle('on', b === el); }); },
     fk: function(d, el){ var a = (D.settings.focus_kinds || []).slice(), i = a.indexOf(d.id); if (i > -1) a.splice(i, 1); else a.push(d.id); D.settings.focus_kinds = a; el.classList.toggle('on'); },
     's-save': function(){
-      var row = {send_mode:D.settings.send_mode, daily_email_limit:parseInt(val('s_lim'), 10) || 0, search_runs_per_day:parseInt(val('s_runs'), 10) || 0, quiet_start:parseInt(val('s_qs'), 10) || 0, quiet_end:parseInt(val('s_qe'), 10) || 0, followup_days:Math.max(1, parseInt(val('s_fu'), 10) || 4), focus_kinds:D.settings.focus_kinds || [], monthly_budget_usd:Number(val('s_bud')) || 0, blocked_domains:val('s_block').split(',').map(function(x){ return x.trim().toLowerCase(); }).filter(Boolean), tone:val('s_tone') || null, updated_at:new Date().toISOString()};
+      var row = {send_mode:D.settings.send_mode, daily_email_limit:parseInt(val('s_lim'), 10) || 0, search_runs_per_day:parseInt(val('s_runs'), 10) || 0, quiet_start:parseInt(val('s_qs'), 10) || 0, quiet_end:parseInt(val('s_qe'), 10) || 0, followup_days:Math.max(1, parseInt(val('s_fu'), 10) || 4), focus_countries:val('s_countries').split(',').map(function(x){ return x.trim(); }).filter(Boolean), company_summary:val('s_company') || null, timezone:val('s_tz') || 'Europe/Moscow', focus_kinds:D.settings.focus_kinds || [], monthly_budget_usd:Number(val('s_bud')) || 0, blocked_domains:val('s_block').split(',').map(function(x){ return x.trim().toLowerCase(); }).filter(Boolean), tone:val('s_tone') || null, updated_at:new Date().toISOString()};
       rest('PATCH','agent_settings?id=eq.1', row).then(function(){ toast('Настройки сохранены'); return reload(); }).catch(function(){ toast('Не получилось сохранить'); });
     },
     'acc-new': function(){ accSheet(''); }, 'acc-open': function(d){ accSheet(d.id); },
