@@ -179,8 +179,58 @@ async function absorbAnswers(c: Ctx) {
 }
 
 /* ---------- Почта (провайдеры подключаются позже) ---------- */
-async function fetchInbox(_account: any): Promise<any[]> { return []; }
-async function sendMail(_account: any, _email: any): Promise<{ ok: boolean; id?: string; error?: string }> { return { ok: false, error: "Ящик не подключён" }; }
+let AM_KEY = "";
+const AM = "https://api.agentmail.to/v0";
+async function am(method: string, path: string, body?: unknown): Promise<any> {
+  const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 20000);
+  try {
+    const r = await fetch(AM + path, { method, signal: ctl.signal, headers: { Authorization: "Bearer " + AM_KEY, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error("AgentMail " + r.status + ": " + String(j?.message || j?.name || "").slice(0, 200));
+    return j;
+  } finally { clearTimeout(timer); }
+}
+function addrOf(x: unknown): string {
+  const v = Array.isArray(x) ? x[0] : x; const t = String(v || "");
+  const m = t.match(/<([^>]+)>/); return (m ? m[1] : t).trim().toLowerCase();
+}
+// ящик AgentMail создаём автоматически при первом запуске с ключом
+async function ensureMailbox(c: Ctx) {
+  if (!AM_KEY || c.accounts.some((a) => a.provider === "agentmail")) return;
+  try {
+    let inbox: any = null;
+    for (const username of ["waylen.travel", "waylen-travel", "waylen.pets", "waylen"]) {
+      try { inbox = await am("POST", "/inboxes", { username, display_name: "Waylen Travel" }); break; } catch (e) { if (!String(e).includes("409")) throw e; }
+    }
+    if (!inbox) inbox = await am("POST", "/inboxes", { display_name: "Waylen Travel" });
+    const { data: acc } = await c.db.from("mail_accounts").insert({ label: "Агент (AgentMail)", address: inbox.email || inbox.inbox_id, provider: "agentmail", status: "connected" }).select("*").single();
+    if (acc) c.accounts.push(acc);
+    await c.run("mail_check", "Создан ящик агента: " + (inbox.email || inbox.inbox_id), "", true);
+    await c.notify("Ящик агента готов: " + (inbox.email || inbox.inbox_id));
+  } catch (e) { await c.run("mail_check", "Не удалось создать ящик AgentMail", String(e), false); }
+}
+async function fetchInbox(account: any): Promise<any[]> {
+  if (account.provider !== "agentmail" || !AM_KEY) return [];
+  const after = new Date(Date.now() - 3 * 864e5).toISOString();
+  const list = await am("GET", `/inboxes/${encodeURIComponent(account.address)}/messages?limit=30&ascending=true&after=${encodeURIComponent(after)}`);
+  const out: any[] = [];
+  for (const m of list.messages || []) {
+    const from = addrOf(m.from);
+    if (!from || from === String(account.address).toLowerCase()) continue;
+    if ((m.labels || []).includes("sent")) continue;
+    let body = m.preview || "";
+    try { const full = await am("GET", `/inboxes/${encodeURIComponent(account.address)}/messages/${encodeURIComponent(m.message_id)}`); body = full.extracted_text || full.text || full.preview || body; } catch (_) { /* оставляем preview */ }
+    out.push({ external_id: m.message_id, from_addr: from, subject: m.subject || "(без темы)", body, date: m.timestamp || m.created_at });
+  }
+  return out;
+}
+async function sendMail(account: any, email: any): Promise<{ ok: boolean; id?: string; error?: string }> {
+  if (account.provider !== "agentmail" || !AM_KEY) return { ok: false, error: "\u042f\u0449\u0438\u043a \u043d\u0435 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0451\u043d" };
+  try {
+    const r = await am("POST", `/inboxes/${encodeURIComponent(account.address)}/messages/send`, { to: [email.to_addr], subject: email.subject || "", text: email.body || "" });
+    return { ok: true, id: r.message_id };
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
 
 async function mailSync(c: Ctx) {
   const connected = c.accounts.filter((a) => a.status === "connected");
@@ -460,6 +510,8 @@ Deno.serve(async (req) => {
       return json(200, { ok: true, skipped: "budget", log: c.log });
     }
 
+    AM_KEY = sec.agentmail_api_key || "";
+    await ensureMailbox(c);
     await mailSync(c);
     await processInbox(c);
     await sendQueued(c);
