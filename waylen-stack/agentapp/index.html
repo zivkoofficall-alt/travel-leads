@@ -183,8 +183,8 @@
   .bad{color:var(--danger);}
 
   /* sheet */
-  #sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;}
-  #sheet .sp{width:100%;max-width:640px;max-height:92vh;max-height:92dvh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:22px 20px calc(24px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px)));}
+  #sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding-top:calc(var(--tg-top,0px) + 8px);}
+  #sheet .sp{width:100%;max-width:640px;max-height:calc(100dvh - var(--tg-top,0px) - 8px);overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:22px 20px calc(24px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px)));}
   #sheet .sh{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;}
   #sheet .sh h2{font-family:var(--font-head);font-weight:800;font-size:22px;margin:0;}
   .x{width:40px;height:40px;border-radius:50%;background:var(--card-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -671,7 +671,8 @@
   }
   setInterval(softRefresh, 90000);
   document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible' && sess && S.loadedAt && Date.now() - S.loadedAt > 60000) softRefresh(); });
-  window.addEventListener('offline', function(){ toast('Нет связи с интернетом'); });
+  document.addEventListener('focusout', function(){ setTimeout(function(){ if (window.scrollY) window.scrollTo(0, 0); }, 60); });
+  window.addEventListener('offline', function(){ toast('Нет связи с интернетом', true); });
   window.addEventListener('online', function(){ toast('Связь восстановлена'); softRefresh(); });
   function quietNow(){ var st = D.settings || {}, h = new Date().getHours(), a = Number(st.quiet_start == null ? 22 : st.quiet_start), b = Number(st.quiet_end == null ? 8 : st.quiet_end); return a === b ? false : (a < b ? (h >= a && h < b) : (h >= a || h < b)); }
   function hasKey(n){ return D.secrets.some(function(m){ return m.name === n; }); }
