@@ -329,6 +329,7 @@
   .cnt2{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--lime);color:var(--lime-ink);font-size:11px;font-weight:800;margin-left:6px;}
   .mid .l1 .wrap{white-space:normal;}
   .err-box{text-align:center;padding:40px 18px;}
+  .acts.sticky{position:sticky;bottom:-24px;background:linear-gradient(180deg,rgba(23,25,29,0) 0%,var(--card) 28%);padding:18px 0 24px;margin:0;z-index:2;}
   .phead{display:flex;align-items:center;gap:14px;margin:-4px 0 6px;}
   .phead .avr{width:60px;height:60px;}
   .phead .avr .av{width:48px;height:48px;font-size:18px;}
@@ -514,8 +515,10 @@
     var s = $('#sheet');
     s.innerHTML = '<div class="sp" role="dialog" aria-modal="true"><div class="sh"><h2>' + esc(title) + '</h2><button class="x" data-act="close" aria-label="Закрыть">' + ic('x') + '</button></div>' + html + '</div>';
     s.classList.remove('hidden'); document.body.style.overflow = 'hidden';
+    openSheet.prev = document.activeElement;
+    setTimeout(function(){ var f = s.querySelector('[autofocus]') || s.querySelector('.x'); if (f){ f.focus({preventScroll:true}); if (f.tagName === 'TEXTAREA') try{ f.setSelectionRange(0, 0); }catch(e){} } }, 30);
   }
-  function closeSheet(){ var s = $('#sheet'); s.classList.add('hidden'); s.innerHTML = ''; document.body.style.overflow = ''; }
+  function closeSheet(){ var s = $('#sheet'); s.classList.add('hidden'); s.innerHTML = ''; document.body.style.overflow = ''; var pv = openSheet.prev; if (pv && pv.focus && document.body.contains(pv)) try{ pv.focus({preventScroll:true}); }catch(e){} openSheet.prev = null; }
 
   /* ---------- helpers v2 ---------- */
   var FREE = {'gmail.com':1,'googlemail.com':1,'yahoo.com':1,'outlook.com':1,'hotmail.com':1,'live.com':1,'icloud.com':1,'me.com':1,'mail.ru':1,'bk.ru':1,'inbox.ru':1,'list.ru':1,'yandex.ru':1,'yandex.com':1,'ya.ru':1,'proton.me':1,'protonmail.com':1,'gmx.com':1,'gmx.de':1,'web.de':1,'aol.com':1};
@@ -885,8 +888,8 @@
       '<div class="fld"><label>Кому</label><input id="c_to" list="c_pl" type="email" placeholder="email партнёра" value="' + esc(pre.to_addr || '') + '"><datalist id="c_pl">' + pOpts + '</datalist></div>' +
       '<div class="fld"><label>Шаблон</label><select id="c_tpl">' + tOpts + '</select></div>' +
       '<div class="fld"><label>Тема</label><input id="c_sub" value="' + esc(pre.subject || '') + '"></div>' +
-      '<div class="fld"><label>Текст</label><textarea id="c_body" style="min-height:170px">' + esc(pre.body || '') + '</textarea></div>' +
-      '<div class="acts"><button class="pill" data-act="c-send" data-id="' + esc(pre.id || '') + '" data-p="' + esc(pre.partner_id || '') + '">Отправить</button><button class="pill ghost" data-act="c-save" data-id="' + esc(pre.id || '') + '" data-p="' + esc(pre.partner_id || '') + '">Сохранить черновик</button></div>' +
+      '<div class="fld"><label>Текст</label><textarea id="c_body" autofocus style="min-height:170px">' + esc(pre.body || '') + '</textarea></div>' +
+      '<div class="acts sticky"><button class="pill" data-act="c-send" data-id="' + esc(pre.id || '') + '" data-p="' + esc(pre.partner_id || '') + '">Отправить</button><button class="pill ghost" data-act="c-save" data-id="' + esc(pre.id || '') + '" data-p="' + esc(pre.partner_id || '') + '">Сохранить черновик</button></div>' +
       '<p class="sub">«Отправить» ставит письмо в очередь. Оно уйдёт после подключения ящика. В шаблонах {{имя}}, {{компания}} и {{страна}} подставляются сами.</p></div>');
   }
   function saveCompose(id, pid, status){
@@ -976,7 +979,7 @@
       '<div class="fld"><label for="p_terms">Условия сотрудничества</label><textarea id="p_terms" placeholder="Комиссия, скидка клиентам, порядок оплаты, договор">' + esc(p.terms || '') + '</textarea><p class="hint">Агент использует это поле, когда отвечает партнёру и когда предлагает его клиентам.</p></div>' +
       '<div class="fld"><label for="p_notes">Заметки</label><textarea id="p_notes">' + esc(p.notes || '') + '</textarea></div>' +
       '<div id="p_warn"></div>' +
-      '<div class="acts"><button class="pill" data-act="p-save" data-id="' + esc(id || '') + '">Сохранить</button>' +
+      '<div class="acts sticky"><button class="pill" data-act="p-save" data-id="' + esc(id || '') + '">Сохранить</button>' +
       (id && p.email ? '<button class="pill ghost" data-act="p-write" data-id="' + esc(id) + '">Написать</button>' : '') +
       (id ? '<button class="pill ghost" data-act="p-task" data-id="' + esc(id) + '">Задача</button>' : '') +
       (site ? '<a class="pill ghost" href="' + esc(site) + '" target="_blank" rel="noopener noreferrer">Сайт</a>' : '') +
@@ -1216,7 +1219,7 @@
 
   /* ----- search ----- */
   function searchSheet(){
-    openSheet('Поиск', '<div class="search" style="margin-bottom:6px">' + ic('search') + '<input id="gq" type="search" placeholder="Партнёр, письмо, задача, знание" autocomplete="off"></div><div id="gres" class="gs-r"><p class="sub">Введите хотя бы две буквы.</p></div>');
+    openSheet('Поиск', '<div class="search" style="margin-bottom:6px">' + ic('search') + '<input id="gq" autofocus type="search" placeholder="Партнёр, письмо, задача, знание" autocomplete="off"></div><div id="gres" class="gs-r"><p class="sub">Введите хотя бы две буквы.</p></div>');
     setTimeout(function(){ var i = $('#gq'); if (i) i.focus(); }, 40);
   }
   function searchRes(q){
