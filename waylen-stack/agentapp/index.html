@@ -30,6 +30,7 @@
   button,input,select,textarea{font-family:inherit;color:inherit;}
   button{cursor:pointer;border:none;background:none;}
   :focus-visible{outline:2px solid var(--lime);outline-offset:3px;border-radius:8px;}
+  .sp:focus,.sp:focus-visible{outline:none;}
   .hidden{display:none !important;}
   svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
 
@@ -120,6 +121,8 @@
   .pill.ghost:hover{border-color:var(--lime);}
   .pill.danger{background:transparent;color:var(--danger);border:1.5px solid rgba(255,138,128,.3);}
   .pill[disabled]{opacity:.5;cursor:default;}
+  .acts.sec{margin-top:8px;gap:8px;}
+  .acts.sec .pill{padding:8px 14px;font-size:13px;}
 
   .bar{display:flex;height:14px;border-radius:999px;overflow:hidden;background:var(--card-2);gap:3px;}
   .bar span{display:block;height:100%;}
@@ -137,7 +140,7 @@
   .it .mid{flex:1;min-width:0;}
   .it .l1{display:flex;justify-content:space-between;gap:10px;font-size:15px;font-weight:700;}
   .it .l1 span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .it .tm{font-size:12px;color:var(--faint);font-weight:600;white-space:nowrap;}
+  .tm{font-size:12px;color:var(--faint);font-weight:600;white-space:nowrap;flex-shrink:0;}
   .it .l2{font-size:14px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .it.unread .l2{font-weight:800;}
   .it .l3{font-size:13px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -165,6 +168,7 @@
 
   .set{display:flex;flex-direction:column;gap:16px;}
   .fld{display:flex;flex-direction:column;}
+  .row2 .fld{justify-content:flex-end;}
   .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;}
   .checks{display:flex;flex-wrap:wrap;gap:8px;}
   .seg{display:flex;background:var(--bg);border-radius:999px;padding:4px;gap:4px;}
@@ -212,19 +216,22 @@
     main#view{overflow-x:hidden;}
     html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;}
     #app{height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
-    .topbar{position:sticky;top:0;z-index:30;background:var(--bg);padding-bottom:10px;}
-    .kbsec{display:none;}
+    .kbsec,.dsk{display:none !important;}
     .seg button{font-size:13px;padding:10px 8px;}
     #app{display:block;}
     .side{display:none;}
     main#view{padding:16px 16px 130px;}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top) + var(--tg-top,0px)) 16px 0;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top) + var(--tg-top,0px)) 16px 10px;position:sticky;top:0;z-index:30;background:var(--bg);}
     .topbar .logo{font-size:15px;}
     .topbar .logo-mark{width:28px;height:28px;}
     .topbar .x{background:var(--card);}
     h1.pt{font-size:26px;}
-    .head{flex-direction:column;gap:12px;}
+    .head{gap:10px;align-items:flex-start;}
+    .head .acts{flex-wrap:nowrap;margin-top:2px;}
+    .head .acts .pill{padding:10px 16px;font-size:14px;}
+    .head.col{flex-direction:column;gap:12px;}
     .two,.row2{grid-template-columns:1fr;}
+    .row2.keep{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
     .tabbar{display:flex;position:fixed;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));bottom:calc(12px + env(safe-area-inset-bottom) + var(--tg-bottom,0px));z-index:40;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:8px;justify-content:space-between;align-items:center;}
     .tabbar .tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--muted);padding:6px 0;border-radius:999px;position:relative;}
     .tabbar .tb.on{color:var(--lime);}
@@ -350,6 +357,92 @@
   .phead .pm b{color:var(--text);display:block;font-size:15px;}
   .alerts .more{align-self:flex-start;font-size:13px;font-weight:700;color:var(--muted);padding:4px 16px;}
   .err-box p{color:var(--muted);margin:0 0 16px;}
+
+  /* ---------- v4: очередь дел, баннеры, анимации ---------- */
+  .status{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600;margin:8px 0 0;}
+  .status .sr{display:flex;align-items:center;flex-wrap:wrap;gap:4px 0;}
+  .status .sr>span+span::before{content:'·';margin:0 7px;opacity:.45;}
+  .status .ok{display:inline-flex;align-items:center;gap:7px;color:var(--text);}
+  .status .ok::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 0 3px rgba(200,242,123,.18);}
+  .status .off::before{background:var(--faint);box-shadow:none;}
+  .status .sep{opacity:.4;}
+  .banner{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;font-size:14px;font-weight:600;line-height:1.4;width:100%;text-align:left;margin-bottom:10px;}
+  .banner .bd{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:#F2B84B;}
+  .banner.bad .bd{background:var(--danger);}
+  .banner .t{flex:1;}
+  .banner .go2{color:var(--muted);display:flex;}
+  .qh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:26px 0 12px;}
+  .qh h3{font-family:var(--font-head);font-weight:800;font-size:19px;margin:0;display:flex;align-items:center;gap:10px;}
+  .qh .n{font-size:12px;font-weight:800;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:var(--lime);color:var(--lime-ink);display:inline-flex;align-items:center;justify-content:center;}
+  .qh .n.z{background:var(--card-2);color:var(--muted);}
+  .qh button,.qh a{font-size:14px;font-weight:700;color:var(--lime);white-space:nowrap;padding:0;}
+  .qi{display:flex;gap:14px;align-items:center;padding:14px 18px;width:100%;text-align:left;border-top:1px solid var(--line);}
+  .qi:first-child{border-top:none;}
+  button.qi:hover{background:var(--card-2);}
+  .qi .qk{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--card-2);color:var(--text);}
+  .qi .qk.lime{background:var(--lime);color:var(--lime-ink);}
+  .qi .qk.blue{background:rgba(59,128,195,.22);color:#8FC0F0;}
+  .qi .qk.warn{background:rgba(242,184,75,.16);color:#F2B84B;}
+  .qi .qk.bad{background:rgba(255,138,128,.14);color:var(--danger);}
+  .qi .mid{flex:1;min-width:0;}
+  .qi .l1{font-size:15px;font-weight:700;display:flex;justify-content:space-between;gap:10px;}
+  .qi .l1 span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .qi .l3{font-size:13px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .qi .arr{color:var(--faint);display:flex;flex-shrink:0;}
+  .done{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;}
+  .done .qk{width:42px;height:42px;border-radius:14px;background:var(--lime);color:var(--lime-ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .done b{display:block;font-size:15px;}
+  .done span{font-size:13px;color:var(--muted);}
+  .kpi{text-align:left;display:flex;flex-direction:column;justify-content:space-between;min-height:122px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:16px 18px;min-width:0;}
+  .kpi .kl{font-size:13px;font-weight:600;color:var(--muted);}
+  .kpi .kv2{font-family:var(--font-head);font-weight:800;font-size:clamp(20px,6.2vw,28px);letter-spacing:-.02em;line-height:1.1;margin-top:8px;font-variant-numeric:tabular-nums;}
+  .kpi .ks{font-size:12px;font-weight:600;color:var(--muted);margin-top:4px;line-height:1.35;}
+  .kpi .ks.up{color:var(--lime);}
+  .kpi .ks.down{color:var(--danger);}
+  .num{font-variant-numeric:tabular-nums;}
+  #view.fade{animation:vin .32s var(--ease) both;}
+  @keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .list .it,.list .qi,.list .stp,.tiles>*{animation:rowin .4s var(--ease) both;}
+  @keyframes rowin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  #sheet{animation:dim .25s ease both;}
+  #sheet .sp{animation:up .34s var(--ease) both;}
+  @keyframes dim{from{background:rgba(0,0,0,0)}to{background:rgba(0,0,0,.6)}}
+  @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+  @media (min-width:821px){ @keyframes up{from{transform:translateY(14px) scale(.985);opacity:0}to{transform:none;opacity:1}} }
+  #toast{animation:tin .28s var(--ease) both;}
+  @keyframes tin{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+  .pill,.chip,.tb,.x,.tile,.it,.qi,.nav-b{-webkit-tap-highlight-color:transparent;}
+  .pill:active,.chip:active,.x:active,.it:active,.qi:active{transform:scale(.98);}
+  .pill,.chip,.x,.it,.qi,.tile{transition:transform .18s var(--ease),background .2s var(--ease),border-color .2s var(--ease),opacity .2s;}
+  .tg.on,.tg{transition:background .25s var(--ease);}
+  .meter span,.hb .ht i{transition:width .7s var(--ease);}
+  .mail-dir{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);}
+  .mail-dir i{width:8px;height:8px;border-radius:50%;background:var(--blue);}
+  .mail-dir.in i{background:var(--lime);}
+  .it .l2{font-weight:600;}
+  .it.unread .l1 span:first-child{font-weight:800;}
+  .it.unread .l2{font-weight:800;color:var(--text);}
+  .it:not(.unread) .av.in{background:var(--card-2);color:var(--text);}
+  .thread{margin-top:18px;}
+  .thread .tm2{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin:0 0 10px;}
+  .msg-b{border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin-bottom:10px;background:var(--bg);}
+  .msg-b.me{background:rgba(59,128,195,.12);border-color:rgba(59,128,195,.25);}
+  .msg-b.cur{border-color:var(--lime);}
+  .msg-b .mh2{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .msg-b .mt{font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+  .msg-b .mt.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+  .msg-b button.more2{font-size:13px;font-weight:700;color:var(--lime);padding:6px 0 0;}
+  .nw{padding:10px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.45;}
+  .nw:first-of-type{border-top:none;padding-top:0;}
+  .nw b{display:block;margin-bottom:2px;}
+  .nw span{color:var(--muted);font-size:13px;}
+  .keyrow{padding:12px 0;border-top:1px solid var(--line);}
+  .keyrow:first-of-type{border-top:none;padding-top:0;}
+  .keyrow .kl2{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .keyrow .kl2 small{display:block;color:var(--muted);font-size:13px;font-weight:500;margin-top:2px;}
+  .keyrow .kin{display:flex;gap:8px;}
+  .keyrow .kin input{padding:11px 14px;min-width:0;}
+  .keyrow .kin .pill{flex-shrink:0;padding:10px 16px;}
   /* boot screen */
   #boot{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow:hidden;transition:opacity .45s ease,visibility .45s;padding-top:var(--tg-top,0px);}
   #boot.out{opacity:0;visibility:hidden;pointer-events:none;}
@@ -499,7 +592,12 @@
     search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     x:'<path d="M6 6l12 12M18 6 6 18"/>',
     check:'<path d="m5 12.5 4.5 4.5L19 7"/>',
-    out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>'
+    out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+    ask:'<path d="M12 21a9 9 0 1 0-9-9c0 1.6.4 3.1 1.2 4.4L3 21l4.6-1.2A9 9 0 0 0 12 21z"/><path d="M9.8 9.5a2.3 2.3 0 0 1 4.4.8c0 1.5-2.2 2-2.2 3.2M12 16.5h.01"/>',
+    bell:'<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/>',
+    chev:'<path d="m9 6 6 6-6 6"/>',
+    eye:'<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="3"/>',
+    eyeoff:'<path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M6.7 6.7C4.1 8.4 2 12 2 12s3.5 6 10 6c1.6 0 3-.3 4.3-.9M9.9 5.2A10 10 0 0 1 12 5c6.5 0 10 7 10 7s-.9 1.6-2.6 3.2"/>'
   };
   function ic(n){ return '<svg class="i" viewBox="0 0 24 24">' + IC[n] + '</svg>'; }
 
@@ -582,7 +680,24 @@
   function lastContact(pid){ var t = 0; D.emails.forEach(function(e){ if (e.partner_id === pid && e.folder !== 'draft' && e.folder !== 'spam'){ var x = new Date(tm(e)).getTime(); if (x > t) t = x; } }); return t; }
 
   /* ---------- utils ---------- */
-  function toast(t, bad){ var el = $('#toast'); el.textContent = t; el.classList.toggle('bad', !!bad); el.classList.remove('hidden'); clearTimeout(toast.t); toast.t = setTimeout(function(){ el.classList.add('hidden'); }, 2600); }
+  var HAP = (function(){ function H(){ var W = window.Telegram && window.Telegram.WebApp; return W && W.HapticFeedback; } return {
+    tap: function(){ try{ var h = H(); if (h) h.impactOccurred('light'); }catch(e){} },
+    sel: function(){ try{ var h = H(); if (h) h.selectionChanged(); }catch(e){} },
+    ok: function(){ try{ var h = H(); if (h) h.notificationOccurred('success'); }catch(e){} },
+    err: function(){ try{ var h = H(); if (h) h.notificationOccurred('error'); }catch(e){} } }; })();
+  function toast(t, bad){ var el = $('#toast'); el.textContent = t; el.classList.toggle('bad', !!bad); el.classList.remove('hidden'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; clearTimeout(toast.t); toast.t = setTimeout(function(){ el.classList.add('hidden'); }, 2600); if (bad) HAP.err(); else HAP.ok(); }
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function animateNums(root){
+    if (reduceMotion) return;
+    Array.prototype.forEach.call(root.querySelectorAll('.kv2, .tile .tv, .hero'), function(el){
+      var txt = el.textContent.trim(), m = txt.match(/^([^\d]*)(\d[\d\s]*)([.,](\d+))?(.*)$/); if (!m) return;
+      var pre = m[1], intp = m[2].replace(/\s/g, ''), dec = m[4] ? m[4].length : 0, suf = m[5], target = parseFloat(intp + (m[4] ? '.' + m[4] : '')); if (!isFinite(target) || target === 0) return;
+      var t0 = performance.now(), dur = 650;
+      function step(now){ var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3), v = target * e; el.textContent = pre + (dec ? v.toFixed(dec) : Math.round(v)) + suf; if (k < 1) requestAnimationFrame(step); else el.textContent = txt; }
+      requestAnimationFrame(step);
+    });
+  }
+  function stagger(root){ if (reduceMotion) return; Array.prototype.forEach.call(root.querySelectorAll('.list, .tiles'), function(l){ Array.prototype.forEach.call(l.children, function(c, i){ if (i < 14) c.style.animationDelay = (i * 28) + 'ms'; }); }); }
   function ago(iso){
     if (!iso) return '';
     var d = new Date(iso), s = (Date.now() - d.getTime()) / 1000;
@@ -605,10 +720,10 @@
   /* ---------- sheet ---------- */
   function openSheet(title, html){
     var s = $('#sheet');
-    s.innerHTML = '<div class="sp" role="dialog" aria-modal="true"><div class="sh"><h2>' + esc(title) + '</h2><button class="x" data-act="close" aria-label="Закрыть">' + ic('x') + '</button></div>' + html + '</div>';
+    s.innerHTML = '<div class="sp" role="dialog" aria-modal="true" tabindex="-1"><div class="sh"><h2>' + esc(title) + '</h2><button class="x" data-act="close" aria-label="Закрыть">' + ic('x') + '</button></div>' + html + '</div>';
     s.classList.remove('hidden'); document.body.style.overflow = 'hidden';
     openSheet.prev = document.activeElement;
-    setTimeout(function(){ var f = s.querySelector('[autofocus]') || s.querySelector('.x'); if (f){ f.focus({preventScroll:true}); if (f.tagName === 'TEXTAREA') try{ f.setSelectionRange(0, 0); }catch(e){} } }, 30);
+    setTimeout(function(){ var f = s.querySelector('[autofocus]') || s.querySelector('.sp'); if (f){ f.focus({preventScroll:true}); if (f.tagName === 'TEXTAREA') try{ f.setSelectionRange(0, 0); }catch(e){} } }, 30);
   }
   function closeSheet(){ var s = $('#sheet'); s.classList.add('hidden'); s.innerHTML = ''; document.body.style.overflow = ''; var pv = openSheet.prev; if (pv && pv.focus && document.body.contains(pv)) try{ pv.focus({preventScroll:true}); }catch(e){} openSheet.prev = null; }
 
@@ -633,13 +748,6 @@
     var h = m / 60; if (h < 48) return (h < 10 ? h.toFixed(1) : Math.round(h)) + ' ч';
     return (h / 24).toFixed(1) + ' дн';
   }
-  function dl(name, text, type){
-    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type:type}));
-    a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
-  }
-  function csvText(rows){ return rows.map(function(r){ return r.map(function(c){ c = String(c == null ? '' : c); if (/^[=+\-@]/.test(c)) c = "'" + c; return '"' + c.replace(/"/g, '""') + '"'; }).join(','); }).join('\n'); }
-  function exportCsv(name, rows){ dl(name, '﻿' + csvText(rows), 'text/csv;charset=utf-8'); }
-  function stamp(){ return dkey(new Date()); }
   function starI(on){ return '<svg class="i" viewBox="0 0 24 24"' + (on ? ' style="fill:currentColor"' : '') + '><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>'; }
   function fill(t, p){
     p = p || {};
@@ -667,11 +775,11 @@
     o = o || {};
     var nar = window.innerWidth < 600, W = nar ? 340 : 640, H = o.h || (nar ? 220 : 200), pl = nar ? 38 : 44, pr = 6, pt = 16, pb = 24, n = days.length, cw = (W - pl - pr) / n, k = series.length, ih = H - pt - pb, fmt = o.fmt || String;
     var mx = 0; series.forEach(function(s){ s.vals.forEach(function(v){ if (v > mx) mx = v; }); });
-    var top = niceMax(mx);
+    var top = o.int ? (mx <= 10 ? Math.max(2, mx + (mx % 2)) : niceMax(mx)) : niceMax(mx);
     function Y(v){ return pt + ih * (1 - v / top); }
     var g = '';
     [0, .5, 1].forEach(function(f){ var y = Y(top * f); g += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y + '" y2="' + y + '"/><text x="' + (pl - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + esc(fmt(top * f)) + '</text>'; });
-    var bw = Math.max(1.5, Math.min(24, (cw - 4 - (k - 1) * 2) / k));
+    var bw = Math.max(1.5, Math.min(24, (cw - 4 - (k - 1) * 2) / k)), lstep = Math.max(1, Math.ceil(n / Math.floor((W - pl - pr) / (nar ? 64 : 72))));
     var bars = '', hits = '', lab = '', maxI = -1, m0 = 0;
     if (k === 1) series[0].vals.forEach(function(v, i){ if (v > m0){ m0 = v; maxI = i; } });
     days.forEach(function(d, i){
@@ -681,7 +789,7 @@
         if (v > 0){ var h = Math.max(3, ih * v / top); bars += '<path d="' + rbar(+(x0 + j * (bw + 2)).toFixed(1), +(pt + ih - h).toFixed(1), +bw.toFixed(1), +h.toFixed(1), bw < 5 ? 1 : 4) + '" fill="' + s.color + '"/>'; }
       });
       hits += '<rect class="hit" x="' + (pl + cw * i).toFixed(1) + '" y="' + pt + '" width="' + cw.toFixed(1) + '" height="' + ih + '" data-tip="' + esc(tip) + '"/>';
-      if ((n - 1 - i) % (n > 60 ? 15 : n > 16 ? 7 : n > 8 ? 2 : 1) === 0) lab += '<text x="' + cx.toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + esc(dshort(d.d)) + '</text>';
+      if ((n - 1 - i) % lstep === 0) lab += '<text x="' + cx.toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + esc(dshort(d.d)) + '</text>';
     });
     var dlab = '';
     if (maxI > -1 && m0 > 0){ var cxm = pl + cw * maxI + cw / 2; dlab = '<text x="' + cxm.toFixed(1) + '" y="' + (Y(m0) - 5).toFixed(1) + '" text-anchor="middle" style="fill:#F3F5F7;font-weight:800">' + esc(fmt(m0)) + '</text>'; }
@@ -777,84 +885,76 @@
     });
     return out.sort(function(a, b){ return (b.next ? 1 : 0) - (a.next ? 1 : 0); });
   }
-  function alerts(){
-    var a = [], b = budgetInfo(), now = Date.now();
+  function sysAlerts(){
+    var a = [], b = budgetInfo(), now = Date.now(), st = D.settings || {};
     var errs = D.runs.filter(function(r){ return !r.ok && now - new Date(r.created_at).getTime() < 864e5; }).length;
     if (errs) a.push({c:'bad', t:'Ошибок агента за сутки: ' + errs, tab:'agent', arg:'err'});
-    if (b.budget && b.pct >= 100) a.push({c:'bad', t:'Месячный лимит расходов исчерпан: ' + usd(b.cost) + ' из ' + usd(b.budget), tab:'agent', arg:'cost'});
-    else if (b.budget && b.pct >= 80) a.push({c:'warn', t:'Израсходовано ' + Math.round(b.pct) + '% месячного лимита (' + usd(b.cost) + ' из ' + usd(b.budget) + ')', tab:'agent', arg:'cost'});
-    else if (b.budget && b.forecast > b.budget) a.push({c:'warn', t:'При текущем темпе за месяц выйдет ' + usd(b.forecast) + ', лимит ' + usd(b.budget), tab:'agent', arg:'cost'});
-    var old = D.emails.filter(function(e){ return e.folder === 'inbox' && !e.is_read && now - new Date(e.created_at).getTime() > 2 * 864e5; }).length;
-    if (old) a.push({c:'warn', t:'Письма без ответа дольше 2 дней: ' + old, tab:'mail', arg:'inbox'});
-    var wait = D.emails.filter(function(e){ return e.folder === 'draft' && e.status !== 'approved'; }).length;
-    if (wait) a.push({c:'', t:'Черновиков ждут вашего утверждения: ' + wait, tab:'mail', arg:'draft'});
-    var queued = D.emails.filter(function(e){ return e.folder === 'draft' && e.status === 'approved'; }).length;
-    if (queued && D.accounts.every(function(x){ return x.status !== 'connected'; })) a.push({c:'', t:'В очереди на отправку: ' + queued + '. Уйдут после подключения ящика', tab:'mail', arg:'draft'});
-    if (!hasKey('anthropic_api_key')) a.push({c:'warn', t:'Ключ Claude API не задан: агент не сможет работать', tab:'settings', arg:''});
-    var st = D.settings || {}, lim = Number(st.daily_email_limit) || 0, sentToday = D.emails.filter(function(e){ return e.folder === 'sent' && isToday(tm(e)); }).length;
+    if (b.budget && b.pct >= 100) a.push({c:'bad', t:'Месячный лимит расходов исчерпан: ' + usd(b.cost) + ' из ' + usd(b.budget) + '. Агент остановлен', tab:'agent', arg:'cost'});
+    else if (b.budget && b.pct >= 80) a.push({c:'', t:'Израсходовано ' + Math.round(b.pct) + '% месячного лимита (' + usd(b.cost) + ' из ' + usd(b.budget) + ')', tab:'agent', arg:'cost'});
+    else if (b.budget && b.forecast > b.budget * 1.15) a.push({c:'', t:'При текущем темпе за месяц выйдет ' + usd(b.forecast) + ', лимит ' + usd(b.budget), tab:'agent', arg:'cost'});
+    if (!hasKey('anthropic_api_key')) a.push({c:'bad', t:'Ключ Claude API не задан: агент не сможет работать', tab:'settings', arg:''});
+    if (!hasKey('agentmail_api_key')) a.push({c:'', t:'Ключ AgentMail не задан: почта не синхронизируется', tab:'settings', arg:''});
+    var lim = Number(st.daily_email_limit) || 0, sentToday = D.emails.filter(function(e){ return e.folder === 'sent' && isToday(tm(e)); }).length;
     if (lim && sentToday >= lim) a.push({c:'', t:'Дневной лимит писем исчерпан (' + sentToday + ' из ' + lim + '). Отправка продолжится завтра', tab:'settings', arg:''});
-    if (st.enabled && quietNow()) a.push({c:'', t:'Сейчас тихие часы: агент читает почту, но не пишет', tab:'settings', arg:''});
-    var fu = followups().length;
-    if (fu) a.push({c:'', t:'Пора напомнить или действовать по ' + fu + ' партнёрам', act:'fu-open'});
-    var od = D.tasks.filter(function(t){ return !t.done && t.due_at && new Date(t.due_at) < new Date(new Date().setHours(0, 0, 0, 0)); }).length;
-    if (od) a.push({c:'warn', t:'Просроченных задач: ' + od, tab:'home', arg:''});
     return a;
   }
-  function alertsBlock(){
-    var all = alerts(), a = S.alertsAll ? all : all.slice(0, 3); if (!all.length) return '';
-    return '<div class="alerts">' + a.map(function(x){
-      return '<button class="alert ' + x.c + '" data-act="' + (x.act || 'go') + '" data-tab="' + (x.tab || 'home') + '" data-arg="' + esc(x.arg || '') + '"><i class="ad"></i><span class="t">' + esc(x.t) + '</span><span class="go2">' + ic('arrow') + '</span></button>';
-    }).join('') + (all.length > 3 ? '<button class="more" data-act="alerts-more">' + (S.alertsAll ? 'Свернуть' : 'Ещё ' + (all.length - 3)) + '</button>' : '') + '</div>';
+  function bannersBlock(){
+    var a = sysAlerts(); if (!a.length) return '';
+    return a.map(function(x){ return '<button class="banner ' + x.c + '" data-act="go" data-tab="' + x.tab + '" data-arg="' + esc(x.arg) + '"><i class="bd"></i><span class="t">' + esc(x.t) + '</span><span class="go2">' + ic('arrow') + '</span></button>'; }).join('');
   }
-
-  function vHome(){
-    var st = D.settings || {}, c = counts();
-    var hr = new Date().getHours();
-    var hello = hr < 5 ? 'Доброй ночи' : hr < 12 ? 'Доброе утро' : hr < 18 ? 'Добрый день' : 'Добрый вечер';
-    var b = budgetInfo();
-    var sentToday = D.emails.filter(function(e){ return e.folder === 'sent' && isToday(tm(e)); }).length;
-    var lim = Number(st.daily_email_limit) || 0;
-    var active = D.partners.filter(function(p){ return p.status === 'contacted' || p.status === 'replied'; }).length;
-    var qs = D.questions.filter(function(x){ return x.status === 'open'; });
-
-    var lr = lastRun('mail_check'), ls = lastRun('partner_search');
-    var h = '<div class="head"><div><h1 class="pt">' + hello + ', Филипп</h1><p class="sub">' + (st.enabled ? 'Агент работает' : 'Агент выключен') + ' · режим «' + (st.send_mode === 'auto' ? 'сам отправляет' : 'через ваше утверждение') + '»' + (lr ? ' · почта проверена ' + ago(lr.created_at) + ' назад' : '') + (ls ? ' · поиск ' + ago(ls.created_at) + ' назад' : '') + ' · <button class="link" style="margin:0;padding:0;font-size:14px" data-act="help">как это работает</button></p></div>' +
-      '<div class="acts" style="margin:0"><button class="pill ghost" data-act="run-now" id="runNow">Запустить сейчас</button><div class="switch"><span>Агент</span><button class="tg' + (st.enabled ? ' on' : '') + '" data-act="toggle-agent" aria-label="Включить или выключить агента" aria-pressed="' + (st.enabled ? 'true' : 'false') + '"></button></div></div></div>';
-
-    h += alertsBlock();
-    h += '<div class="tiles">' +
-      tile('lime','Новые письма', c.inbox, 'во входящих', 'mail', 'inbox') +
-      tile('', 'Ждут утверждения', c.drafts, 'черновиков писем', 'mail', 'draft') +
-      tile('', 'Партнёры', D.partners.length, active + ' в работе', 'partners', '') +
-      tile('', 'Расходы за месяц', usd(b.cost), b.budget ? 'из ' + usd(b.budget) + ' (' + Math.round(b.pct) + '%)' : 'лимит не задан', 'agent', 'cost') +
-      '</div>';
-
-    h += homeDash();
-    h += '<h3 class="sec">Вопросы агента к вам <span class="tag">' + qs.length + '</span></h3>';
-    if (!qs.length) h += '<div class="card empty">Вопросов нет. Агент решает всё сам.</div>';
-    else h += '<div class="stack">' + qs.map(qCard).join('') + '</div>';
-    var qa = D.questions.filter(function(x){ return x.status !== 'open'; }).length;
-    if (qa) h += '<p class="hint"><button class="link" style="margin:0;padding:0;font-size:13px" data-act="q-hist">Отвеченные вопросы (' + qa + ')</button></p>';
-
-    var fu = followups();
-    h += '<h3 class="sec">Пора напомнить <span class="tag">' + fu.length + '</span></h3>';
-    if (!fu.length) h += '<div class="card empty">Все партнёры в срок. Напоминаем через ' + (Number(st.followup_days) || 4) + ' дн. без ответа.</div>';
-    else h += '<div class="list">' + fu.slice(0, 5).map(fuRow).join('') + '</div>' + (fu.length > 5 ? '<p class="sub"><button class="link" style="margin:8px 0 0" data-act="fu-open">Показать всех (' + fu.length + ')</button></p>' : '');
-
-    h += tasksBlock();
-
-    h += '<div class="two" style="margin-top:30px"><div class="card"><div class="kv" style="border:0;padding:0"><div><b>Воронка партнёров</b></div></div>' + funnel() + '</div>' +
-      '<div class="card"><b>Сегодня</b><div style="font-family:var(--font-head);font-weight:800;font-size:30px;margin-top:10px">' + sentToday + '<span style="font-size:16px;color:var(--muted)"> из ' + (lim || '—') + ' отправлено</span></div><p class="sub" style="margin:4px 0 0">Получено: ' + D.emails.filter(function(e){ return e.direction === 'in' && e.folder !== 'spam' && isToday(tm(e)); }).length + ' · действий агента: ' + D.runs.filter(function(r){ return isToday(r.created_at); }).length + '</p>' +
-      '<div class="meter"><span style="width:' + (lim ? Math.min(100, Math.round(sentToday / lim * 100)) : 0) + '%"></span></div>' +
-      '<p class="sub">Тихие часы: ' + String(st.quiet_start == null ? 22 : st.quiet_start).padStart(2,'0') + ':00 – ' + String(st.quiet_end == null ? 8 : st.quiet_end).padStart(2,'0') + ':00</p></div></div>';
-
-    h += homeInsights();
-    h += '<h3 class="sec">Последние действия агента <button data-act="go" data-tab="agent" data-arg="runs">Вся история</button></h3>' + runList(D.runs.slice(0, 5));
+  /* очередь дел: всё, что ждёт решения владельца, одним списком */
+  function queue(){
+    var out = [], today0 = new Date(); today0.setHours(0, 0, 0, 0); var eod = new Date(); eod.setHours(23, 59, 59, 999);
+    D.questions.filter(function(x){ return x.status === 'open'; }).forEach(function(q){ var p = pById(q.partner_id); out.push({pr:0, k:'blue', i:'ask', t:q.question, s:'Вопрос агента' + (p ? ' · ' + p.name : ''), at:q.created_at, act:'q-open', id:q.id}); });
+    D.emails.filter(function(e){ return e.folder === 'draft' && e.status !== 'approved'; }).forEach(function(e){ out.push({pr:1, k:'lime', i:'mail', t:'Утвердить: ' + (e.subject || '(без темы)'), s:'Черновик' + (e.author === 'agent' ? ' агента' : '') + ' · кому ' + who(e), at:e.created_at, act:'mail-open', id:e.id}); });
+    D.emails.filter(function(e){ return e.folder === 'inbox' && !e.is_read; }).forEach(function(e){ out.push({pr:2, k:'', i:'mail', dot:true, t:who(e), s:e.summary_ru || e.subject || '(без темы)', at:e.created_at, act:'mail-open', id:e.id}); });
+    followups().forEach(function(x){ out.push({pr:3, k:'warn', i:'bell', t:x.p.name, s:x.why, at:x.p.next_action_at || null, act:'p-open', id:x.p.id}); });
+    D.tasks.filter(function(t){ return !t.done && (!t.due_at || new Date(t.due_at) <= eod); }).forEach(function(t){ var over = t.due_at && new Date(t.due_at) < today0, p = pById(t.partner_id); out.push({pr:4, k:over ? 'bad' : '', i:'check', t:t.title, s:(t.due_at ? (over ? 'Просрочено · ' + dshort(t.due_at) : 'Сегодня') : 'Задача') + (p ? ' · ' + p.name : ''), at:t.due_at, act:'t-open', id:t.id}); });
+    return out.sort(function(a, b){ return a.pr - b.pr || new Date(b.at || 0) - new Date(a.at || 0); });
+  }
+  function qRow(x){
+    return '<button class="qi" data-act="' + x.act + '" data-id="' + esc(x.id) + '"><span class="qk ' + x.k + '">' + ic(x.i) + '</span><div class="mid"><div class="l1"><span>' + (x.dot ? '<i class="dot"></i>' : '') + esc(x.t) + '</span>' + (x.at ? '<span class="tm">' + esc(ago(x.at)) + '</span>' : '') + '</div><div class="l3">' + esc(x.s) + '</div></div><span class="arr">' + ic('chev') + '</span></button>';
+  }
+  function queueBlock(limit){
+    var q = queue(), n = q.length, show = S.queueAll ? q : q.slice(0, limit || 6);
+    var h = '<div class="qh"><h3>Требует внимания <span class="n' + (n ? '' : ' z') + '">' + n + '</span></h3><button data-act="t-new">+ Задача</button></div>';
+    if (!n) return h + '<div class="done"><span class="qk">' + ic('check') + '</span><div><b>Всё сделано</b><span>Новых писем, вопросов и напоминаний нет.</span></div></div>';
+    h += '<div class="list">' + show.map(qRow).join('') + '</div>';
+    if (n > show.length) h += '<div class="acts" style="justify-content:center"><button class="pill ghost" data-act="queue-all">Показать все (' + n + ')</button></div>';
+    else if (S.queueAll && n > (limit || 6)) h += '<div class="acts" style="justify-content:center"><button class="pill ghost" data-act="queue-all">Свернуть</button></div>';
     return h;
   }
-  /* ----- home dashboards ----- */
+  function kpi(label, value, sub, cls, tab, arg){
+    return '<button class="kpi" data-act="go" data-tab="' + tab + '" data-arg="' + esc(arg || '') + '"><div class="kl">' + label + '</div><div><div class="kv2 num">' + value + '</div><div class="ks ' + (cls || '') + '">' + esc(sub) + '</div></div></button>';
+  }
+  function kcard(label, value, sub, cls){ return '<div class="kpi"><div class="kl">' + label + '</div><div><div class="kv2 num">' + value + '</div>' + (sub ? '<div class="ks ' + (cls || '') + '">' + esc(sub) + '</div>' : '') + '</div></div>'; }
+  function vHome(){
+    var st = D.settings || {};
+    var hr = new Date().getHours();
+    var hello = hr < 5 ? 'Доброй ночи' : hr < 12 ? 'Доброе утро' : hr < 18 ? 'Добрый день' : 'Добрый вечер';
+    var b = budgetInfo(), sc = stageCounts(), lr = lastRun('mail_check'), ls = lastRun('partner_search');
+    var inWork = D.partners.filter(function(p){ return p.status === 'contacted' || p.status === 'replied'; }).length;
+    var rate = sc.contacted ? Math.round(sc.replied / sc.contacted * 100) : 0;
+    var h = '<div class="head col"><div><h1 class="pt">' + hello + ', Филипп</h1>' +
+      '<div class="status"><div class="sr"><span class="ok' + (st.enabled ? '' : ' off') + '">' + (st.enabled ? 'Агент работает' : 'Агент выключен') + '</span><span>' + (st.send_mode === 'auto' ? 'отправляет сам' : 'через утверждение') + '</span>' + (st.enabled && quietNow() ? '<span>тихие часы</span>' : '') + '</div>' +
+      (lr || ls ? '<div class="sr">' + (lr ? '<span>почта ' + ago(lr.created_at) + ' назад</span>' : '') + (ls ? '<span>поиск ' + ago(ls.created_at) + ' назад</span>' : '') + '</div>' : '') + '</div></div>' +
+      '<div class="acts" style="margin:0"><button class="pill ghost" data-act="run-now" id="runNow">Запустить сейчас</button><div class="switch"><span>Агент</span><button class="tg' + (st.enabled ? ' on' : '') + '" data-act="toggle-agent" aria-label="Включить или выключить агента" aria-pressed="' + (st.enabled ? 'true' : 'false') + '"></button></div></div></div>';
+    h += bannersBlock();
+    h += queueBlock(6);
+
+    h += '<div class="qh"><h3>Показатели</h3><button data-act="go" data-tab="agent" data-arg="an">Аналитика</button></div>';
+    h += '<div class="tiles">' +
+      kpi('Ответили партнёры', rate + '%', sc.replied + ' из ' + sc.contacted + ' написанных', '', 'agent', 'an') +
+      kpi('В работе', inWork, 'написали или ответили', '', 'partners', 'work') +
+      kpi('Договорились', sc.agreed, 'из ' + D.partners.length + ' партнёров', sc.agreed ? 'up' : '', 'partners', 'agreed') +
+      kpi('Расходы за месяц', usd(b.cost), b.budget ? 'из ' + usd(b.budget) + ' · ' + Math.round(b.pct) + '%' : 'лимит не задан', b.budget && b.pct >= 80 ? 'down' : '', 'agent', 'cost') + '</div>';
+    h += homeDash();
+    h += homeInsights();
+    h += '<div class="qh"><h3>Действия агента</h3><button data-act="go" data-tab="agent" data-arg="runs">Вся история</button></div>' + runList(D.runs.slice(0, 5));
+    return h;
+  }
   function homeDash(){
-    var days = lastDays(14), sentM = {}, recvM = {}, costM = {}, sc = stageCounts(), b = budgetInfo();
+    var days = lastDays(14), sentM = {}, recvM = {}, costM = {}, b = budgetInfo();
     D.emails.forEach(function(e){
       var k = dkey(tm(e));
       if (e.direction === 'out' && e.folder === 'sent') sentM[k] = (sentM[k] || 0) + 1;
@@ -864,50 +964,51 @@
     var ser = [{name:'Отправлено', color:'#3B80C3', vals:days.map(function(d){ return sentM[d.k] || 0; })}, {name:'Получено', color:'#6FA83A', vals:days.map(function(d){ return recvM[d.k] || 0; })}];
     var cser = [{name:'Расходы', color:'#C8F27B', vals:days.map(function(d){ return +(costM[d.k] || 0).toFixed(4); })}];
     var usdf = function(v){ return '$' + (v >= 10 ? v.toFixed(0) : v.toFixed(2)); };
-    var rate = sc.contacted ? Math.round(sc.replied / sc.contacted * 100) : 0;
-    var wk = new Date(Date.now() - 7 * 864e5);
-    var newW = D.partners.filter(function(p){ return new Date(p.created_at) >= wk; }).length;
-    var inW = D.emails.filter(function(e){ return e.direction === 'in' && e.folder !== 'spam' && new Date(e.created_at) >= wk; }).length;
-    var kp = function(l, v, sub){ return '<div class="card"><div class="sub" style="margin:0">' + l + '</div><div style="font-family:var(--font-head);font-weight:800;font-size:26px;margin-top:6px">' + v + '</div><div class="sub" style="margin:4px 0 0">' + sub + '</div></div>'; };
-    var h = '<div class="tiles" style="margin-top:14px">' +
-      kp('Ответили партнёры', rate + '%', sc.replied + ' из ' + sc.contacted + ' написанных') +
-      kp('Новых партнёров', newW, 'за 7 дней') +
-      kp('Писем получено', inW, 'за 7 дней') +
-      kp('Договорились', sc.agreed, 'всего') + '</div>';
-    h += '<div class="grid2"><div class="card"><p class="cardt">Письма за 14 дней</p><p class="cardn">Ушло и пришло по дням.</p>' + legend(ser) + barChart(days, ser, {label:'Письма', h:190}) + '</div>' +
-      '<div class="card"><p class="cardt">Расходы за 14 дней</p><p class="cardn">В этом месяце ' + usd(b.cost) + (b.budget ? ' из ' + usd(b.budget) : '') + ', прогноз ' + usd(b.forecast) + '.</p>' + barChart(days, cser, {fmt:usdf, label:'Расходы', h:190}) + '</div></div>';
-    return h;
+    var s14 = ser[0].vals.reduce(function(a, c){ return a + c; }, 0), r14 = ser[1].vals.reduce(function(a, c){ return a + c; }, 0);
+    return '<div class="grid2"><div class="card"><p class="cardt">Письма за 14 дней</p><p class="cardn">Ушло ' + s14 + ', пришло ' + r14 + '.</p>' + legend(ser) + barChart(days, ser, {label:'Письма', h:190, int:true}) + '</div>' +
+      '<div class="card"><p class="cardt">Расходы за 14 дней</p><p class="cardn">За месяц ' + usd(b.cost) + (b.budget ? ' из ' + usd(b.budget) : '') + ', прогноз ' + usd(b.forecast) + '.</p>' + barChart(days, cser, {fmt:usdf, label:'Расходы', h:190}) + '</div></div>';
   }
   function homeInsights(){
     var h = '';
-    var rt = [5, 4, 3, 2, 1].map(function(r){ var n = D.partners.filter(function(p){ return ratingOf(p) === r; }).length; return {name:r + ' из 5 · ' + RLAB[r], val:n, label:String(n)}; });
+    var rt = [5, 4, 3, 2, 1].map(function(r){ var n = D.partners.filter(function(p){ return ratingOf(p) === r; }).length; return {name:r + ' · ' + RLAB[r], val:n, label:String(n)}; });
     var un = D.partners.filter(function(p){ return !ratingOf(p); }).length;
     if (un) rt.push({name:'Без оценки', val:un, label:String(un)});
+    h += '<div class="grid2"><div class="card"><p class="cardt">Воронка партнёров</p><p class="cardn">От найденных до договорённостей.</p>' + funnel() + '</div>' +
+      '<div class="card"><p class="cardt">Партнёры по оценке</p><p class="cardn">Насколько подходят нам, 1–5.</p>' + hbars(rt) + '</div></div>';
     var cs = D.insights.filter(function(x){ return x.kind === 'country'; }).sort(function(a, b){ return (b.metric || 0) - (a.metric || 0); }).slice(0, 6);
-    h += '<div class="grid2"><div class="card"><p class="cardt">Партнёры по оценке</p><p class="cardn">Кто нам подходит больше всего.</p>' + hbars(rt) + '</div>' +
-      '<div class="card"><p class="cardt">Куда едут с питомцами</p><p class="cardn">Ведущие страны по потоку. <button class="link" style="margin:0;padding:0;font-size:13px" data-act="go" data-tab="agent" data-arg="market">Весь рынок</button></p>' + hbars(cs.map(function(x){ return {name:x.country || x.title, val:Number(x.metric) || 0, label:x.metric_label || String(x.metric)}; })) + '</div></div>';
     var news = D.insights.filter(function(x){ return x.kind === 'news'; }).slice(0, 3);
-    if (news.length) h += '<h3 class="sec">Новости туризма <button data-act="go" data-tab="agent" data-arg="market">Все новости</button></h3><div class="list">' + news.map(function(x){ return insRow(x); }).join('') + '</div>';
+    if (cs.length || news.length){
+      h += '<div class="qh"><h3>Рынок</h3><button data-act="go" data-tab="agent" data-arg="mkt">Весь раздел</button></div><div class="grid2" style="margin-top:0">';
+      if (cs.length) h += '<div class="card"><p class="cardt">Куда едут с питомцами</p><p class="cardn">Ведущие страны по потоку.</p>' + hbars(cs.map(function(x){ return {name:x.country || x.title, val:Number(x.metric) || 0, label:x.metric_label || String(x.metric)}; })) + '</div>';
+      if (news.length) h += '<div class="card"><p class="cardt">Новости туризма</p>' + news.map(function(x){ return '<div class="nw"><b>' + esc(x.title) + '</b><span>' + esc(x.summary || '') + '</span>' + (/^https?:\/\//.test(x.url || '') ? ' <a class="lnk" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">Источник</a>' : '') + '</div>'; }).join('') + '</div>';
+      h += '</div>';
+    }
     var nw = D.partners.filter(function(p){ return p.status === 'found'; }).sort(function(a, b){ return ratingOf(b) - ratingOf(a); }).slice(0, 4);
-    if (nw.length) h += '<h3 class="sec">Лучшие найденные партнёры <button data-act="go" data-tab="partners" data-arg="">Все партнёры</button></h3><div class="list">' + nw.map(function(p){ return '<div class="it">' + avRing(p) + '<button class="mid" style="text-align:left" data-act="p-open" data-id="' + esc(p.id) + '"><div class="l1"><span>' + esc(p.name) + '</span></div><div class="l3" style="white-space:normal">' + esc(p.fit_note || KIND[p.kind] || '') + '</div></button></div>'; }).join('') + '</div>';
+    if (nw.length) h += '<div class="qh"><h3>Новые партнёры <span class="n z">' + D.partners.filter(function(p){ return p.status === 'found'; }).length + '</span></h3><button data-act="go" data-tab="partners" data-arg="found">Все найденные</button></div><div class="list">' + nw.map(function(p){ return '<button class="it" data-act="p-open" data-id="' + esc(p.id) + '">' + avRing(p) + '<div class="mid"><div class="l1"><span>' + esc(p.name) + '</span><span class="tm">' + esc(KIND[p.kind] || '') + '</span></div><div class="l3" style="white-space:normal">' + esc(p.fit_note || (p.country || '')) + '</div></div></button>'; }).join('') + '</div>';
     return h;
   }
   function fuRow(x){
     var p = x.p;
-    return '<div class="it">' + avRing(p) + '<button class="mid" style="text-align:left" data-act="p-open" data-id="' + esc(p.id) + '"><div class="l1"><span>' + esc(p.name) + '</span></div><div class="l3' + (x.next ? '' : '') + '">' + esc(x.why) + '</div></button>' +
+    return '<div class="it">' + avRing(p) + '<button class="mid" style="text-align:left" data-act="p-open" data-id="' + esc(p.id) + '"><div class="l1"><span>' + esc(p.name) + '</span></div><div class="l3">' + esc(x.why) + '</div></button>' +
       (p.email ? '<button class="pill ghost" style="padding:9px 14px;font-size:13px" data-act="fu-draft" data-id="' + esc(p.id) + '">Написать</button>' : '') + '</div>';
   }
-  function tasksBlock(){
-    var ts = D.tasks.filter(function(t){ return !t.done; }).sort(function(a, b){ return (a.due_at ? new Date(a.due_at).getTime() : 9e15) - (b.due_at ? new Date(b.due_at).getTime() : 9e15); });
-    var today0 = new Date(); today0.setHours(0, 0, 0, 0);
-    var h = '<h3 class="sec">Задачи <span class="tag">' + ts.length + '</span></h3><div class="list">';
-    h += ts.map(function(t){
-      var over = t.due_at && new Date(t.due_at) < today0, p = pById(t.partner_id);
-      return '<div class="stp"><button class="cb" data-act="t-done" data-id="' + esc(t.id) + '" aria-label="Выполнено">' + ic('check') + '</button><div class="mid">' + esc(t.title) + demoTag(t) + '<small' + (over ? ' class="bad"' : '') + '>' + (t.due_at ? (over ? 'Просрочено · ' : 'До ') + esc(dshort(t.due_at)) : 'Без срока') + (p ? ' · ' + esc(p.name) : '') + '</small></div>' +
-        '<button class="x" style="width:32px;height:32px" data-act="t-del" data-id="' + esc(t.id) + '" aria-label="Удалить">' + ic('x') + '</button></div>';
-    }).join('');
-    h += '<div class="stp" style="align-items:center;flex-wrap:wrap"><input id="t_new" placeholder="Новая задача" style="flex:1;min-width:150px;padding:11px 14px"><input id="t_due" type="date" aria-label="Срок" style="width:auto;padding:11px 12px"><button class="pill" data-act="t-add">Добавить</button></div></div>';
-    return h;
+  function qSheet(id){
+    var x = byId(D.questions, id); if (!x) return;
+    var p = pById(x.partner_id);
+    openSheet('Вопрос агента', '<div class="stack"><div class="q" style="padding:0;border:0;background:none"><div class="qt">' + esc(x.question) + '</div>' +
+      '<div class="qc">' + (p ? '<b>' + esc(p.name) + '.</b> ' : '') + esc(x.context || '') + ' <span class="tm">' + esc(fullDate(x.created_at)) + '</span></div>' +
+      (x.draft ? '<div class="qd"><b>Агент предлагает</b>' + esc(x.draft) + '</div>' : '') +
+      '<textarea id="qa-' + esc(x.id) + '" placeholder="Ваш ответ агенту" autofocus>' + esc(x.draft || '') + '</textarea>' +
+      '<div class="acts"><button class="pill" data-act="q-answer" data-id="' + esc(x.id) + '">Ответить</button><button class="pill ghost" data-act="q-answer" data-id="' + esc(x.id) + '" data-kb="1" title="Агент запомнит ответ и больше не спросит">Ответить и запомнить</button><button class="pill ghost" data-act="q-skip" data-id="' + esc(x.id) + '">Пропустить</button></div>' +
+      '<div class="acts" style="margin-top:4px">' + (p ? '<button class="pill ghost" data-act="p-open" data-id="' + esc(p.id) + '">Партнёр</button>' : '') + (x.email_id ? '<button class="pill ghost" data-act="mail-open" data-id="' + esc(x.email_id) + '">Письмо</button>' : '') + '</div></div></div>');
+  }
+  function tSheet(id){
+    var t = id ? byId(D.tasks, id) : {};
+    if (id && !t) return;
+    var pOpts = '<option value="">Без партнёра</option>' + D.partners.map(function(p){ return '<option value="' + esc(p.id) + '"' + (t.partner_id === p.id ? ' selected' : '') + '>' + esc(p.name) + '</option>'; }).join('');
+    openSheet(id ? 'Задача' : 'Новая задача', '<div class="set"><div class="fld"><label for="t_title">Что сделать</label><input id="t_title" value="' + esc(t.title || '') + '" placeholder="Позвонить в клинику" autofocus></div>' +
+      '<div class="row2"><div class="fld"><label for="t_due">Срок</label><input id="t_due" type="date" value="' + (t.due_at ? dkey(t.due_at) : '') + '"></div><div class="fld"><label for="t_p">Партнёр</label><select id="t_p">' + pOpts + '</select></div></div>' +
+      '<div class="acts"><button class="pill" data-act="t-save" data-id="' + esc(id || '') + '">Сохранить</button>' + (id && !t.done ? '<button class="pill ghost" data-act="t-done" data-id="' + esc(id) + '">Выполнено</button>' : '') + (id ? '<button class="pill danger" data-act="t-del" data-id="' + esc(id) + '">Удалить</button>' : '') + '</div></div>');
   }
   function tile(cls, label, val_, sub, tab, arg){
     return '<button class="tile ' + cls + '" data-act="go" data-tab="' + tab + '" data-arg="' + arg + '"><div class="row"><div><div class="tl">' + label + '</div></div><span class="rb">' + ic('arrow') + '</span></div><div><div class="tv">' + esc(val_) + '</div><div class="ts">' + esc(sub) + '</div></div></button>';
@@ -920,14 +1021,6 @@
       leg += '<span><i style="background:' + PCOL[k] + '"></i>' + PST[k] + ' ' + n + '</span>';
     });
     return '<div class="bar" style="margin-top:14px">' + (bar || '') + '</div><div class="legend">' + leg + '</div>';
-  }
-  function qCard(x){
-    var p = pById(x.partner_id);
-    return '<div class="q" data-q="' + esc(x.id) + '"><div class="qt">' + esc(x.question) + demoTag(x) + '</div>' +
-      '<div class="qc">' + (p ? '<b>' + esc(p.name) + '.</b> ' : '') + esc(x.context || '') + '</div>' +
-      (x.draft ? '<div class="qd"><b>Черновик ответа</b>' + esc(x.draft) + '</div>' : '') +
-      '<textarea id="qa-' + esc(x.id) + '" placeholder="Ваш ответ агенту"></textarea>' +
-      '<div class="acts"><button class="pill" data-act="q-answer" data-id="' + esc(x.id) + '">Ответить</button><button class="pill ghost" data-act="q-answer" data-id="' + esc(x.id) + '" data-kb="1" title="Агент запомнит ответ и больше не спросит">Ответить и запомнить</button><button class="pill ghost" data-act="q-skip" data-id="' + esc(x.id) + '">Пропустить</button>' + (p ? '<button class="pill ghost" data-act="p-open" data-id="' + esc(p.id) + '">Партнёр</button>' : '') + (x.email_id ? '<button class="pill ghost" data-act="mail-open" data-id="' + esc(x.email_id) + '">Письмо</button>' : '') + '</div></div>';
   }
   function runList(rs, byDay){
     if (!rs.length) return '<div class="card empty">Действий пока нет.</div>';
@@ -952,65 +1045,91 @@
       return ((e.subject || '') + ' ' + (e.body || '') + ' ' + (e.from_addr || '') + ' ' + (e.to_addr || '')).toLowerCase().indexOf(q) > -1;
     });
   }
-  function who(e){
-    var p = pById(e.partner_id), addr = (e.folder === 'sent' || e.folder === 'draft') ? e.to_addr : e.from_addr;
-    return p ? p.name : (addr || '—');
-  }
+  function who(e){ return nameOf(e); }
   function selIds(){ return Object.keys(S.sel); }
+  function addrOnly(x){ var m = String(x || '').match(/[^\s<>"]+@[^\s<>"]+/); return (m ? m[0] : String(x || '')).toLowerCase(); }
+  function counterpart(e){ return addrOnly(e.direction === 'in' ? e.from_addr : e.to_addr); }
+  function nameOf(e){ var p = pById(e.partner_id); if (p) return p.name; var raw = e.direction === 'in' ? e.from_addr : e.to_addr; var m = String(raw || '').match(/^"?([^"<]+?)"?\s*<[^>]+>/); return m ? m[1].trim() : (addrOnly(raw) || '—'); }
+  function threadOf(e){
+    var cp = counterpart(e); if (!cp) return [];
+    return D.emails.filter(function(x){ return x.id !== e.id && x.folder !== 'draft' && counterpart(x) === cp; }).sort(function(a, b){ return new Date(tm(b)) - new Date(tm(a)); });
+  }
+  function mailRow(e){
+    var unread = e.folder === 'inbox' && !e.is_read, out = e.direction === 'out';
+    var tag = '';
+    if (e.folder === 'draft') tag = e.status === 'approved' ? '<span class="st queue">в очереди</span>' : (e.author === 'agent' ? '<span class="tag agent">агент</span>' : '');
+    var lang = e.lang && e.lang !== 'ru' ? '<span class="lang">' + esc(e.lang.toUpperCase()) + '</span>' : '';
+    return '<button class="it' + (unread ? ' unread' : '') + '" data-act="' + (S.selMode ? 'sel-toggle' : 'mail-open') + '" data-id="' + esc(e.id) + '">' +
+      (S.selMode ? '<span class="cb' + (S.sel[e.id] ? ' on' : '') + '">' + ic('check') + '</span>' : '') +
+      '<div class="av' + (unread ? ' in' : '') + '">' + initial(nameOf(e)) + '</div><div class="mid"><div class="l1"><span>' + (unread ? '<i class="dot"></i>' : '') + esc(nameOf(e)) + '</span><span class="tm">' + ago(tm(e)) + '</span></div>' +
+      '<div class="l2">' + esc(e.subject || '(без темы)') + lang + (tag ? ' ' + tag : '') + '</div>' +
+      (e.summary_ru ? '<div class="l3 sm">' + esc(e.summary_ru) + '</div>' : '<div class="l3">' + esc((e.body || '').replace(/\s+/g, ' ')) + '</div>') + '</div></button>';
+  }
   function vMail(){
-    var h = '<div class="head"><div><h1 class="pt">Почта</h1><p class="sub">Все письма агента и ваши</p></div><div class="acts" style="margin:0"><button class="pill ghost" data-act="sel-mode">' + (S.selMode ? 'Готово' : 'Выбрать') + '</button><button class="pill" data-act="compose">' + ic('plus') + 'Написать</button></div></div>';
-    h += '<div class="chips">' + '<button class="chip' + (S.mailAcc === 'all' ? ' on' : '') + '" data-act="acc" data-id="all">Все ящики</button>' +
-      D.accounts.map(function(a){ var un = D.emails.filter(function(e){ return e.account_id === a.id && e.folder === 'inbox' && !e.is_read; }).length; return '<button class="chip' + (S.mailAcc === a.id ? ' on' : '') + '" data-act="acc" data-id="' + esc(a.id) + '">' + esc(a.label) + ' <span class="n">' + esc(a.address) + '</span>' + (un ? '<span class="cnt2">' + un + '</span>' : '') + '</button>'; }).join('') + '</div>';
+    var accs = D.accounts, un = function(f, acc){ if (f === 'sent' || f === 'spam') return 0; return D.emails.filter(function(e){ return e.folder === f && (f === 'inbox' ? !e.is_read : e.status !== 'approved') && (acc === 'all' || e.account_id === acc); }).length; };
+    var unreadN = un('inbox', S.mailAcc);
+    var h = '<div class="head"><div><h1 class="pt">Почта</h1><p class="sub">' + (unreadN ? 'Непрочитанных: ' + unreadN : 'Всё прочитано') + '</p></div><div class="acts" style="margin:0"><button class="pill ghost" data-act="sel-mode">' + (S.selMode ? 'Готово' : 'Выбрать') + '</button><button class="pill dsk" data-act="compose">' + ic('plus') + 'Написать</button></div></div>';
     h += '<div class="chips">' + ['inbox','sent','draft','spam'].map(function(f){
-      var n = D.emails.filter(function(e){ return e.folder === f && (f === 'inbox' ? !e.is_read : true) && (S.mailAcc === 'all' || e.account_id === S.mailAcc); }).length;
+      var n = un(f, S.mailAcc);
       return '<button class="chip' + (S.folder === f ? ' on' : '') + '" data-act="folder" data-id="' + f + '">' + FOLD[f] + (n ? ' <span class="n">' + n + '</span>' : '') + '</button>';
     }).join('') + '</div>';
+    if (accs.length > 1) h += '<div class="chips">' + '<button class="chip' + (S.mailAcc === 'all' ? ' on' : '') + '" data-act="acc" data-id="all">Все ящики</button>' +
+      accs.map(function(a){ var u = un('inbox', a.id); return '<button class="chip' + (S.mailAcc === a.id ? ' on' : '') + '" data-act="acc" data-id="' + esc(a.id) + '">' + esc(a.label) + (u ? '<span class="cnt2">' + u + '</span>' : '') + '</button>'; }).join('') + '</div>';
     h += '<div class="search">' + ic('search') + '<input id="mq" type="search" placeholder="Поиск по письмам" value="' + esc(S.q) + '" autocomplete="off"></div>';
 
     var extra = '';
-    var unreadN = D.emails.filter(function(e){ return e.folder === 'inbox' && !e.is_read && (S.mailAcc === 'all' || e.account_id === S.mailAcc); }).length;
     if (S.folder === 'inbox'){
       extra += '<button class="ls" data-act="unread-only">' + (S.unread ? 'Показать все' : 'Только непрочитанные') + '</button>';
       if (unreadN) extra += '<button class="ls" data-act="read-all">Прочитать все (' + unreadN + ')</button>';
     }
-    var waitN = D.emails.filter(function(e){ return e.folder === 'draft' && e.status !== 'approved' && (S.mailAcc === 'all' || e.account_id === S.mailAcc); }).length;
-    if (S.folder === 'draft' && waitN) extra += '<button class="ls" data-act="approve-all">Утвердить все (' + waitN + ')</button>';
+    var waitN = un('draft', S.mailAcc);
+    if (S.folder === 'draft' && waitN > 1) extra += '<button class="ls" data-act="approve-all">Утвердить все (' + waitN + ')</button>';
     if (extra) h += '<div style="display:flex;flex-wrap:wrap">' + extra + '</div>';
 
     var L = mailList();
     if (S.selMode){
       var cnt = L.filter(function(e){ return S.sel[e.id]; }).length;
       h += '<div class="bulk"><span>Выбрано: ' + cnt + '</span><button class="pill ghost" data-act="sel-all">Все</button>' +
-        '<button class="pill ghost" data-act="bulk" data-do="read">Прочитано</button>' +
-        (S.folder === 'spam' ? '<button class="pill ghost" data-act="bulk" data-do="inbox">Не спам</button>' : '<button class="pill ghost" data-act="bulk" data-do="spam">В спам</button>') +
+        (S.folder === 'inbox' ? '<button class="pill ghost" data-act="bulk" data-do="read">Прочитано</button><button class="pill ghost" data-act="bulk" data-do="unread">Не прочитано</button>' : '') +
+        (S.folder === 'spam' ? '<button class="pill ghost" data-act="bulk" data-do="inbox">Не спам</button>' : S.folder === 'inbox' ? '<button class="pill ghost" data-act="bulk" data-do="spam">В спам</button>' : '') +
         '<button class="pill danger" data-act="bulk" data-do="del">Удалить</button></div>';
     }
-    if (!L.length) return h + '<div class="card empty">В этой папке писем нет.</div>' + (D.accounts.some(function(a){ return a.status !== 'connected'; }) ? '<p class="sub" style="margin-top:14px">Ящик ещё не подключён: настоящие письма появятся после подключения.</p>' : '');
+    if (!L.length) return h + '<div class="card empty">' + (S.q ? 'Ничего не найдено.' : S.unread ? 'Непрочитанных писем нет.' : 'В этой папке писем нет.') + '</div>';
     var mp = more(L.length, 'mail'), lastD = '';
-    h += '<div class="list">' + L.slice(0, mp.n).map(function(e){
-      var unread = e.folder === 'inbox' && !e.is_read, hd = '', k = dkey(tm(e));
-      if (k !== lastD){ lastD = k; hd = '<div class="dayh">' + (isToday(tm(e)) ? 'Сегодня' : esc(dshort(tm(e)))) + '</div>'; }
-      return hd + '<button class="it' + (unread ? ' unread' : '') + '" data-act="' + (S.selMode ? 'sel-toggle' : 'mail-open') + '" data-id="' + esc(e.id) + '">' + (S.selMode ? '<span class="cb' + (S.sel[e.id] ? ' on' : '') + '">' + ic('check') + '</span>' : '') + '<div class="av' + (e.direction === 'in' ? ' in' : '') + '">' + initial(who(e)) + '</div><div class="mid"><div class="l1"><span>' + (unread ? '<i class="dot"></i>' : '') + esc(who(e)) + demoTag(e) + '</span><span class="tm">' + ago(e.created_at) + '</span></div>' +
-        '<div class="l2">' + esc(e.subject || '(без темы)') + (e.lang && e.lang !== 'ru' && e.direction === 'in' ? '<span class="lang">' + esc(e.lang.toUpperCase()) + ' → RU</span>' : '') + (e.folder === 'draft' && e.status === 'approved' ? ' <span class="st queue">в очереди</span>' : '') + (e.folder === 'draft' && e.author === 'agent' ? ' <span class="tag agent">агент</span>' : '') + '</div>' + (e.summary_ru ? '<div class="l3 sm">' + esc(e.summary_ru) + '</div>' : '<div class="l3">' + esc((e.body || '').replace(/\s+/g, ' ')) + '</div>') + '</div></button>';
-    }).join('') + '</div>' + mp.html;
+    h += '<div class="list">' + L.map(function(e, i){ if (i >= mp.n) return ''; var hd = '', k = dkey(tm(e)); if (k !== lastD){ lastD = k; hd = '<div class="dayh">' + (isToday(tm(e)) ? 'Сегодня' : esc(dshort(tm(e)))) + '</div>'; } return hd + mailRow(e); }).join('') + '</div>' + mp.html;
     return h;
+  }
+  function dtime(iso){ var d = new Date(iso); return dshort(d) + ', ' + d.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}); }
+  function msgBox(x, cur){
+    var me = x.direction === 'out', t = x.summary_ru || x.body_ru || x.body || '';
+    return '<div class="msg-b' + (me ? ' me' : '') + '"><div class="mh2"><span>' + (me ? 'Вы' + (x.author === 'agent' ? ' · агент' : '') : esc(nameOf(x))) + '</span><span>' + esc(dtime(tm(x))) + '</span></div>' +
+      (cur && x.subject && x.subject !== cur.subject ? '<div class="mt" style="font-size:13px;color:var(--muted);margin-bottom:4px">' + esc(x.subject) + '</div>' : '') +
+      '<div class="mt' + (x.summary_ru ? '' : ' clamp') + '">' + esc(t) + '</div><button class="more2" data-act="mail-open" data-id="' + esc(x.id) + '">Открыть письмо</button></div>';
   }
   function openMail(id){
     var e = byId(D.emails, id); if (!e) return;
-    if (e.folder === 'inbox' && !e.is_read){ e.is_read = true; rest('PATCH','emails?id=eq.' + id, {is_read:true}).catch(function(){}); renderNav(); }
-    var a = aById(e.account_id), p = pById(e.partner_id);
-    var acts = '';
-    if (e.folder === 'inbox') acts = '<button class="pill" data-act="reply" data-id="' + id + '">Ответить</button><button class="pill ghost" data-act="mail-move" data-id="' + id + '" data-to="spam">В спам</button>';
+    if (e.folder === 'inbox' && !e.is_read){ e.is_read = true; rest('PATCH','emails?id=eq.' + id, {is_read:true}).catch(function(){}); renderNav(); var row = document.querySelector('.it.unread[data-id="' + id + '"]'); if (row){ row.classList.remove('unread'); var dot = row.querySelector('.dot'); if (dot) dot.remove(); var av = row.querySelector('.av'); if (av) av.classList.remove('in'); } var qi = document.querySelector('.qi[data-id="' + id + '"] .dot'); if (qi) qi.remove(); }
+    var a = aById(e.account_id), p = pById(e.partner_id), me = e.direction === 'out';
+    var acts = '', sec = '';
+    if (e.folder === 'inbox') acts = '<button class="pill" data-act="reply" data-id="' + id + '">Ответить</button><button class="pill ghost" data-act="mail-unread" data-id="' + id + '">' + ic('eyeoff') + 'Не прочитано</button>';
     if (e.folder === 'spam') acts = '<button class="pill" data-act="mail-move" data-id="' + id + '" data-to="inbox">Не спам</button>';
-    if (e.folder === 'draft') acts = (e.status === 'approved' ? '' : '<button class="pill" data-act="approve" data-id="' + id + '">Утвердить и отправить</button>') + '<button class="pill ghost" data-act="edit-draft" data-id="' + id + '">Изменить</button>';
-    if (e.folder === 'sent') acts = '<button class="pill ghost" data-act="reply" data-id="' + id + '">Написать снова</button>';
-    acts += '<button class="pill ghost" data-act="mail-task" data-id="' + id + '">Создать задачу</button>';
-    if (e.direction === 'in' && e.from_addr) acts += '<button class="pill ghost" data-act="mail-block" data-id="' + id + '">Заблокировать отправителя</button>';
-    acts += '<button class="pill danger" data-act="mail-del" data-id="' + id + '">Удалить</button>';
-    var thread = p ? D.emails.filter(function(x){ return x.partner_id === p.id && x.id !== e.id; }) : [];
-    openSheet(e.subject || '(без темы)', '<div class="mh"><b>От:</b> ' + esc(e.from_addr || '—') + '<br><b>Кому:</b> ' + esc(e.to_addr || '—') + '<br>' + (a ? '<b>Ящик:</b> ' + esc(a.label) + '<br>' : '') + (p ? '<b>Партнёр:</b> <button class="link" style="margin:0;padding:0;font-size:14px" data-act="p-open" data-id="' + esc(p.id) + '">' + esc(p.name) + '</button> <span class="st ' + p.status + '">' + PST[p.status] + '</span><br>' : '') + (e.direction === 'out' ? '<b>Автор:</b> ' + (e.author === 'agent' ? 'агент' : 'вы') + '<br>' : '') + fullDate(tm(e)) + '</div>' +
-      (e.summary_ru ? '<div class="sumbox"><b>Кратко</b>' + esc(e.summary_ru) + '</div>' : '') + (e.body_ru ? '<div class="body-t" id="bt-ru">' + esc(e.body_ru) + '</div><div class="body-t hidden" id="bt-orig">' + esc(e.body || '') + '</div><div class="acts" style="margin-top:0"><button class="pill ghost" data-act="mail-orig" id="bt-btn">Показать оригинал' + (e.lang ? ' (' + esc(e.lang.toUpperCase()) + ')' : '') + '</button></div>' : '<div class="body-t">' + esc(e.body || '') + '</div>') + (e.status === 'approved' ? '<p class="sub">Письмо в очереди: уйдёт, когда ящик будет подключён.</p>' : '') + (e.folder === 'draft' && e.author === 'agent' && e.status !== 'approved' ? '<p class="sub">Черновик написал агент. Проверьте и утвердите или измените.</p>' : '') + '<div class="acts">' + acts + '</div>' +
-      (thread.length ? '<details class="tbl" style="margin-top:18px"><summary>Вся переписка с партнёром (' + thread.length + ')</summary><div class="list" style="margin-top:10px">' + thread.map(function(x){ return '<button class="it" data-act="mail-open" data-id="' + esc(x.id) + '"><div class="av' + (x.direction === 'in' ? ' in' : '') + '">' + (x.direction === 'in' ? '←' : '→') + '</div><div class="mid"><div class="l1"><span>' + esc(x.subject || '(без темы)') + '</span><span class="tm">' + ago(tm(x)) + '</span></div><div class="l3">' + esc((x.body || '').replace(/\s+/g, ' ')) + '</div></div></button>'; }).join('') + '</div></details>' : ''));
+    if (e.folder === 'draft') acts = (e.status === 'approved' ? '<button class="pill ghost" data-act="unapprove" data-id="' + id + '">Убрать из очереди</button>' : '<button class="pill" data-act="approve" data-id="' + id + '">Утвердить и отправить</button>') + '<button class="pill ghost" data-act="edit-draft" data-id="' + id + '">Изменить</button>';
+    if (e.folder === 'sent') acts = '<button class="pill" data-act="reply" data-id="' + id + '">Написать снова</button>';
+    if (e.folder === 'inbox') sec += '<button class="pill ghost" data-act="mail-move" data-id="' + id + '" data-to="spam">В спам</button>';
+    sec += '<button class="pill ghost" data-act="mail-task" data-id="' + id + '">Задача</button>';
+    if (!p && !me) sec += '<button class="pill ghost" data-act="mail-partner" data-id="' + id + '">В партнёры</button>';
+    if (!me && e.from_addr && e.folder !== 'spam') sec += '<button class="pill ghost" data-act="mail-block" data-id="' + id + '">Заблокировать</button>';
+    sec += '<button class="pill danger" data-act="mail-del" data-id="' + id + '">Удалить</button>';
+    var thread = threadOf(e);
+    var head = '<div class="mh"><span class="mail-dir' + (me ? '' : ' in') + '"><i></i>' + (me ? 'Вы → ' + esc(nameOf(e)) : esc(nameOf(e)) + ' → Вы') + '</span><br>' +
+      '<b>' + (me ? 'Кому' : 'От') + ':</b> ' + esc(me ? e.to_addr : e.from_addr) + '<br>' + (a ? '<b>Ящик:</b> ' + esc(a.address) + '<br>' : '') +
+      (p ? '<b>Партнёр:</b> <button class="link" style="margin:0;padding:0;font-size:14px" data-act="p-open" data-id="' + esc(p.id) + '">' + esc(p.name) + '</button> <span class="st ' + p.status + '">' + PST[p.status] + '</span><br>' : '') +
+      (me ? '<b>Автор:</b> ' + (e.author === 'agent' ? 'агент' : 'вы') + '<br>' : '') + fullDate(tm(e)) + '</div>';
+    var body = (e.summary_ru ? '<div class="sumbox"><b>Кратко</b>' + esc(e.summary_ru) + '</div>' : '') +
+      (e.body_ru ? '<div class="body-t" id="bt-ru">' + esc(e.body_ru) + '</div><div class="body-t hidden" id="bt-orig">' + esc(e.body || '') + '</div><div class="acts" style="margin-top:0"><button class="pill ghost" data-act="mail-orig" id="bt-btn">Показать оригинал' + (e.lang ? ' (' + esc(e.lang.toUpperCase()) + ')' : '') + '</button></div>' : '<div class="body-t">' + esc(e.body || '(пусто)') + '</div>') +
+      (e.folder === 'draft' && e.status === 'approved' ? '<p class="sub">Письмо в очереди: уйдёт при следующем запуске агента.</p>' : '') + (e.folder === 'draft' && e.author === 'agent' && e.status !== 'approved' ? '<p class="sub">Черновик написал агент. Проверьте и утвердите или измените.</p>' : '');
+    openSheet(e.subject || '(без темы)', head + body + '<div class="acts">' + acts + '</div><div class="acts sec">' + sec + '</div>' +
+      (thread.length ? '<div class="thread"><p class="tm2">Переписка с ' + esc(nameOf(e)) + ' · ' + thread.length + '</p>' + thread.slice(0, 12).map(function(x){ return msgBox(x, e); }).join('') + (thread.length > 12 ? '<p class="sub">Показаны последние 12.</p>' : '') + '</div>' : ''));
   }
   function composeSheet(pre){
     pre = pre || {};
@@ -1058,7 +1177,7 @@
   function pFiltered(){
     var q = S.pq.toLowerCase(), pr = {high:0, normal:1, low:2};
     var L = D.partners.filter(function(p){
-      if (S.pst !== 'all' && p.status !== S.pst) return false;
+      if (S.pwork){ if (p.status !== 'contacted' && p.status !== 'replied') return false; } else if (S.pst !== 'all' && p.status !== S.pst) return false;
       if (S.pkind !== 'all' && p.kind !== S.pkind) return false;
       if (S.pstar && !p.starred) return false;
       return !q || ((p.name || '') + ' ' + (p.email || '') + ' ' + (p.country || '') + ' ' + (p.countries || '') + ' ' + (p.website || '') + ' ' + (p.notes || '') + ' ' + (p.terms || '') + ' ' + (p.contact_person || '')).toLowerCase().indexOf(q) > -1;
@@ -1070,27 +1189,28 @@
     return L;
   }
   function vPartners(){
-    var h = '<div class="head"><div><h1 class="pt">Партнёры</h1><p class="sub">' + D.partners.length + ' в базе</p></div><div class="acts" style="margin:0"><button class="pill ghost" data-act="p-export">Выгрузить CSV</button><button class="pill" data-act="p-new">' + ic('plus') + 'Добавить</button></div></div>';
-    h += '<div class="chips"><button class="chip' + (S.pst === 'all' ? ' on' : '') + '" data-act="pst" data-id="all">Все</button>' + Object.keys(PST).map(function(k){
+    var work = S.pwork, L = pFiltered();
+    var h = '<div class="head"><div><h1 class="pt">Партнёры</h1><p class="sub">' + D.partners.length + ' в базе' + (work ? ' · в работе' : '') + '</p></div><div class="acts" style="margin:0"><button class="pill" data-act="p-new">' + ic('plus') + 'Добавить</button></div></div>';
+    h += '<div class="chips"><button class="chip' + (S.pst === 'all' && !work ? ' on' : '') + '" data-act="pst" data-id="all">Все</button>' +
+      '<button class="chip' + (work ? ' on' : '') + '" data-act="pst" data-id="work">В работе <span class="n">' + D.partners.filter(function(p){ return p.status === 'contacted' || p.status === 'replied'; }).length + '</span></button>' +
+      Object.keys(PST).map(function(k){
       var n = D.partners.filter(function(p){ return p.status === k; }).length;
       return '<button class="chip' + (S.pst === k ? ' on' : '') + '" data-act="pst" data-id="' + k + '">' + PST[k] + ' <span class="n">' + n + '</span></button>';
-    }).join('') + '</div>';
-    h += '<div class="row2" style="margin-bottom:14px"><div class="search" style="margin:0">' + ic('search') + '<input id="pq" type="search" placeholder="Поиск" value="' + esc(S.pq) + '" autocomplete="off"></div>' +
-      '<select id="pkind"><option value="all">Все типы</option>' + Object.keys(KIND).map(function(k){ return '<option value="' + k + '"' + (S.pkind === k ? ' selected' : '') + '>' + KIND[k] + '</option>'; }).join('') + '</select></div>';
-    h += '<div class="row2" style="margin-bottom:14px"><select id="psort">' + [['new','Сначала новые'],['name','По названию'],['prio','По важности'],['next','По дате действия'],['fit','По оценке']].map(function(o){ return '<option value="' + o[0] + '"' + (S.psort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' +
-      '<div class="chips" style="margin:0"><button class="chip' + (S.pstar ? ' on' : '') + '" data-act="pstar">' + starI(S.pstar) + 'Избранные <span class="n">' + D.partners.filter(function(p){ return p.starred; }).length + '</span></button></div></div>';
-    var L = pFiltered();
+    }).join('') + '<button class="chip' + (S.pstar ? ' on' : '') + '" data-act="pstar">' + starI(S.pstar) + 'Избранные <span class="n">' + D.partners.filter(function(p){ return p.starred; }).length + '</span></button></div>';
+    h += '<div class="search">' + ic('search') + '<input id="pq" type="search" placeholder="Название, страна, почта" value="' + esc(S.pq) + '" autocomplete="off"></div>';
+    h += '<div class="row2 keep" style="margin-bottom:14px"><select id="pkind" aria-label="Тип"><option value="all">Все типы</option>' + Object.keys(KIND).map(function(k){ return '<option value="' + k + '"' + (S.pkind === k ? ' selected' : '') + '>' + (KINDP[k] || KIND[k]) + '</option>'; }).join('') + '</select>' +
+      '<select id="psort" aria-label="Сортировка">' + [['new','Новые'],['fit','По оценке'],['name','По названию'],['prio','По важности'],['next','По дате']].map(function(o){ return '<option value="' + o[0] + '"' + (S.psort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
     if (!L.length) return h + '<div class="card empty">' + (D.partners.length ? 'Никого не найдено по этим фильтрам.' : 'Партнёров пока нет. Агент добавит найденных сам, или добавьте вручную.') + '<div class="acts" style="justify-content:center"><button class="pill" data-act="p-new">' + ic('plus') + 'Добавить партнёра</button></div></div>';
     var pp = more(L.length, 'partners', 80);
     var today0 = new Date(); today0.setHours(0, 0, 0, 0);
-    return h + '<div class="list">' + L.slice(0, pp.n).map(function(p){
-      var over = p.next_action_at && new Date(p.next_action_at) < today0;
+    return h + '<p class="hint" style="margin:0 0 10px">Показано: ' + Math.min(L.length, pp.n) + ' из ' + L.length + '</p><div class="list">' + L.slice(0, pp.n).map(function(p){
+      var over = p.next_action_at && new Date(p.next_action_at) < today0, lc = lastContact(p.id);
       var na = (p.next_action || p.next_action_at) ? '<div class="l3' + (over ? ' bad' : '') + '">→ ' + esc(p.next_action || 'Действие') + (p.next_action_at ? ' · ' + esc(dshort(p.next_action_at)) : '') + '</div>' : '';
-      return '<button class="it" data-act="p-open" data-id="' + esc(p.id) + '">' + avRing(p) + '<div class="mid"><div class="l1"><span>' + (p.starred ? '<span class="star">' + starI(true) + '</span>' : '') + esc(p.name) + demoTag(p) + (p.priority === 'high' ? ' <span class="tag">важно</span>' : '') + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + (p.email ? ' · ' + esc(p.email) : '') + '</div>' + (function(){ var lc = lastContact(p.id); return lc ? '<div class="l3">Контакт ' + esc(ago(new Date(lc).toISOString())) + ' назад</div>' : ''; })() + na + '</div></button>';
+      return '<button class="it" data-act="p-open" data-id="' + esc(p.id) + '">' + avRing(p) + '<div class="mid"><div class="l1"><span>' + (p.starred ? '<span class="star">' + starI(true) + '</span>' : '') + esc(p.name) + (p.priority === 'high' ? ' <span class="tag">важно</span>' : '') + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + (lc ? ' · контакт ' + esc(ago(new Date(lc).toISOString())) + ' назад' : '') + '</div>' + na + '</div></button>';
     }).join('') + '</div>' + pp.html;
   }
-  function partnerSheet(id){
-    var p = id ? pById(id) : {status:'found', kind:'clinic', priority:'normal'};
+  function partnerSheet(id, pre){
+    var p = id ? pById(id) : Object.assign({status:'found', kind:'clinic', priority:'normal'}, pre || {});
     if (!p) return;
     var ins = function(i, l, v, ph, type){ return '<div class="fld"><label for="' + i + '">' + l + '</label><input id="' + i + '" type="' + (type || 'text') + '" value="' + esc(v || '') + '" placeholder="' + esc(ph || '') + '"></div>'; };
     var sel = function(i, l, obj, cur){ return '<div class="fld"><label for="' + i + '">' + l + '</label><select id="' + i + '">' + Object.keys(obj).map(function(k){ return '<option value="' + k + '"' + (cur === k ? ' selected' : '') + '>' + obj[k] + '</option>'; }).join('') + '</select></div>'; };
@@ -1157,31 +1277,15 @@
     });
     return out;
   }
-  function exportPartners(){
-    exportCsv('partners-' + stamp() + '.csv', [['Название','Тип','Статус','Важность','Избранный','Оценка','Страна','Контакт','Почта','Сайт','Следующее действие','Когда','Заметки']].concat(pFiltered().map(function(p){ return [p.name, KIND[p.kind] || '', PST[p.status] || '', PRIO[p.priority || 'normal'], p.starred ? 'да' : '', ratingOf(p) || '', p.country, p.contact_person, p.email, p.website, p.next_action, p.next_action_at ? dkey(p.next_action_at) : '', p.notes]; })));
-  }
-  function exportEmails(){
-    exportCsv('emails-' + stamp() + '.csv', [['Дата','Папка','Направление','От','Кому','Тема','Партнёр','Текст']].concat(D.emails.map(function(e){ var p = pById(e.partner_id); return [fullDate(tm(e)), FOLD[e.folder] || e.folder, e.direction === 'in' ? 'входящее' : 'исходящее', e.from_addr, e.to_addr, e.subject, p ? p.name : '', e.body]; })));
-  }
-  function exportRuns(){
-    exportCsv('agent-runs-' + stamp() + '.csv', [['Дата','Тип','Успешно','Описание','Модель','Токенов вход','Токенов выход','Стоимость, $']].concat(D.runs.map(function(r){ return [fullDate(r.created_at), RK[r.kind] || r.kind, r.ok ? 'да' : 'нет', r.summary, r.model, r.tokens_in, r.tokens_out, Number(r.cost_usd || 0).toFixed(4)]; })));
-  }
-  function backupJson(){
-    dl('waylen-backup-' + stamp() + '.json', JSON.stringify({exported_at:new Date().toISOString(), partners:D.partners, emails:D.emails, questions:D.questions, runs:D.runs, knowledge:D.knowledge, templates:D.templates, mail_accounts:D.accounts, tasks:D.tasks, insights:D.insights, settings:D.settings}, null, 2), 'application/json');
-  }
-
   /* ----- agent ----- */
   var AGT = [['runs','История'],['mkt','Рынок'],['an','Аналитика'],['cost','Расходы'],['kb','Знания'],['tpl','Шаблоны']];
   function vAgent(){
-    var h = '<div class="head"><div><h1 class="pt">Агент</h1><p class="sub">История, аналитика, расходы, знания и шаблоны</p></div></div>';
+    var h = '<div class="head"><div><h1 class="pt">Агент</h1><p class="sub">' + (D.settings.enabled ? 'Работает · следующий запуск в течение 30 минут' : 'Выключен') + '</p></div></div>';
     h += '<div class="chips">' + AGT.map(function(t){ return '<button class="chip' + (S.agTab === t[0] ? ' on' : '') + '" data-act="agtab" data-id="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>';
     if (S.agTab === 'runs'){
       var month = D.runs.filter(function(r){ return thisMonth(r.created_at); });
       var errs = D.runs.filter(function(r){ return !r.ok; }).length;
-      h += '<div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:18px">' +
-        '<div class="card"><div class="sub" style="margin:0">Действий за месяц</div><div style="font-family:var(--font-head);font-weight:800;font-size:26px;margin-top:6px">' + month.length + '</div></div>' +
-        '<div class="card"><div class="sub" style="margin:0">Расходы</div><div style="font-family:var(--font-head);font-weight:800;font-size:26px;margin-top:6px">' + usd(sumCost(month)) + '</div></div>' +
-        '<div class="card"><div class="sub" style="margin:0">Ошибки</div><div style="font-family:var(--font-head);font-weight:800;font-size:26px;margin-top:6px">' + errs + '</div></div></div>';
+      h += '<div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:18px">' + kcard('За месяц', month.length, 'действий') + kcard('Расходы', usd(sumCost(month)), 'за месяц') + kcard('Ошибки', errs, 'всего', errs ? 'down' : '') + '</div>';
       h += '<div class="chips">' + [['all','Все'],['err','Ошибки']].concat(Object.keys(RK).map(function(k){ return [k, RK[k]]; })).map(function(f){ return '<button class="chip' + (S.runFilter === f[0] ? ' on' : '') + '" data-act="runf" data-id="' + f[0] + '">' + f[1] + '</button>'; }).join('') + '</div>';
       h += '<div class="chips">' + [[0,'За всё время'],[1,'Сегодня'],[7,'7 дней'],[30,'30 дней']].map(function(f){ return '<button class="chip' + (S.runDays === f[0] ? ' on' : '') + '" data-act="rundays" data-id="' + f[0] + '">' + f[1] + '</button>'; }).join('') + '</div>';
       var since = S.runDays ? Date.now() - (S.runDays === 1 ? 0 : S.runDays * 864e5) : 0, t0 = new Date(); t0.setHours(0, 0, 0, 0);
@@ -1256,15 +1360,14 @@
     });
     var ser = [{name:'Отправлено', color:'#3B80C3', vals:days.map(function(d){ return sentM[d.k] || 0; })}, {name:'Получено', color:'#6FA83A', vals:days.map(function(d){ return recvM[d.k] || 0; })}];
     var sc = stageCounts(), rate = sc.contacted ? Math.round(sc.replied / sc.contacted * 100) : 0;
-    var kp = function(l, v, s){ return '<div class="card"><div class="sub" style="margin:0">' + l + '</div><div style="font-family:var(--font-head);font-weight:800;font-size:26px;margin-top:6px">' + v + '</div>' + (s ? '<div class="sub" style="margin:4px 0 0">' + s + '</div>' : '') + '</div>'; };
     var h = periodChips() + '<div class="tiles" style="margin-bottom:14px">' +
-      kp('Ответили', rate + '%', sc.replied + ' из ' + sc.contacted + ' написанных') +
-      kp('Ответ партнёра', dur(avgReply()), 'в среднем') +
-      kp('Ваш ответ агенту', dur(ownerReply()), 'в среднем') +
-      kp('Договорились', sc.agreed, sc.contacted ? Math.round(sc.agreed / sc.contacted * 100) + '% от написанных' : '') + '</div>';
+      kcard('Ответили', rate + '%', sc.replied + ' из ' + sc.contacted + ' написанных') +
+      kcard('Ответ партнёра', dur(avgReply()), 'в среднем') +
+      kcard('Ваш ответ агенту', dur(ownerReply()), 'в среднем') +
+      kcard('Договорились', sc.agreed, sc.contacted ? Math.round(sc.agreed / sc.contacted * 100) + '% от написанных' : '') + '</div>';
 
     var wk = weekly(days, ser);
-    h += '<div class="card"><p class="cardt">Письма за ' + S.days + ' дней</p><p class="cardn">Сколько писем ушло и пришло ' + (wk.week ? 'по неделям' : 'по дням') + '.</p>' + legend(ser) + barChart(wk.days, wk.series, {label:'Письма'}) + tableView(wk.days, wk.series) + '</div>';
+    h += '<div class="card"><p class="cardt">Письма за ' + S.days + ' дней</p><p class="cardn">Сколько писем ушло и пришло ' + (wk.week ? 'по неделям' : 'по дням') + '.</p>' + legend(ser) + barChart(wk.days, wk.series, {label:'Письма', int:true}) + tableView(wk.days, wk.series) + '</div>';
 
     var st = [['Найдены', sc.total], ['Написали', sc.contacted], ['Ответили', sc.replied], ['Договорились', sc.agreed]];
     h += '<div class="card" style="margin-top:14px"><p class="cardt">Воронка</p><p class="cardn">Доля считается от предыдущего шага.</p>' + hbars(st.map(function(x, i){ return {name:x[0], val:x[1], label:x[1] + ' · ' + (i === 0 ? '100%' : st[i - 1][1] ? Math.round(x[1] / st[i - 1][1] * 100) + '%' : '—')}; })) + '</div>';
@@ -1288,7 +1391,6 @@
     }
     h += '<div class="card" style="margin-top:14px"><p class="cardt">Неделя к неделе</p><p class="cardn">Последние 7 дней и предыдущие 7.</p><div class="wk h"><span></span><span>Сейчас</span><span>Раньше</span><span>Разница</span></div>' +
       row('Отправлено', a.sent, b.sent) + row('Получено', a.recv, b.recv) + row('Новых партнёров', a.newp, b.newp) + row('Действий агента', a.runs, b.runs) + row('Расходы', a.cost, b.cost, true, true) + '</div>';
-    h += '<div class="acts"><button class="pill ghost" data-act="exp-emails">Письма CSV</button><button class="pill ghost" data-act="exp-partners">Партнёры CSV</button></div>';
     return h;
   }
   function vMarket(){
@@ -1323,10 +1425,7 @@
     var month = D.runs.filter(function(r){ return thisMonth(r.created_at); }), recvM = D.emails.filter(function(e){ return e.direction === 'in' && e.folder !== 'spam' && thisMonth(tm(e)); }).length;
     var newM = D.partners.filter(function(p){ return thisMonth(p.created_at); }).length, agreed = D.partners.filter(function(p){ return p.status === 'agreed'; }).length;
     var per = function(n){ return n ? usd(b.cost / n) : '—'; };
-    h += '<div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-top:14px">' +
-      '<div class="card"><div class="sub" style="margin:0">За партнёра</div><div style="font-family:var(--font-head);font-weight:800;font-size:24px;margin-top:6px">' + per(newM) + '</div><div class="sub" style="margin:4px 0 0">новых: ' + newM + '</div></div>' +
-      '<div class="card"><div class="sub" style="margin:0">За ответ</div><div style="font-family:var(--font-head);font-weight:800;font-size:24px;margin-top:6px">' + per(recvM) + '</div><div class="sub" style="margin:4px 0 0">писем: ' + recvM + '</div></div>' +
-      '<div class="card"><div class="sub" style="margin:0">За договорённость</div><div style="font-family:var(--font-head);font-weight:800;font-size:24px;margin-top:6px">' + per(agreed) + '</div><div class="sub" style="margin:4px 0 0">всего: ' + agreed + '</div></div></div>';
+    h += '<p class="cardt" style="margin:18px 0 10px">Цена результата за месяц</p><div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr))">' + kcard('За партнёра', per(newM), 'новых: ' + newM) + kcard('За ответ', per(recvM), 'писем: ' + recvM) + kcard('За сделку', per(agreed), 'всего: ' + agreed) + '</div>';
 
     var byK = {}, byM = {}, tokIn = 0, tokOut = 0;
     month.forEach(function(r){
@@ -1339,7 +1438,7 @@
     var mi = Object.keys(byM).map(function(k){ return {name:k, val:byM[k].c, label:usd(byM[k].c) + ' · ' + Math.round(byM[k].t / 1000) + 'K ток.'}; }).sort(function(a, b){ return b.val - a.val; });
     h += '<div class="grid2"><div class="card"><p class="cardt">По типам действий</p><p class="cardn">За этот месяц, $ · число действий.</p>' + hbars(ki) + '</div><div class="card"><p class="cardt">По моделям</p><p class="cardn">Haiku дешевле, Sonnet умнее.</p>' + hbars(mi) + '</div></div>';
     h += '<p class="sub" style="margin-top:14px">Токенов за месяц: ' + tokIn.toLocaleString('ru-RU') + ' на входе, ' + tokOut.toLocaleString('ru-RU') + ' на выходе.</p>';
-    h += '<div class="acts"><button class="pill ghost" data-act="exp-runs">Выгрузить расходы CSV</button><button class="pill ghost" data-act="go" data-tab="settings" data-arg="">Изменить лимит</button></div>';
+    h += '<div class="acts"><button class="pill ghost" data-act="go" data-tab="settings" data-arg="">Изменить лимит</button></div>';
     return h;
   }
   function kbSheet(id){
@@ -1364,7 +1463,7 @@
     function sec(t, arr){ if (!arr.length) return; n += arr.length; h += '<h4>' + t + '</h4><div class="list">' + arr.slice(0, 6).join('') + '</div>'; }
     sec('Партнёры', D.partners.filter(function(p){ return m(p.name) || m(p.email) || m(p.country) || m(p.website) || m(p.notes) || m(p.contact_person); }).map(function(p){ return row('p-open', p.id, p.name, (KIND[p.kind] || '') + ' · ' + PST[p.status] + (p.country ? ' · ' + p.country : '')); }));
     sec('Письма', D.emails.filter(function(e){ return m(e.subject) || m(e.body) || m(e.from_addr) || m(e.to_addr) || m(who(e)); }).map(function(e){ return row('mail-open', e.id, e.subject || '(без темы)', FOLD[e.folder] + ' · ' + who(e)); }));
-    sec('Задачи', D.tasks.filter(function(t){ return m(t.title); }).map(function(t){ return row('go', t.id, t.title, t.done ? 'Выполнена' : 'Открыта', ' data-tab="home" data-arg=""'); }));
+    sec('Задачи', D.tasks.filter(function(t){ return m(t.title); }).map(function(t){ return row('t-open', t.id, t.title, t.done ? 'Выполнена' : 'Открыта'); }));
     sec('Знания', D.knowledge.filter(function(k){ return m(k.topic) || m(k.content); }).map(function(k){ return row('kb-open', k.id, k.topic, k.content.replace(/\s+/g, ' ').slice(0, 90)); }));
     sec('История агента', D.runs.filter(function(r){ return m(r.summary) || m(r.details); }).map(function(r){ return row('go', r.id, r.summary || RK[r.kind], RK[r.kind] + ' · ' + ago(r.created_at), ' data-tab="agent" data-arg="runs"'); }));
     return n ? h : '<p class="sub">Ничего не найдено.</p>';
@@ -1375,37 +1474,35 @@
     var s = D.settings || {}, fk = s.focus_kinds || [];
     var hrs = function(id, v){ var o = ''; for (var i = 0; i < 24; i++) o += '<option value="' + i + '"' + (Number(v) === i ? ' selected' : '') + '>' + String(i).padStart(2, '0') + ':00</option>'; return '<select id="' + id + '">' + o + '</select>'; };
     var h = '<div class="head"><div><h1 class="pt">Настройки</h1><p class="sub"><button class="link" style="margin:0;padding:0;font-size:14px" data-act="help">Как работает агент</button></p></div></div>';
-    h += '<div class="card"><h3 class="sec" style="margin-top:0">Агент</h3><div class="set">' +
-      '<div class="fld"><label>Режим отправки</label><div class="seg" id="s_mode">' + [['approve','Через утверждение'],['auto','Сам отправляет']].map(function(m){ return '<button type="button" class="' + (s.send_mode === m[0] ? 'on' : '') + '" data-act="mode" data-id="' + m[0] + '">' + m[1] + '</button>'; }).join('') + '</div><p class="sub">Первую неделю лучше держать «Через утверждение».</p></div>' +
-      '<div class="row2"><div class="fld"><label>Писем в день (максимум)</label><input id="s_lim" type="number" min="0" max="500" value="' + esc(s.daily_email_limit) + '"><p class="hint">Защита от спама и от лишних трат. Новым партнёрам обычно хватает 10–20 писем в день.</p></div><div class="fld"><label>Поисков партнёров в день</label><input id="s_runs" type="number" min="0" max="48" value="' + esc(s.search_runs_per_day) + '"><p class="hint">Один поиск — это несколько запросов в интернет и около $0.05–0.15.</p></div></div>' +
-      '<div class="row2"><div class="fld"><label>Тихие часы: с</label>' + hrs('s_qs', s.quiet_start) + '</div><div class="fld"><label>до</label>' + hrs('s_qe', s.quiet_end) + '</div></div>' +
-      '<div class="fld"><label>Страны для поиска партнёров (через запятую)</label><input id="s_countries" value="' + esc((s.focus_countries || []).join(', ')) + '" placeholder="Турция, ОАЭ, Грузия, Таиланд"><p class="hint">Пусто — агент сам выберет популярные страны переезда с питомцами.</p></div>' +
+    h += '<div class="qh" style="margin-top:4px"><h3>Режим работы</h3></div><div class="card"><div class="set">' +
+      '<div class="fld"><label>Отправка писем</label><div class="seg" id="s_mode">' + [['approve','Через утверждение'],['auto','Сам отправляет']].map(function(m){ return '<button type="button" class="' + (s.send_mode === m[0] ? 'on' : '') + '" data-act="mode" data-id="' + m[0] + '">' + m[1] + '</button>'; }).join('') + '</div><p class="hint">«Через утверждение»: агент пишет черновик, вы нажимаете «Утвердить». Первые недели лучше так.</p></div>' +
+      '<div class="row2 keep"><div class="fld"><label>Писем в день</label><input id="s_lim" type="number" inputmode="numeric" min="0" max="500" value="' + esc(s.daily_email_limit) + '"></div><div class="fld"><label>Поисков в день</label><input id="s_runs" type="number" inputmode="numeric" min="0" max="48" value="' + esc(s.search_runs_per_day) + '"></div></div><p class="hint" style="margin-top:-8px">Один поиск партнёров стоит около $0.25–0.30. Писем новым партнёрам обычно хватает 10–20 в день.</p>' +
+      '<div class="row2 keep"><div class="fld"><label>Тихие часы с</label>' + hrs('s_qs', s.quiet_start) + '</div><div class="fld"><label>до</label>' + hrs('s_qe', s.quiet_end) + '</div></div>' +
+      '<div class="row2 keep"><div class="fld"><label>Часовой пояс</label><select id="s_tz">' + [['Europe/Moscow','Москва'],['Asia/Bangkok','Бангкок'],['Asia/Dubai','Дубай'],['Europe/Istanbul','Стамбул'],['Asia/Tbilisi','Тбилиси'],['Europe/Belgrade','Белград'],['Europe/Berlin','Берлин'],['Asia/Almaty','Алматы']].map(function(z){ return '<option value="' + z[0] + '"' + ((s.timezone || 'Europe/Moscow') === z[0] ? ' selected' : '') + '>' + z[1] + '</option>'; }).join('') + '</select></div>' +
+      '<div class="fld"><label>Напоминание, дней</label><input id="s_fu" type="number" inputmode="numeric" min="1" max="60" value="' + esc(s.followup_days || 4) + '"></div></div>' +
+      '<div class="fld"><label>Месячный лимит расходов, $</label><input id="s_bud" type="number" inputmode="decimal" min="0" step="1" value="' + esc(s.monthly_budget_usd) + '"><p class="hint">При достижении лимита агент остановится сам.</p></div>' +
+      '</div></div>';
+    h += '<div class="qh"><h3>Кого и где искать</h3></div><div class="card"><div class="set">' +
+      '<div class="fld"><label>Типы партнёров</label><div class="checks">' + Object.keys(KINDP).map(function(k){ return '<button type="button" class="chip' + (fk.indexOf(k) > -1 ? ' on' : '') + '" data-act="fk" data-id="' + k + '">' + KINDP[k] + '</button>'; }).join('') + '</div></div>' +
+      '<div class="fld"><label>Страны (через запятую)</label><input id="s_countries" value="' + esc((s.focus_countries || []).join(', ')) + '" placeholder="Турция, ОАЭ, Грузия, Таиланд"><p class="hint">Пусто — агент сам выберет популярные страны переезда с питомцами.</p></div>' +
       '<div class="fld"><label>О компании для агента</label><textarea id="s_company" placeholder="Что мы делаем, какие страны, что предлагаем партнёрам и что хотим от них">' + esc(s.company_summary || '') + '</textarea><p class="hint">Агент опирается на это и на базу знаний, когда ищет партнёров и пишет письма.</p></div>' +
-      '<div class="fld"><label>Часовой пояс (для тихих часов и утренней сводки)</label><select id="s_tz">' + [['Europe/Moscow','Москва'],['Asia/Bangkok','Бангкок'],['Asia/Dubai','Дубай'],['Europe/Istanbul','Стамбул'],['Asia/Tbilisi','Тбилиси'],['Europe/Belgrade','Белград'],['Europe/Berlin','Берлин'],['Asia/Almaty','Алматы']].map(function(z){ return '<option value="' + z[0] + '"' + ((s.timezone || 'Europe/Moscow') === z[0] ? ' selected' : '') + '>' + z[1] + '</option>'; }).join('') + '</select></div>' +
-      '<div class="fld"><label>Напоминать, если нет ответа (дней)</label><input id="s_fu" type="number" min="1" max="60" value="' + esc(s.followup_days || 4) + '"></div>' +
-      '<div class="fld"><label>Кого искать</label><div class="checks">' + Object.keys(KINDP).map(function(k){ return '<button type="button" class="chip' + (fk.indexOf(k) > -1 ? ' on' : '') + '" data-act="fk" data-id="' + k + '">' + KINDP[k] + '</button>'; }).join('') + '</div></div>' +
-      '<div class="fld"><label>Месячный лимит расходов, $</label><input id="s_bud" type="number" min="0" step="1" value="' + esc(s.monthly_budget_usd) + '"><p class="sub">При достижении лимита агент остановится сам.</p></div>' +
-      '<div class="fld"><label>Не писать этим доменам и адресам (через запятую)</label><input id="s_block" value="' + esc((s.blocked_domains || []).join(', ')) + '" placeholder="example.com, spam.ru"></div>' +
-      '<div class="fld"><label>Тон писем</label><textarea id="s_tone" placeholder="Вежливо, коротко, на «вы»">' + esc(s.tone || '') + '</textarea></div>' +
-      '<div class="acts"><button class="pill" id="s_btn" data-act="s-save">Сохранить</button></div></div></div>';
+      '<div class="fld"><label>Тон писем</label><textarea id="s_tone" style="min-height:70px" placeholder="Вежливо, коротко, на «вы»">' + esc(s.tone || '') + '</textarea></div>' +
+      '<div class="fld"><label>Чёрный список адресов и доменов</label><input id="s_block" value="' + esc((s.blocked_domains || []).join(', ')) + '" placeholder="example.com, spam.ru"></div>' +
+      '</div></div>';
+    h += '<div class="acts" style="margin-top:14px"><button class="pill" id="s_btn" data-act="s-save">Сохранить настройки</button></div>';
 
-    h += '<h3 class="sec">Почтовые ящики <button data-act="acc-new">Добавить</button></h3>';
-    h += D.accounts.length ? '<div class="list">' + D.accounts.map(function(a){ return '<button class="it" data-act="acc-open" data-id="' + esc(a.id) + '"><div class="av">' + initial(a.label) + '</div><div class="mid"><div class="l1"><span>' + esc(a.label) + demoTag(a) + '</span><span class="st ' + (a.status === 'connected' ? 'agreed' : 'paused') + '">' + (a.status === 'connected' ? 'подключён' : a.status === 'error' ? 'ошибка' : 'не подключён') + '</span></div><div class="l3">' + esc(a.address) + '</div></div></button>'; }).join('') + '</div>' : '<div class="card empty">Ящиков нет.</div>';
+    h += '<div class="qh"><h3>Почтовые ящики</h3><button data-act="acc-new">Добавить</button></div>';
+    h += D.accounts.length ? '<div class="list">' + D.accounts.map(function(a){ var n = D.emails.filter(function(e){ return e.account_id === a.id; }).length; return '<button class="it" data-act="acc-open" data-id="' + esc(a.id) + '"><div class="av">' + initial(a.label) + '</div><div class="mid"><div class="l1"><span>' + esc(a.label) + '</span><span class="st ' + (a.status === 'connected' ? 'agreed' : 'paused') + '">' + (a.status === 'connected' ? 'подключён' : a.status === 'error' ? 'ошибка' : 'не подключён') + '</span></div><div class="l3">' + esc(a.address) + ' · писем: ' + n + '</div></div></button>'; }).join('') + '</div>' : '<div class="card empty">Ящиков нет.</div>';
 
     var meta = {}; D.secrets.forEach(function(m){ meta[m.name] = m; });
-    h += '<h3 class="sec">Ключи</h3><div class="card"><p class="sub" style="margin:0 0 6px">Ключ записывается в защищённое хранилище и больше нигде не показывается: прочитать его обратно нельзя, только заменить. Видны лишь последние 4 символа.</p>' + [['anthropic_api_key','Ключ Claude API','sk-ant-…'],['telegram_bot_token','Токен Telegram-бота','123456:ABC…'],['telegram_chat_id','Telegram: ваш chat id','число']].map(function(k){
-      return '<div class="kv" style="flex-wrap:wrap"><div style="flex:1;min-width:200px">' + k[1] + '<small>' + (meta[k[0]] ? 'задан · …' + esc(meta[k[0]].last4) : 'не задан') + '</small></div></div>' +
-        '<div style="display:flex;gap:10px;margin-bottom:6px"><input id="key-' + k[0] + '" type="password" autocomplete="off" spellcheck="false" placeholder="' + k[2] + '" style="padding:11px 14px"><button class="pill" data-act="key-save" data-id="' + k[0] + '">' + (meta[k[0]] ? 'Заменить' : 'Сохранить') + '</button></div>';
+    h += '<div class="qh"><h3>Ключи</h3></div><div class="card"><p class="hint" style="margin:0 0 14px">Ключ хранится в защищённом хранилище, прочитать его обратно нельзя, только заменить. Видны последние 4 символа.</p>' + [['anthropic_api_key','Claude API','sk-ant-…'],['agentmail_api_key','AgentMail API','am_…'],['telegram_bot_token','Токен Telegram-бота','123456:ABC…'],['telegram_chat_id','Telegram chat id','число']].map(function(k){
+      return '<div class="keyrow"><div class="kl2">' + k[1] + '<small>' + (meta[k[0]] ? 'задан · …' + esc(meta[k[0]].last4) : 'не задан') + '</small></div>' +
+        '<div class="kin"><input id="key-' + k[0] + '" type="password" autocomplete="off" spellcheck="false" placeholder="' + k[2] + '"><button class="pill" data-act="key-save" data-id="' + k[0] + '">' + (meta[k[0]] ? 'Заменить' : 'Сохранить') + '</button></div></div>';
     }).join('') + '</div>';
 
-    h += '<h3 class="sec">Выгрузки и копия</h3><div class="card"><p class="sub" style="margin:0 0 12px">Файлы скачиваются на ваше устройство.</p><div class="acts" style="margin:0"><button class="pill ghost" data-act="exp-partners">Партнёры CSV</button><button class="pill ghost" data-act="exp-emails">Письма CSV</button><button class="pill ghost" data-act="exp-runs">История и расходы CSV</button><button class="pill ghost" data-act="backup">Полная копия JSON</button></div></div>';
-
     var dg = dupGroups().length;
-    var demo = ['partners','emails','questions','runs','knowledge','templates','accounts','tasks','insights'].some(function(k){ return (D[k] || []).some(function(x){ return x.is_demo; }); });
-    h += '<h3 class="sec">Данные</h3><div class="card"><div class="kv"><div>Дубликаты партнёров<small>' + (dg ? 'Найдено групп: ' + dg : 'Повторов не найдено') + '</small></div><button class="pill ghost" data-act="dups">Проверить</button></div>' +
-      '<div class="kv"><div>Тестовые данные<small>' + (demo ? 'Примеры для оценки дизайна. Удалите, когда начнёте работать.' : 'Тестовых данных нет.') + '</small></div>' + (demo ? '<button class="pill danger" data-act="demo-del">Удалить</button>' : '') + '</div></div>';
-
-    h += '<div class="kbsec"><h3 class="sec">Горячие клавиши</h3><div class="card"><div class="kv"><div>Поиск по всему</div><span><span class="kbd">/</span> или <span class="kbd">Ctrl</span> <span class="kbd">K</span></span></div><div class="kv"><div>Новое письмо</div><span class="kbd">c</span></div><div class="kv"><div>Перейти в раздел</div><span><span class="kbd">g</span> потом <span class="kbd">h</span> <span class="kbd">m</span> <span class="kbd">p</span> <span class="kbd">a</span> <span class="kbd">s</span></span></div></div></div>';
+    h += '<div class="qh"><h3>Данные</h3></div><div class="card"><div class="kv"><div>Дубликаты партнёров<small>' + (dg ? 'Найдено групп: ' + dg : 'Повторов не найдено') + '</small></div><button class="pill ghost" data-act="dups">Проверить</button></div>' +
+      '<div class="kv"><div>Отвеченные вопросы<small>История ответов агенту</small></div><button class="pill ghost" data-act="q-hist">Открыть</button></div></div>';
     h += '<div class="acts" style="margin-top:26px"><button class="pill ghost" data-act="logout">' + ic('out') + 'Выйти</button></div>';
     return h;
   }
@@ -1415,16 +1512,17 @@
   }
 
   /* ---------- render ---------- */
-  function render(){
+  function render(anim){
     var v = $('#view');
     var map = {home:vHome, mail:vMail, partners:vPartners, agent:vAgent, settings:vSettings};
     v.innerHTML = map[S.tab]();
     hideTip(); renderNav();
+    if (anim){ v.classList.remove('fade'); void v.offsetWidth; v.classList.add('fade'); animateNums(v); stagger(v); }
   }
   function scr(){ return window.matchMedia('(max-width:820px)').matches ? document.getElementById('app') : null; }
   function gy(){ var e = scr(); return e ? e.scrollTop : window.scrollY; }
   function sy(y){ var e = scr(); if (e) e.scrollTop = y; else window.scrollTo(0, y); }
-  function setTab(t){ S.tab = t; S.selMode = false; S.sel = {}; S.page = {}; render(); sy(0); }
+  function setTab(t){ var ch = S.tab !== t; S.tab = t; S.selMode = false; S.sel = {}; S.page = {}; S.queueAll = false; render(ch); sy(0); if (ch) HAP.sel(); }
 
   /* ---------- actions ---------- */
   function byId(arr, id){ return arr.filter(function(x){ return x.id === id; })[0]; }
@@ -1460,13 +1558,23 @@
     'alerts-more': function(){ S.alertsAll = !S.alertsAll; render(); },
     retry: function(){ enter(); },
     refresh: function(){ toast('Обновляем…'); reload(); },
+    'q-open': function(d){ qSheet(d.id); },
+    't-open': function(d){ tSheet(d.id); },
+    't-new': function(){ tSheet(''); },
+    'queue-all': function(){ S.queueAll = !S.queueAll; var y = gy(); render(); sy(y); },
+    't-save': function(d){
+      var row = {title:val('t_title'), due_at: val('t_due') ? new Date(val('t_due') + 'T09:00:00').toISOString() : null, partner_id: val('t_p') || null};
+      if (!row.title){ toast('Напишите, что сделать'); return; }
+      (d.id ? rest('PATCH','tasks?id=eq.' + d.id, row) : rest('POST','tasks', row)).then(function(){ closeSheet(); toast(d.id ? 'Сохранено' : 'Задача добавлена'); return reload(); }).catch(fail);
+    },
     'q-hist': function(){ var qs = D.questions.filter(function(x){ return x.status !== 'open'; }); openSheet('Отвеченные вопросы', '<div class="tline">' + qs.map(function(q){ var p = pById(q.partner_id); return '<div class="tle"><div class="tt">' + esc(fullDate(q.created_at)) + (p ? ' · ' + esc(p.name) : '') + '</div><b>' + esc(q.question) + '</b><div class="sub" style="margin-top:4px">' + (q.status === 'skipped' ? 'Пропущен' : 'Ответ: ' + esc(q.answer || '')) + '</div></div>'; }).join('') + '</div>'); },
     close: closeSheet,
     search: searchSheet,
     tab: function(d){ closeSheet(); setTab(d.tab); },
     go: function(d){
       closeSheet();
-      if (d.tab === 'mail' && d.arg){ S.folder = d.arg; S.unread = false; }
+      if (d.tab === 'mail' && d.arg){ S.folder = d.arg === 'unread' ? 'inbox' : d.arg; S.unread = d.arg === 'unread'; }
+      if (d.tab === 'partners'){ S.pst = d.arg === 'work' ? 'all' : (d.arg || 'all'); S.pwork = d.arg === 'work'; }
       if (d.tab === 'agent' && d.arg){ if (d.arg === 'err'){ S.agTab = 'runs'; S.runFilter = 'err'; } else { S.agTab = d.arg; if (d.arg === 'runs') S.runFilter = 'all'; } }
       setTab(d.tab);
     },
@@ -1483,6 +1591,9 @@
     'mail-open': function(d){ openMail(d.id); },
     'mail-orig': function(d, el){ var r = $('#bt-ru'), o = $('#bt-orig'); if (!r || !o) return; var show = o.classList.contains('hidden'); o.classList.toggle('hidden', !show); r.classList.toggle('hidden', show); el.textContent = show ? 'Показать перевод' : 'Показать оригинал'; },
     reply: function(d){ var e = byId(D.emails, d.id); closeSheet(); composeSheet({account_id:e.account_id, partner_id:e.partner_id, to_addr: e.folder === 'sent' ? e.to_addr : e.from_addr, subject: /^re:/i.test(e.subject || '') || e.folder === 'sent' ? (e.subject || '') : 'Re: ' + (e.subject || ''), body: e.folder === 'inbox' ? quote(e) : ''}); },
+    'mail-unread': function(d){ rest('PATCH','emails?id=eq.' + d.id, {is_read:false}).then(function(){ closeSheet(); toast('Отмечено непрочитанным'); return reload(); }).catch(fail); },
+    unapprove: function(d){ rest('PATCH','emails?id=eq.' + d.id, {status:'draft'}).then(function(){ closeSheet(); toast('Убрано из очереди'); return reload(); }).catch(fail); },
+    'mail-partner': function(d){ var e = byId(D.emails, d.id); closeSheet(); partnerSheet('', {name:nameOf(e), email:addrOnly(e.from_addr), source:'Письмо', status:'replied'}); },
     'mail-move': function(d){ rest('PATCH','emails?id=eq.' + d.id, {folder:d.to}).then(function(){ closeSheet(); toast(d.to === 'spam' ? 'Перенесено в спам' : 'Возвращено во входящие'); return reload(); }).catch(fail); },
     'mail-del': function(d){ confirmSheet('Удалить письмо?', 'Письмо исчезнет из панели. Вернуть его нельзя.', 'mail-del-go', 'Удалить'); $('#sheet .sp').dataset.id = d.id; },
     'mail-del-go': function(){ var id = $('#sheet .sp').dataset.id; rest('DELETE','emails?id=eq.' + id).then(function(){ closeSheet(); toast('Письмо удалено'); return reload(); }).catch(fail); },
@@ -1511,7 +1622,7 @@
       var ids = mailList().filter(function(e){ return S.sel[e.id]; }).map(function(e){ return e.id; });
       if (!ids.length){ toast('Сначала выберите письма'); return; }
       if (d['do'] === 'del'){ confirmSheet('Удалить письма?', 'Будет удалено писем: ' + ids.length + '. Вернуть их нельзя.', 'bulk-del-go', 'Удалить'); return; }
-      var patch = d['do'] === 'read' ? {is_read:true} : {folder:d['do']};
+      var patch = d['do'] === 'read' ? {is_read:true} : d['do'] === 'unread' ? {is_read:false} : {folder:d['do']};
       rest('PATCH','emails?' + inList(ids), patch).then(function(){ S.sel = {}; toast('Готово: ' + ids.length); return reload(); }).catch(fail);
     },
     'bulk-del-go': function(){
@@ -1521,7 +1632,7 @@
     'edit-draft': function(d){ var e = byId(D.emails, d.id); closeSheet(); composeSheet(e); },
     'c-send': function(d){ saveCompose(d.id, d.p, 'approved'); },
     'c-save': function(d){ saveCompose(d.id, d.p, 'draft'); },
-    pst: function(d){ S.pst = d.id; render(); },
+    pst: function(d){ S.pwork = d.id === 'work'; S.pst = S.pwork ? 'all' : d.id; render(); },
     pstar: function(){ S.pstar = !S.pstar; render(); },
     'p-open': function(d){ partnerSheet(d.id); },
     'p-new': function(){ partnerSheet(''); },
@@ -1559,8 +1670,6 @@
     'p-write': function(d){ var p = pById(d.id); closeSheet(); composeSheet({account_id: D.accounts[0] && D.accounts[0].id, partner_id:p.id, to_addr:p.email}); },
     'p-task': function(d){ var p = pById(d.id); rest('POST','tasks', {title:'Связаться: ' + p.name, partner_id:p.id}).then(function(){ closeSheet(); toast('Задача создана'); return reload(); }).catch(fail); },
     'p-block': function(d){ var p = pById(d.id); rest('PATCH','partners?id=eq.' + d.id, {status:'declined', status_changed_at:new Date().toISOString()}).catch(function(){}); blockAddr(p.email); },
-    'p-export': exportPartners,
-    'exp-partners': exportPartners, 'exp-emails': exportEmails, 'exp-runs': exportRuns, backup: backupJson,
     dups: function(){
       var g = dupGroups();
       openSheet('Дубликаты', g.length ? g.map(function(x){ return '<div class="list" style="margin-bottom:12px">' + x.list.map(function(p){ return '<button class="it" data-act="p-open" data-id="' + esc(p.id) + '"><div class="mid"><div class="l1"><span>' + esc(p.name) + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc((p.email || p.website || '—')) + '</div></div></button>'; }).join('') + '</div>'; }).join('') + '<p class="sub">Откройте карточку, чтобы удалить лишнюю.</p>' : '<p class="lead">Повторов не найдено.</p>');
@@ -1573,13 +1682,9 @@
       var subj = x && x.subj ? (/^re:/i.test(x.subj) ? x.subj : 'Re: ' + x.subj) : (tpl && tpl.subject) || '';
       closeSheet(); composeSheet({account_id: D.accounts[0] && D.accounts[0].id, partner_id:p.id, to_addr:p.email, subject:subj, body:fill(body, p)});
     },
-    't-add': function(){
-      var t = val('t_new'), due = val('t_due'); if (!t){ toast('Напишите задачу'); return; }
-      rest('POST','tasks', {title:t, due_at: due ? new Date(due + 'T09:00:00').toISOString() : null}).then(function(){ toast('Задача добавлена'); return reload(); }).catch(fail);
-    },
-    't-done': function(d){ rest('PATCH','tasks?id=eq.' + d.id, {done:true}).then(function(){ toast('Готово'); return reload(); }).catch(fail); },
-    't-del': function(d){ rest('DELETE','tasks?id=eq.' + d.id).then(function(){ return reload(); }).catch(fail); },
-    agtab: function(d){ S.agTab = d.id; render(); },
+    't-done': function(d){ rest('PATCH','tasks?id=eq.' + d.id, {done:true}).then(function(){ closeSheet(); toast('Выполнено'); return reload(); }).catch(fail); },
+    't-del': function(d){ rest('DELETE','tasks?id=eq.' + d.id).then(function(){ closeSheet(); return reload(); }).catch(fail); },
+    agtab: function(d){ S.agTab = d.id; render(true); },
     runf: function(d){ S.runFilter = d.id; S.page.runs = 0; render(); },
     rundays: function(d){ S.runDays = parseInt(d.id, 10); S.page.runs = 0; render(); },
     period: function(d){ S.days = parseInt(d.id, 10); render(); },
@@ -1611,7 +1716,7 @@
     if (tp){ showTip(tp, ev.clientX, ev.clientY); return; } else hideTip();
     var el = ev.target.closest('[data-act]'); if (!el) return;
     if (el.id === 'sheet') return;
-    var f = ACT[el.dataset.act]; if (f){ ev.preventDefault(); f(el.dataset, el); }
+    var f = ACT[el.dataset.act]; if (f){ ev.preventDefault(); if (/^(tab|folder|acc|pst|pstar|agtab|runf|rundays|period|fk|mode|p-quick|p-rate)$/.test(el.dataset.act)) HAP.sel(); else HAP.tap(); f(el.dataset, el); }
   });
   document.addEventListener('mousemove', function(ev){
     var tp = ev.target.closest && ev.target.closest('[data-tip]');
@@ -1621,7 +1726,7 @@
   var gWait = false, gT = null;
   document.addEventListener('keydown', function(ev){
     if (ev.key === 'Escape'){ closeSheet(); return; }
-    if (ev.key === 'Enter' && ev.target && ev.target.id === 't_new'){ ev.preventDefault(); ACT['t-add'](); return; }
+    if (ev.key === 'Enter' && ev.target && ev.target.id === 't_title'){ ev.preventDefault(); var sb2 = $('#sheet [data-act="t-save"]'); if (sb2) sb2.click(); return; }
     if (!sess || $('#app').classList.contains('hidden')) return;
     if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'k'){ ev.preventDefault(); searchSheet(); return; }
     var tg = ev.target, typing = tg && /^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName);
@@ -1686,7 +1791,7 @@
     bootMsg('Загружаем данные'); bootProg(52);
     $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#app').classList.add('in');
     $('#view').innerHTML = '<div class="head"><div><div class="sk" style="width:220px;height:28px"></div><div class="sk" style="width:160px;margin-top:12px"></div></div></div><div class="tiles">' + '<div class="skc"><div class="sk" style="width:60%"></div><div class="sk" style="width:40%;height:30px"></div></div>'.repeat(4) + '</div>';
-    loadAll().then(function(){ S.loadedAt = Date.now(); render(); bootOut(); }).catch(function(){ bootOut(); $('#view').innerHTML = '<div class="card err-box"><p>Не удалось загрузить данные. Проверьте интернет.</p><button class="pill" data-act="retry">Попробовать снова</button></div>'; });
+    loadAll().then(function(){ S.loadedAt = Date.now(); render(true); bootOut(); }).catch(function(){ bootOut(); $('#view').innerHTML = '<div class="card err-box"><p>Не удалось загрузить данные. Проверьте интернет.</p><button class="pill" data-act="retry">Попробовать снова</button></div>'; });
   }
 
   var h = location.hash ? new URLSearchParams(location.hash.slice(1)) : null;
