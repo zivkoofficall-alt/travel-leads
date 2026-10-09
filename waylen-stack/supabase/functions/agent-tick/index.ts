@@ -50,6 +50,13 @@ function extractJson(text: string): any {
       const ch = c[end - 1]; if (ch !== "}" && ch !== "]") continue;
       try { return JSON.parse(c.slice(i, end)); } catch (_) { /* укорачиваем */ }
     }
+    // ответ мог оборваться по лимиту токенов: режем до последнего целого объекта и закрываем скобки
+    const body = c.slice(i);
+    for (let cut = body.lastIndexOf("}"); cut > 0; cut = body.lastIndexOf("}", cut - 1)) {
+      for (const tail of ["", "]}", "]}]}", "]}]}]}"]) {
+        try { return JSON.parse(body.slice(0, cut + 1) + tail); } catch (_) { /* дальше */ }
+      }
+    }
   }
   return null;
 }
@@ -311,7 +318,7 @@ async function followUps(c: Ctx) {
 /* ---------- Поиск партнёров ---------- */
 async function partnerSearch(c: Ctx) {
   const perDay = Number(c.s.search_runs_per_day || 0); if (!perDay) return;
-  const { data: today } = await c.db.from("agent_runs").select("created_at").eq("kind", "partner_search").eq("ok", true).gte("created_at", dayStart()).order("created_at", { ascending: false });
+  const { data: today } = await c.db.from("agent_runs").select("created_at").eq("kind", "partner_search").eq("ok", true).eq("is_demo", false).gte("created_at", dayStart()).order("created_at", { ascending: false });
   if ((today || []).length >= perDay) return;
   if (today && today.length && hoursAgo(today[0].created_at) < 24 / perDay - 0.4) return;
   const kinds: string[] = (c.s.focus_kinds || []).filter((k: string) => ["clinic", "carrier", "blogger", "community"].includes(k));
@@ -333,7 +340,7 @@ async function partnerSearch(c: Ctx) {
 Для каждого оцени rating 1–5, насколько партнёр подходит Waylen Travel (релевантность услуг, страна, активность, наличие контакта), и кратко объясни в fit_note.
 Верни только JSON-массив: [{"name":"","kind":"${kind}","country":"","website":"","email":"","contact_person":"","services":"","languages":"","countries":"","rating":3,"fit_note":"","source_url":""}]`;
   try {
-    const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), prompt, webSearch: 8, maxTokens: 3000 });
+    const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), prompt, webSearch: 8, maxTokens: 8000 });
     const arr: any[] = Array.isArray(r.json) ? r.json : (r.json?.partners || []);
     let added = 0; const names: string[] = [];
     for (const x of arr) {
@@ -363,7 +370,7 @@ async function market(c: Ctx) {
 3) ideas: 3 идеи, где искать партнёров или клиентов в ближайший месяц, с опорой на новости.
 Верни только JSON: {"news":[{"title":"","summary":"","url":"","source":"","country":""}],"countries":[{"country":"","index":100,"note":""}],"ideas":[{"title":"","summary":"","country":""}]}`;
   try {
-    const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), prompt, webSearch: 8, maxTokens: 3000 });
+    const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), prompt, webSearch: 8, maxTokens: 8000 });
     const j = r.json || {};
     const rows: any[] = [];
     for (const n of j.news || []) if (n?.title) rows.push({ kind: "news", title: String(n.title).slice(0, 200), summary: n.summary || null, url: /^https?:\/\//.test(n.url || "") ? n.url : null, source: n.source || null, country: n.country || null });
