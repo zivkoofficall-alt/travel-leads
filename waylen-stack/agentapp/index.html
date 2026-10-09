@@ -260,6 +260,15 @@
   .wk{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:8px;padding:9px 0;border-top:1px solid var(--line);font-size:14px;align-items:center;}
   .wk:first-of-type{border-top:none;}
   .wk.h{color:var(--faint);font-size:12px;font-weight:700;}
+  .avr{position:relative;width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .avr svg.rg{position:absolute;inset:0;width:100%;height:100%;fill:none;}
+  .avr .av{width:42px;height:42px;}
+  .avr .rn{position:absolute;right:-3px;bottom:-3px;min-width:19px;height:19px;border-radius:999px;background:var(--bg);border:1.5px solid var(--card);color:var(--text);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+  .avr.l5 .rn,.avr.l4 .rn{color:var(--lime);}
+  .avr.l1 .rn,.avr.l2 .rn{color:var(--faint);}
+  .rs{display:flex;gap:8px;}
+  .rs button{flex:1;padding:12px 0;border-radius:14px;background:var(--card-2);font-weight:800;font-size:15px;color:var(--muted);}
+  .rs button.on{background:var(--lime);color:var(--lime-ink);}
   .star{color:var(--lime);}
   .star svg{width:16px;height:16px;vertical-align:-3px;margin-right:5px;}
   .chip svg{width:16px;height:16px;}
@@ -481,6 +490,16 @@
     p = p || {};
     return String(t || '').replace(/\{\{\s*имя\s*\}\}/gi, p.contact_person || p.name || '').replace(/\{\{\s*компания\s*\}\}/gi, p.name || '').replace(/\{\{\s*страна\s*\}\}/gi, p.country || '');
   }
+  function ratingOf(p){ if (p.rating) return p.rating; if (p.fit_score != null) return Math.max(1, Math.min(5, Math.round(p.fit_score / 20))); return 0; }
+  var RLAB = ['Не оценён','Не подходит','Слабо','Средне','Хорошо','Отлично'];
+  function avRing(p){
+    var r = ratingOf(p), segs = '', R = 24, C = 2 * Math.PI * R, seg = C / 5, gap = 5;
+    for (var i = 0; i < 5; i++){
+      var on = i < r, col = on ? (r >= 4 ? '#C8F27B' : r === 3 ? '#8FD0A8' : '#8D9199') : 'rgba(255,255,255,.12)';
+      segs += '<circle cx="26" cy="26" r="' + R + '" stroke="' + col + '" stroke-width="3" stroke-linecap="round" stroke-dasharray="' + (seg - gap).toFixed(1) + ' ' + (C - seg + gap).toFixed(1) + '" transform="rotate(' + (-90 + i * 72 + gap * 360 / C / 2) + ' 26 26)"/>';
+    }
+    return '<div class="avr l' + r + '" title="' + esc(RLAB[r]) + '"><svg class="rg" viewBox="0 0 52 52" aria-hidden="true">' + segs + '</svg><div class="av">' + initial(p.name) + '</div><span class="rn" aria-label="Оценка ' + r + ' из 5">' + (r || '–') + '</span></div>';
+  }
   function partnerByMail(addr){ var a = String(addr || '').toLowerCase(), r = null; D.partners.forEach(function(p){ if (p.email && p.email.toLowerCase() === a) r = p; }); return r; }
   function confirmSheet(title, text, act, label){
     openSheet(title, '<p class="lead">' + text + '</p><div class="acts"><button class="pill danger" data-act="' + act + '">' + (label || 'Да') + '</button><button class="pill ghost" data-act="close">Отмена</button></div>');
@@ -660,7 +679,7 @@
   }
   function fuRow(x){
     var p = x.p;
-    return '<div class="it"><div class="av">' + initial(p.name) + '</div><button class="mid" style="text-align:left" data-act="p-open" data-id="' + esc(p.id) + '"><div class="l1"><span>' + esc(p.name) + '</span></div><div class="l3' + (x.next ? '' : '') + '">' + esc(x.why) + '</div></button>' +
+    return '<div class="it">' + avRing(p) + '<button class="mid" style="text-align:left" data-act="p-open" data-id="' + esc(p.id) + '"><div class="l1"><span>' + esc(p.name) + '</span></div><div class="l3' + (x.next ? '' : '') + '">' + esc(x.why) + '</div></button>' +
       (p.email ? '<button class="pill ghost" style="padding:9px 14px;font-size:13px" data-act="fu-draft" data-id="' + esc(p.id) + '">Написать</button>' : '') + '</div>';
   }
   function tasksBlock(){
@@ -817,7 +836,7 @@
     });
     if (S.psort === 'name') L.sort(function(a, b){ return String(a.name).localeCompare(String(b.name), 'ru'); });
     else if (S.psort === 'prio') L.sort(function(a, b){ return (pr[a.priority || 'normal']) - (pr[b.priority || 'normal']) || (b.starred ? 1 : 0) - (a.starred ? 1 : 0); });
-    else if (S.psort === 'fit') L.sort(function(a, b){ return (b.fit_score == null ? -1 : b.fit_score) - (a.fit_score == null ? -1 : a.fit_score); });
+    else if (S.psort === 'fit') L.sort(function(a, b){ return ratingOf(b) - ratingOf(a) || (b.fit_score || 0) - (a.fit_score || 0); });
     else if (S.psort === 'next') L.sort(function(a, b){ return (a.next_action_at ? new Date(a.next_action_at).getTime() : 9e15) - (b.next_action_at ? new Date(b.next_action_at).getTime() : 9e15); });
     return L;
   }
@@ -829,7 +848,7 @@
     }).join('') + '</div>';
     h += '<div class="row2" style="margin-bottom:14px"><div class="search" style="margin:0">' + ic('search') + '<input id="pq" type="search" placeholder="Поиск" value="' + esc(S.pq) + '" autocomplete="off"></div>' +
       '<select id="pkind"><option value="all">Все типы</option>' + Object.keys(KIND).map(function(k){ return '<option value="' + k + '"' + (S.pkind === k ? ' selected' : '') + '>' + KIND[k] + '</option>'; }).join('') + '</select></div>';
-    h += '<div class="row2" style="margin-bottom:14px"><select id="psort">' + [['new','Сначала новые'],['name','По названию'],['prio','По важности'],['next','По дате действия'],['fit','По подходящести']].map(function(o){ return '<option value="' + o[0] + '"' + (S.psort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' +
+    h += '<div class="row2" style="margin-bottom:14px"><select id="psort">' + [['new','Сначала новые'],['name','По названию'],['prio','По важности'],['next','По дате действия'],['fit','По оценке']].map(function(o){ return '<option value="' + o[0] + '"' + (S.psort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' +
       '<div class="chips" style="margin:0"><button class="chip' + (S.pstar ? ' on' : '') + '" data-act="pstar">' + starI(S.pstar) + 'Избранные <span class="n">' + D.partners.filter(function(p){ return p.starred; }).length + '</span></button></div></div>';
     var L = pFiltered();
     if (!L.length) return h + '<div class="card empty">Никого не найдено.</div>';
@@ -837,7 +856,7 @@
     return h + '<div class="list">' + L.map(function(p){
       var over = p.next_action_at && new Date(p.next_action_at) < today0;
       var na = (p.next_action || p.next_action_at) ? '<div class="l3' + (over ? ' bad' : '') + '">→ ' + esc(p.next_action || 'Действие') + (p.next_action_at ? ' · ' + esc(dshort(p.next_action_at)) : '') + '</div>' : '';
-      return '<button class="it" data-act="p-open" data-id="' + esc(p.id) + '"><div class="av">' + initial(p.name) + '</div><div class="mid"><div class="l1"><span>' + (p.starred ? '<span class="star">' + starI(true) + '</span>' : '') + esc(p.name) + demoTag(p) + (p.priority === 'high' ? ' <span class="tag">важно</span>' : '') + (p.fit_score != null ? ' <span class="tag">подходит ' + p.fit_score + '</span>' : '') + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + (p.email ? ' · ' + esc(p.email) : '') + '</div>' + na + '</div></button>';
+      return '<button class="it" data-act="p-open" data-id="' + esc(p.id) + '">' + avRing(p) + '<div class="mid"><div class="l1"><span>' + (p.starred ? '<span class="star">' + starI(true) + '</span>' : '') + esc(p.name) + demoTag(p) + (p.priority === 'high' ? ' <span class="tag">важно</span>' : '') + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + (p.email ? ' · ' + esc(p.email) : '') + '</div>' + na + '</div></button>';
     }).join('') + '</div>';
   }
   function partnerSheet(id){
@@ -847,6 +866,7 @@
       '<div class="set"><div class="fld"><label>Название</label><input id="p_name" value="' + esc(p.name || '') + '"></div>' +
       '<div class="row2"><div class="fld"><label>Тип</label><select id="p_kind">' + Object.keys(KIND).map(function(k){ return '<option value="' + k + '"' + (p.kind === k ? ' selected' : '') + '>' + KIND[k] + '</option>'; }).join('') + '</select></div>' +
       '<div class="fld"><label>Статус</label><select id="p_st">' + Object.keys(PST).map(function(k){ return '<option value="' + k + '"' + (p.status === k ? ' selected' : '') + '>' + PST[k] + '</option>'; }).join('') + '</select></div></div>' +
+      '<div class="fld"><label>Оценка: ' + esc(RLAB[ratingOf(p)]) + '</label><div class="rs" id="p_rate" data-v="' + ratingOf(p) + '">' + [1,2,3,4,5].map(function(n){ return '<button type="button" class="' + (ratingOf(p) === n ? 'on' : '') + '" data-act="p-rate" data-id="' + n + '">' + n + '</button>'; }).join('') + '</div><p class="sub">Насколько партнёр релевантен нам: 1 — не подходит, 5 — отлично.</p></div>' +
       '<div class="row2"><div class="fld"><label>Важность</label><select id="p_prio">' + Object.keys(PRIO).map(function(k){ return '<option value="' + k + '"' + ((p.priority || 'normal') === k ? ' selected' : '') + '>' + PRIO[k] + '</option>'; }).join('') + '</select></div>' +
       '<div class="fld"><label>Избранный</label><button type="button" id="p_star" class="chip' + (p.starred ? ' on' : '') + '" data-on="' + (p.starred ? '1' : '0') + '" data-act="p-startog" style="justify-content:center;padding:14px 16px">' + starI(p.starred) + (p.starred ? 'Да' : 'Нет') + '</button></div></div>' +
       '<div class="row2"><div class="fld"><label>Страна</label><input id="p_country" value="' + esc(p.country || '') + '"></div><div class="fld"><label>Контакт</label><input id="p_person" value="' + esc(p.contact_person || '') + '"></div></div>' +
@@ -884,7 +904,7 @@
     return out;
   }
   function exportPartners(){
-    exportCsv('partners-' + stamp() + '.csv', [['Название','Тип','Статус','Важность','Избранный','Страна','Контакт','Почта','Сайт','Следующее действие','Когда','Заметки']].concat(pFiltered().map(function(p){ return [p.name, KIND[p.kind] || '', PST[p.status] || '', PRIO[p.priority || 'normal'], p.starred ? 'да' : '', p.country, p.contact_person, p.email, p.website, p.next_action, p.next_action_at ? dkey(p.next_action_at) : '', p.notes]; })));
+    exportCsv('partners-' + stamp() + '.csv', [['Название','Тип','Статус','Важность','Избранный','Оценка','Страна','Контакт','Почта','Сайт','Следующее действие','Когда','Заметки']].concat(pFiltered().map(function(p){ return [p.name, KIND[p.kind] || '', PST[p.status] || '', PRIO[p.priority || 'normal'], p.starred ? 'да' : '', ratingOf(p) || '', p.country, p.contact_person, p.email, p.website, p.next_action, p.next_action_at ? dkey(p.next_action_at) : '', p.notes]; })));
   }
   function exportEmails(){
     exportCsv('emails-' + stamp() + '.csv', [['Дата','Папка','Направление','От','Кому','Тема','Партнёр','Текст']].concat(D.emails.map(function(e){ var p = pById(e.partner_id); return [fullDate(tm(e)), FOLD[e.folder] || e.folder, e.direction === 'in' ? 'входящее' : 'исходящее', e.from_addr, e.to_addr, e.subject, p ? p.name : '', e.body]; })));
@@ -1201,10 +1221,11 @@
     pstar: function(){ S.pstar = !S.pstar; render(); },
     'p-open': function(d){ partnerSheet(d.id); },
     'p-new': function(){ partnerSheet(''); },
+    'p-rate': function(d, el){ var box = el.parentNode; var cur = box.dataset.v === d.id; box.dataset.v = cur ? '0' : d.id; Array.prototype.forEach.call(box.children, function(b){ b.classList.toggle('on', !cur && b.dataset.id === d.id); }); },
     'p-startog': function(d, el){ var on = el.dataset.on !== '1'; el.dataset.on = on ? '1' : '0'; el.classList.toggle('on', on); el.innerHTML = starI(on) + (on ? 'Да' : 'Нет'); },
     'p-save': function(d){
       var se = $('#p_star'), nad = val('p_nad');
-      var row = {name:val('p_name'), kind:val('p_kind'), status:val('p_st'), priority:val('p_prio') || 'normal', starred: !!(se && se.dataset.on === '1'), country:val('p_country') || null, contact_person:val('p_person') || null, email:val('p_email') || null, website:val('p_site') || null, next_action:val('p_na') || null, next_action_at: nad ? new Date(nad + 'T09:00:00').toISOString() : null, notes:val('p_notes') || null, services:val('p_serv') || null};
+      var row = {name:val('p_name'), kind:val('p_kind'), status:val('p_st'), priority:val('p_prio') || 'normal', starred: !!(se && se.dataset.on === '1'), country:val('p_country') || null, contact_person:val('p_person') || null, email:val('p_email') || null, website:val('p_site') || null, next_action:val('p_na') || null, next_action_at: nad ? new Date(nad + 'T09:00:00').toISOString() : null, notes:val('p_notes') || null, services:val('p_serv') || null, rating: parseInt(($('#p_rate') || {dataset:{}}).dataset.v, 10) || null};
       if (!row.name){ toast('Укажите название'); return; }
       if (row.email && !validMail(row.email)){ toast('Проверьте почту'); return; }
       if (!d.force){
