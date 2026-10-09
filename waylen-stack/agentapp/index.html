@@ -372,6 +372,7 @@
     try{
       var px = window.TelegramWebviewProxy;
       if (px && px.postEvent) px.postEvent(t, JSON.stringify(d || {}));
+      else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.performAction) window.webkit.messageHandlers.performAction.postMessage({eventName:t, eventData:JSON.stringify(d || {})});
       else if (window.external && 'notify' in window.external) window.external.notify(JSON.stringify({eventType:t, eventData:d || {}}));
       else if (window.parent !== window) window.parent.postMessage(JSON.stringify({eventType:t, eventData:d || {}}), '*');
     }catch(e){}
@@ -401,6 +402,10 @@
   window.Telegram = window.Telegram || {};
   window.Telegram.WebView = {receiveEvent: onEvent};
   window.addEventListener('message', function(e){ try{ var m = JSON.parse(e.data); if (m && m.eventType) onEvent(m.eventType, m.eventData); }catch(_){} });
+  /* запасной вариант против смахивания: страница всегда прокручена хотя бы на 1px */
+  function keep1(){ if (window.scrollY < 1 && document.documentElement.scrollHeight > window.innerHeight + 2) window.scrollTo(0, 1); }
+  window.addEventListener('scroll', keep1, {passive:true}); window.addEventListener('load', function(){ setTimeout(keep1, 400); });
+  root.style.overscrollBehaviorY = 'none';
   post('web_app_ready');
   post('web_app_expand');
   post('web_app_setup_swipe_behavior', {allow_vertical_swipe:false});
@@ -410,7 +415,12 @@
   function goFs(){ post('web_app_request_fullscreen'); post('web_app_request_safe_area'); post('web_app_request_content_safe_area'); }
   goFs();
   window.addEventListener('load', function(){ setTimeout(goFs, 300); setTimeout(function(){ if (!fsOn) goFs(); }, 1500); });
-  setTimeout(function(){ fsNote('Диагностика: proxy=' + (window.TelegramWebviewProxy ? 'да' : 'нет') + ', iframe=' + (window.parent !== window ? 'да' : 'нет') + ', hash=' + location.hash.length + ', fs=' + (fsOn ? 'да' : 'нет') + (fsErr ? ', ошибка ' + fsErr : '')); }, 3500);
+  function probe(){
+    var k = []; try{ k = Object.getOwnPropertyNames(window).filter(function(x){ return /telegram|tgweb|webview|proxy/i.test(x); }); }catch(e){}
+    var mh = []; try{ mh = Object.keys(window.webkit.messageHandlers); }catch(e){}
+    return 'win=[' + k.join(',') + '] wk=' + (window.webkit ? 'да' : 'нет') + ' mh=[' + mh.join(',') + ']';
+  }
+  setTimeout(function(){ fsNote('Диагностика: proxy=' + (window.TelegramWebviewProxy ? 'да' : 'нет') + ', iframe=' + (window.parent !== window ? 'да' : 'нет') + ', hash=' + location.hash.length + ', fs=' + (fsOn ? 'да' : 'нет') + (fsErr ? ', ошибка ' + fsErr : '') + ' ' + probe()); }, 3500);
 })();
 </script>
 </head>
