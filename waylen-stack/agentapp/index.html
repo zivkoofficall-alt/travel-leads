@@ -112,20 +112,18 @@
 
       <form id="stepEmail" novalidate>
         <h2>Вход</h2>
-        <p class="lead">Введите почту, мы отправим на неё код.</p>
+        <p class="lead">Введите почту, мы отправим на неё ссылку для входа.</p>
         <label for="email">Почта</label>
         <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="name@example.com" required>
-        <button class="btn" type="submit" id="sendBtn"><span>Получить код</span><span class="go"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15 15 5M7 5h8v8"/></svg></span></button>
+        <button class="btn" type="submit" id="sendBtn"><span>Получить ссылку</span><span class="go"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15 15 5M7 5h8v8"/></svg></span></button>
       </form>
 
-      <form id="stepCode" class="hidden" novalidate>
-        <h2>Код из письма</h2>
-        <p class="lead" id="codeLead">Мы отправили код на вашу почту.</p>
-        <label for="code">Код</label>
-        <input id="code" class="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="••••••" required>
-        <button class="btn" type="submit" id="verifyBtn"><span>Войти</span><span class="go"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15 15 5M7 5h8v8"/></svg></span></button>
+      <div id="stepCode" class="hidden">
+        <h2>Проверьте почту</h2>
+        <p class="lead" id="codeLead">Мы отправили письмо со ссылкой.</p>
+        <p class="lead">Откройте письмо на этом же устройстве и нажмите «Sign in». Если письма нет, загляните в «Спам».</p>
         <button class="link" type="button" id="backBtn">Изменить почту</button>
-      </form>
+      </div>
 
       <div id="stepDone" class="done hidden">
         <h2>Вы вошли</h2>
@@ -147,7 +145,7 @@
 
   var $ = function(id){ return document.getElementById(id); };
   var stepEmail = $('stepEmail'), stepCode = $('stepCode'), stepDone = $('stepDone');
-  var msg = $('msg'), emailEl = $('email'), codeEl = $('code');
+  var msg = $('msg'), emailEl = $('email');
   var currentEmail = '';
 
   function show(step){
@@ -173,28 +171,15 @@
     var email = emailEl.value.trim().toLowerCase();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ setMsg('Проверьте адрес почты.', true); return; }
     var btn = $('sendBtn'); busy(btn, true); setMsg('Отправляем код…');
-    api('/auth/v1/otp', { email: email, create_user: true }).then(function(r){
+    api('/auth/v1/otp?redirect_to=' + encodeURIComponent(location.origin + '/agentapp'), { email: email, create_user: true }).then(function(r){
       busy(btn, false);
       if (!r.ok){
         setMsg(r.status === 429 ? 'Слишком часто. Подождите минуту и повторите.' : 'Не получилось отправить код. Попробуйте позже.', true);
         return;
       }
       currentEmail = email;
-      $('codeLead').textContent = 'Мы отправили код на ' + email + '.';
-      show(stepCode); codeEl.value = ''; codeEl.focus();
-    }).catch(function(){ busy(btn, false); setMsg('Нет связи. Проверьте интернет.', true); });
-  });
-
-  stepCode.addEventListener('submit', function(e){
-    e.preventDefault();
-    var token = codeEl.value.replace(/\s/g, '');
-    if (token.length < 6){ setMsg('Введите код из письма.', true); return; }
-    var btn = $('verifyBtn'); busy(btn, true); setMsg('Проверяем…');
-    api('/auth/v1/verify', { type:'email', email: currentEmail, token: token }).then(function(r){
-      busy(btn, false);
-      if (!r.ok || !r.data.access_token){ setMsg('Код неверный или устарел. Запросите новый.', true); return; }
-      saveSession({ access_token:r.data.access_token, refresh_token:r.data.refresh_token, email:currentEmail });
-      enter(currentEmail);
+      $('codeLead').textContent = 'Мы отправили письмо на ' + email + '.';
+      show(stepCode);
     }).catch(function(){ busy(btn, false); setMsg('Нет связи. Проверьте интернет.', true); });
   });
 
@@ -208,6 +193,22 @@
 
   function enter(email){ $('whoAmI').textContent = email; show(stepDone); }
 
+  var h = location.hash ? new URLSearchParams(location.hash.slice(1)) : null;
+  if (h && h.get('access_token')){
+    var at = h.get('access_token'), rt = h.get('refresh_token');
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+    api('/auth/v1/user', null, at).then(function(r){
+      if (r.ok && r.data.email){
+        saveSession({ access_token:at, refresh_token:rt, email:r.data.email });
+        enter(r.data.email);
+      } else { setMsg('Ссылка не сработала. Запросите новую.', true); }
+    }).catch(function(){ setMsg('Нет связи. Проверьте интернет.', true); });
+    return;
+  }
+  if (h && h.get('error')){
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+    setMsg('Ссылка устарела или уже использована. Запросите новую.', true);
+  }
   var s = loadSession();
   if (s && s.access_token){
     api('/auth/v1/user', null, s.access_token).then(function(r){
