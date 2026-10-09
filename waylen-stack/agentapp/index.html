@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0D0E10">
 <meta name="robots" content="noindex, nofollow">
 <title>Панель агента — Waylen Travel</title>
 <link rel="icon" href="/favicon.png">
@@ -11,41 +13,40 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Onest:wght@600;700;800&display=swap">
 <style>
   :root{
-    --ink:#0B1220;
-    --ink-2:#2A3446;
-    --muted:rgba(11,18,32,0.62);
-    --blue:#3B80C3;
-    --blue-strong:#2B6CB0;
-    --blue-deep:#17446F;
-    --blue-soft:#E4EEF8;
+    --bg:#0D0E10;
+    --card:#17191D;
+    --card-2:#1F2227;
+    --line:rgba(255,255,255,.08);
+    --text:#F3F5F7;
+    --muted:rgba(243,245,247,.58);
     --lime:#C8F27B;
-    --bg:#F4F8FC;
-    --line:rgba(11,18,32,0.09);
-    --danger:#B3261E;
+    --lime-ink:#101406;
+    --blue:#3B80C3;
+    --danger:#FF8A80;
     --ease:cubic-bezier(.22,1,.36,1);
     --font-head:'Onest','Manrope',system-ui,sans-serif;
     --font-body:'Manrope','Onest',system-ui,sans-serif;
   }
   *,*::before,*::after{box-sizing:border-box;}
-  html,body{margin:0;padding:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
+  html,body{margin:0;padding:0;min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
   button,input{font-family:inherit;}
   button{cursor:pointer;border:none;background:none;color:inherit;}
-  :focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:8px;}
+  :focus-visible{outline:2px solid var(--lime);outline-offset:3px;border-radius:8px;}
 
   .shell{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:1.05fr 1fr;gap:20px;padding:20px;}
   .brand{
-    position:relative;overflow:hidden;background:var(--blue-strong);color:#fff;border-radius:32px;
+    position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:32px;
     padding:36px 40px 40px;display:flex;flex-direction:column;justify-content:space-between;min-height:320px;
   }
-  .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:800;font-size:17px;letter-spacing:.01em;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:800;font-size:17px;letter-spacing:.01em;position:relative;z-index:1;}
   .logo-mark{width:34px;height:34px;position:relative;flex-shrink:0;}
   .logo-mark::after{
-    content:"";position:absolute;inset:0;background:#fff;
+    content:"";position:absolute;inset:0;background:var(--lime);
     -webkit-mask:url('/agentapp/logo.png') center/100% no-repeat;mask:url('/agentapp/logo.png') center/100% no-repeat;
   }
   .brand h1{font-family:var(--font-head);font-weight:800;font-size:clamp(34px,4.4vw,56px);line-height:1.04;letter-spacing:-.02em;margin:0 0 14px;max-width:11ch;}
-  .brand p{margin:0;font-size:15px;line-height:1.55;color:rgba(255,255,255,.82);max-width:34ch;}
-  .circle-a{position:absolute;right:-70px;top:-70px;width:240px;height:240px;border-radius:50%;background:var(--blue);opacity:.55;}
+  .brand p{margin:0;font-size:15px;line-height:1.55;color:var(--muted);max-width:34ch;}
+  .circle-a{position:absolute;right:-70px;top:-70px;width:240px;height:240px;border-radius:50%;background:var(--blue);}
   .circle-b{position:absolute;right:56px;bottom:46px;width:92px;height:92px;border-radius:50%;background:var(--lime);}
   .brand-copy{position:relative;z-index:1;}
 
@@ -53,36 +54,34 @@
   .card{width:100%;max-width:400px;}
   .card h2{font-family:var(--font-head);font-weight:800;font-size:28px;letter-spacing:-.01em;margin:0 0 8px;}
   .card .lead{margin:0 0 26px;color:var(--muted);font-size:15px;line-height:1.5;}
-  label{display:block;font-size:13px;font-weight:700;margin:0 0 8px;color:var(--ink-2);}
+  label{display:block;font-size:13px;font-weight:700;margin:0 0 8px;color:var(--muted);}
   input{
-    width:100%;font-size:16px;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid rgba(11,18,32,.14);
-    border-radius:16px;padding:15px 18px;outline:none;transition:border-color .2s var(--ease),box-shadow .2s var(--ease);
+    width:100%;font-size:16px;font-weight:600;color:var(--text);background:var(--card);border:1.5px solid var(--line);
+    border-radius:18px;padding:16px 18px;outline:none;transition:border-color .2s var(--ease);
   }
-  input::placeholder{color:rgba(11,18,32,.35);font-weight:500;}
-  input:focus{border-color:var(--blue-strong);box-shadow:0 0 0 4px rgba(59,128,195,.14);}
+  input::placeholder{color:rgba(243,245,247,.3);font-weight:500;}
+  input:focus{border-color:var(--lime);}
   input.code{letter-spacing:.5em;text-align:center;font-size:24px;font-weight:700;padding-left:calc(18px + .5em);}
   .btn{
     margin-top:16px;width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
-    background:var(--blue-strong);color:#fff;font-size:15px;font-weight:700;padding:8px 8px 8px 24px;border-radius:999px;
-    transition:background .2s var(--ease),transform .2s var(--ease),opacity .2s;
+    background:var(--lime);color:var(--lime-ink);font-size:15px;font-weight:800;padding:8px 8px 8px 24px;border-radius:999px;
+    transition:transform .2s var(--ease),opacity .2s;
   }
-  .btn:hover{background:var(--blue-deep);}
   .btn:active{transform:scale(.985);}
-  .btn[disabled]{opacity:.6;cursor:default;}
-  .btn .go{width:44px;height:44px;border-radius:50%;background:var(--lime);color:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .btn[disabled]{opacity:.55;cursor:default;}
+  .btn .go{width:44px;height:44px;border-radius:50%;background:var(--bg);color:var(--lime);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .btn .go svg{width:18px;height:18px;}
-  .link{margin-top:18px;font-size:14px;font-weight:700;color:var(--blue-strong);padding:4px 0;}
-  .link:hover{color:var(--blue-deep);}
+  .link{margin-top:18px;font-size:14px;font-weight:700;color:var(--lime);padding:4px 0;}
   .msg{min-height:20px;margin:14px 0 0;font-size:14px;line-height:1.45;color:var(--muted);}
   .msg.err{color:var(--danger);font-weight:600;}
   .hidden{display:none !important;}
 
-  .done .who{margin:0 0 22px;padding:14px 18px;border-radius:16px;background:var(--blue-soft);font-weight:700;font-size:15px;word-break:break-all;}
+  .done .who{margin:0 0 22px;padding:14px 18px;border-radius:18px;background:var(--card);border:1px solid var(--line);font-weight:700;font-size:15px;word-break:break-all;}
   .btn-ghost{
-    display:inline-flex;align-items:center;font-size:14px;font-weight:700;border:1.5px solid rgba(11,18,32,.16);
-    padding:11px 22px;border-radius:999px;transition:background .2s var(--ease),border-color .2s var(--ease);
+    display:inline-flex;align-items:center;font-size:14px;font-weight:700;border:1.5px solid var(--line);
+    padding:11px 22px;border-radius:999px;transition:border-color .2s var(--ease);
   }
-  .btn-ghost:hover{background:#fff;border-color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--lime);}
 
   @media (max-width:860px){
     .shell{grid-template-columns:1fr;gap:14px;padding:14px;}
