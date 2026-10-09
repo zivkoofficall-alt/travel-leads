@@ -1128,9 +1128,10 @@
     h += D.accounts.length ? '<div class="list">' + D.accounts.map(function(a){ return '<button class="it" data-act="acc-open" data-id="' + esc(a.id) + '"><div class="av">' + initial(a.label) + '</div><div class="mid"><div class="l1"><span>' + esc(a.label) + demoTag(a) + '</span><span class="st ' + (a.status === 'connected' ? 'agreed' : 'paused') + '">' + (a.status === 'connected' ? 'подключён' : a.status === 'error' ? 'ошибка' : 'не подключён') + '</span></div><div class="l3">' + esc(a.address) + '</div></div></button>'; }).join('') + '</div>' : '<div class="card empty">Ящиков нет.</div>';
 
     var meta = {}; D.secrets.forEach(function(m){ meta[m.name] = m; });
-    h += '<h3 class="sec">Ключи</h3><div class="card">' + [['anthropic_api_key','Ключ Claude API'],['telegram_bot_token','Токен Telegram-бота'],['telegram_chat_id','Telegram: ваш chat id']].map(function(k){
-      return '<div class="kv"><div>' + k[1] + '<small>' + (meta[k[0]] ? 'задан · …' + esc(meta[k[0]].last4) : 'не задан') + '</small></div></div>';
-    }).join('') + '<p class="sub" style="margin-top:12px">Ввод ключей в панели появится на следующем шаге.</p></div>';
+    h += '<h3 class="sec">Ключи</h3><div class="card"><p class="sub" style="margin:0 0 6px">Ключ записывается в защищённое хранилище и больше нигде не показывается: прочитать его обратно нельзя, только заменить. Видны лишь последние 4 символа.</p>' + [['anthropic_api_key','Ключ Claude API','sk-ant-…'],['telegram_bot_token','Токен Telegram-бота','123456:ABC…'],['telegram_chat_id','Telegram: ваш chat id','число']].map(function(k){
+      return '<div class="kv" style="flex-wrap:wrap"><div style="flex:1;min-width:200px">' + k[1] + '<small>' + (meta[k[0]] ? 'задан · …' + esc(meta[k[0]].last4) : 'не задан') + '</small></div></div>' +
+        '<div style="display:flex;gap:10px;margin-bottom:6px"><input id="key-' + k[0] + '" type="password" autocomplete="off" spellcheck="false" placeholder="' + k[2] + '" style="padding:11px 14px"><button class="pill" data-act="key-save" data-id="' + k[0] + '">' + (meta[k[0]] ? 'Заменить' : 'Сохранить') + '</button></div>';
+    }).join('') + '</div>';
 
     h += '<h3 class="sec">Выгрузки и копия</h3><div class="card"><p class="sub" style="margin:0 0 12px">Файлы скачиваются на ваше устройство.</p><div class="acts" style="margin:0"><button class="pill ghost" data-act="exp-partners">Партнёры CSV</button><button class="pill ghost" data-act="exp-emails">Письма CSV</button><button class="pill ghost" data-act="exp-runs">История и расходы CSV</button><button class="pill ghost" data-act="backup">Полная копия JSON</button></div></div>';
 
@@ -1221,6 +1222,15 @@
     pstar: function(){ S.pstar = !S.pstar; render(); },
     'p-open': function(d){ partnerSheet(d.id); },
     'p-new': function(){ partnerSheet(''); },
+    'key-save': function(d){
+      var el = document.getElementById('key-' + d.id), v = el ? el.value.trim() : '';
+      if (v.length < 4){ toast('Вставьте ключ'); return; }
+      var now = new Date().toISOString(), l4 = v.slice(-4);
+      function up(table, row, keyCol){
+        return rest('POST', table, row).catch(function(){ var patch = {}; Object.keys(row).forEach(function(c){ if (c !== keyCol) patch[c] = row[c]; }); return rest('PATCH', table + '?' + keyCol + '=eq.' + d.id, patch); });
+      }
+      up('agent_secrets', {name:d.id, value:v, updated_at:now}, 'name').then(function(){ return up('agent_secrets_meta', {name:d.id, last4:l4, updated_at:now}, 'name'); }).then(function(){ el.value = ''; toast('Ключ сохранён'); return reload(); }).catch(function(){ toast('Не получилось сохранить ключ'); });
+    },
     'p-rate': function(d, el){ var box = el.parentNode; var cur = box.dataset.v === d.id; box.dataset.v = cur ? '0' : d.id; Array.prototype.forEach.call(box.children, function(b){ b.classList.toggle('on', !cur && b.dataset.id === d.id); }); },
     'p-startog': function(d, el){ var on = el.dataset.on !== '1'; el.dataset.on = on ? '1' : '0'; el.classList.toggle('on', on); el.innerHTML = starI(on) + (on ? 'Да' : 'Нет'); },
     'p-save': function(d){
