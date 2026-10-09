@@ -176,7 +176,7 @@
 
   /* sheet */
   #sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;}
-  #sheet .sp{width:100%;max-width:640px;max-height:92vh;max-height:92dvh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));}
+  #sheet .sp{width:100%;max-width:640px;max-height:92vh;max-height:92dvh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom) + var(--tg-bottom,0px));}
   #sheet .sh{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;}
   #sheet .sh h2{font-family:var(--font-head);font-weight:800;font-size:22px;margin:0;}
   .x{width:40px;height:40px;border-radius:50%;background:var(--card-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -184,7 +184,7 @@
   .mh{font-size:14px;color:var(--muted);line-height:1.6;}
   .mh b{color:var(--text);}
   #toast.bad{background:var(--danger);color:#1a0b0a;}
-  #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--text);color:var(--bg);font-weight:700;font-size:14px;padding:12px 20px;border-radius:999px;z-index:80;max-width:90vw;text-align:center;}
+  #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom) + var(--tg-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);font-weight:700;font-size:14px;padding:12px 20px;border-radius:999px;z-index:80;max-width:90vw;text-align:center;}
 
   @media (max-width:980px){
     .tiles{grid-template-columns:repeat(2,1fr);}
@@ -205,14 +205,14 @@
     #app{display:block;}
     .side{display:none;}
     main#view{padding:16px 16px 130px;}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) 16px 0;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top) + var(--tg-top,0px)) 16px 0;}
     .topbar .logo{font-size:15px;}
     .topbar .logo-mark{width:28px;height:28px;}
     .topbar .x{background:var(--card);}
     h1.pt{font-size:26px;}
     .head{flex-direction:column;gap:12px;}
     .two,.row2{grid-template-columns:1fr;}
-    .tabbar{display:flex;position:fixed;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));bottom:calc(12px + env(safe-area-inset-bottom));z-index:40;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:8px;justify-content:space-between;align-items:center;}
+    .tabbar{display:flex;position:fixed;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));bottom:calc(12px + env(safe-area-inset-bottom) + var(--tg-bottom,0px));z-index:40;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:8px;justify-content:space-between;align-items:center;}
     .tabbar .tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--muted);padding:6px 0;border-radius:999px;position:relative;}
     .tabbar .tb.on{color:var(--lime);}
     .tabbar .tb .cnt{position:absolute;top:0;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:999px;background:var(--lime);color:var(--lime-ink);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;}
@@ -339,6 +339,43 @@
   .err-box p{color:var(--muted);margin:0 0 16px;}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
 </style>
+<script>
+/* Telegram Mini App: полный экран, без закрытия свайпом (без внешнего SDK, по протоколу Telegram) */
+(function(){
+  if (!/tgWebApp(Data|Platform)=/.test(location.hash)) return;
+  var root = document.documentElement, proxy = window.TelegramWebviewProxy;
+  function post(t, d){
+    try{
+      if (proxy && proxy.postEvent) proxy.postEvent(t, JSON.stringify(d || {}));
+      else if (window.parent !== window) window.parent.postMessage(JSON.stringify({eventType:t, eventData:d || {}}), 'https://web.telegram.org');
+    }catch(e){}
+  }
+  var sa = {top:0, bottom:0}, ca = {top:0, bottom:0};
+  function apply(){
+    root.style.setProperty('--tg-top', (sa.top + ca.top) + 'px');
+    root.style.setProperty('--tg-bottom', (sa.bottom + ca.bottom) + 'px');
+  }
+  function onEvent(t, d){
+    if (typeof d === 'string'){ try{ d = JSON.parse(d); }catch(e){ d = {}; } }
+    d = d || {};
+    if (t === 'safe_area_changed'){ sa.top = +d.top || 0; sa.bottom = +d.bottom || 0; apply(); }
+    else if (t === 'content_safe_area_changed'){ ca.top = +d.top || 0; ca.bottom = +d.bottom || 0; apply(); }
+    else if (t === 'viewport_changed' && !(d.is_state_stable === false)){ /* высота берётся из dvh */ }
+  }
+  window.Telegram = window.Telegram || {};
+  window.Telegram.WebView = {receiveEvent: onEvent};
+  window.addEventListener('message', function(e){ try{ var m = JSON.parse(e.data); if (m && m.eventType) onEvent(m.eventType, m.eventData); }catch(_){} });
+  post('web_app_ready');
+  post('web_app_expand');
+  post('web_app_setup_swipe_behavior', {allow_vertical_swipe:false});
+  post('web_app_setup_closing_behavior', {need_confirmation:true});
+  post('web_app_set_background_color', {color:'#0D0E10'});
+  post('web_app_set_header_color', {color:'#0D0E10'});
+  post('web_app_request_fullscreen');
+  post('web_app_request_safe_area');
+  post('web_app_request_content_safe_area');
+})();
+</script>
 </head>
 <body>
 
