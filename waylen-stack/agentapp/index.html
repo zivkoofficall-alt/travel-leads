@@ -341,7 +341,24 @@
   .phead .pm b{color:var(--text);display:block;font-size:15px;}
   .alerts .more{align-self:flex-start;font-size:13px;font-weight:700;color:var(--muted);padding:4px 16px;}
   .err-box p{color:var(--muted);margin:0 0 16px;}
-  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+  /* boot screen */
+  #boot{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow:hidden;transition:opacity .45s ease,visibility .45s;padding-top:var(--tg-top,0px);}
+  #boot.out{opacity:0;visibility:hidden;pointer-events:none;}
+  #boot .bc{position:absolute;border-radius:50%;pointer-events:none;}
+  #boot .bc.a{width:300px;height:300px;right:-110px;top:-110px;background:#3B80C3;opacity:.16;animation:bfloat 9s ease-in-out infinite;}
+  #boot .bc.b{width:120px;height:120px;left:-40px;bottom:12%;background:var(--lime);opacity:.1;animation:bfloat 11s ease-in-out infinite reverse;}
+  #boot .lf{width:104px;height:104px;position:relative;margin-bottom:10px;--p:10%;}
+  #boot .lf i{position:absolute;inset:0;-webkit-mask:url('/agentapp/logo.png') center/contain no-repeat;mask:url('/agentapp/logo.png') center/contain no-repeat;}
+  #boot .lf .off{background:rgba(255,255,255,.1);}
+  #boot .lf .on{background:linear-gradient(180deg,#D9F89A 0%,#C8F27B 55%,#A8DB5C 100%);clip-path:inset(calc(100% - var(--p)) 0 0 0);transition:clip-path .7s cubic-bezier(.3,.7,.2,1);}
+  #boot .lf .sh{background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);background-size:250% 100%;mix-blend-mode:soft-light;animation:bshine 2.2s ease-in-out infinite;clip-path:inset(calc(100% - var(--p)) 0 0 0);transition:clip-path .7s cubic-bezier(.3,.7,.2,1);}
+  @keyframes bshine{0%{background-position:150% 0}100%{background-position:-50% 0}}
+  #boot .bn{font-family:var(--font-head);font-weight:800;letter-spacing:.16em;font-size:15px;position:relative;}
+  #boot .bs{color:var(--muted);font-size:14px;min-height:20px;position:relative;transition:opacity .25s ease;}
+  @keyframes bfloat{0%,100%{transform:translate(0,0)}50%{transform:translate(-14px,12px)}}
+  @keyframes appin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  #app.in,#login.in{animation:appin .5s cubic-bezier(.2,.7,.2,1) both;}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
 </style>
 <script>
 /* Telegram Mini App: полный экран, без закрытия свайпом (без внешнего SDK, по протоколу Telegram) */
@@ -397,7 +414,14 @@
 </head>
 <body>
 
-<div id="login" class="shell">
+<div id="boot" role="status" aria-live="polite">
+  <span class="bc a"></span><span class="bc b"></span>
+  <div class="lf" id="lf"><i class="off"></i><i class="on"></i><i class="sh"></i></div>
+  <div class="bn">WAYLEN TRAVEL</div>
+  <div class="bs" id="bootMsg">Открываем панель</div>
+</div>
+
+<div id="login" class="shell hidden">
   <section class="brand" aria-label="Waylen Travel">
     <div class="logo"><div class="logo-mark"></div>WAYLEN TRAVEL</div>
     <div class="brand-copy">
@@ -1635,10 +1659,18 @@
     clearSession(); sess = null; closeSheet();
     $('#app').classList.add('hidden'); $('#login').classList.remove('hidden'); showStep('email');
   }
+  var bootP = 10, bootT = null;
+  function bootMsg(t){ var el = $('#bootMsg'); if (el) el.textContent = t; }
+  function bootProg(p){ bootP = Math.max(bootP, p); var lf = $('#lf'); if (lf) lf.style.setProperty('--p', bootP.toFixed(1) + '%'); }
+  function bootOut(){ bootProg(100); clearInterval(bootT); setTimeout(function(){ var b = $('#boot'); if (b) b.classList.add('out'); }, 520); }
+  function reveal(){ var l = $('#login'); l.classList.remove('hidden'); l.classList.add('in'); bootOut(); }
+  bootT = setInterval(function(){ if (bootP < 88) bootProg(bootP + (88 - bootP) * 0.07); }, 350);
+  setTimeout(function(){ bootProg(18); }, 60);
   function enter(){
-    $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+    bootMsg('Загружаем данные'); bootProg(52);
+    $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#app').classList.add('in');
     $('#view').innerHTML = '<div class="head"><div><div class="sk" style="width:220px;height:28px"></div><div class="sk" style="width:160px;margin-top:12px"></div></div></div><div class="tiles">' + '<div class="skc"><div class="sk" style="width:60%"></div><div class="sk" style="width:40%;height:30px"></div></div>'.repeat(4) + '</div>';
-    loadAll().then(function(){ S.loadedAt = Date.now(); render(); }).catch(function(){ $('#view').innerHTML = '<div class="card err-box"><p>Не удалось загрузить данные. Проверьте интернет.</p><button class="pill" data-act="retry">Попробовать снова</button></div>'; });
+    loadAll().then(function(){ S.loadedAt = Date.now(); render(); bootOut(); }).catch(function(){ bootOut(); $('#view').innerHTML = '<div class="card err-box"><p>Не удалось загрузить данные. Проверьте интернет.</p><button class="pill" data-act="retry">Попробовать снова</button></div>'; });
   }
 
   var h = location.hash ? new URLSearchParams(location.hash.slice(1)) : null;
@@ -1647,13 +1679,13 @@
     try{ history.replaceState(null, '', location.pathname); }catch(e){}
     authApi('/auth/v1/user', null, at).then(function(r){
       if (r.ok && r.data.email){ sess = {access_token:at, refresh_token:rt, email:r.data.email}; saveSession(sess); enter(); }
-      else setMsg('Ссылка не сработала. Запросите новую.', true);
-    }).catch(function(){ setMsg('Нет связи. Проверьте интернет.', true); });
+      else { reveal(); setMsg('Ссылка не сработала. Запросите новую.', true); }
+    }).catch(function(){ reveal(); setMsg('Нет связи. Проверьте интернет.', true); });
     return;
   }
   if (h && h.get('error')){
     try{ history.replaceState(null, '', location.pathname); }catch(e){}
-    setMsg('Ссылка устарела или уже использована. Запросите новую.', true);
+    reveal(); setMsg('Ссылка устарела или уже использована. Запросите новую.', true);
   }
   var TGD = h ? (h.get('tgWebAppData') || '') : '';
   if (!TGD){ try{ TGD = sessionStorage.getItem('wl_tgd') || ''; }catch(e){} }
@@ -1668,15 +1700,16 @@
       });
   }
   var s0 = loadSession();
-  if (!s0 && TGD){ tgLogin().catch(function(){ setMsg('Не получилось войти через Telegram. Войдите по почте.', true); }); return; }
+  if (!s0 && TGD){ bootMsg('Входим через Telegram'); tgLogin().catch(function(){ reveal(); setMsg('Не получилось войти через Telegram. Войдите по почте.', true); }); return; }
   if (s0 && s0.access_token){
     sess = s0;
     authApi('/auth/v1/user', null, s0.access_token).then(function(r){
       if (r.ok && r.data.email) enter();
-      else if (r.status === 401 && s0.refresh_token) refresh().then(enter).catch(function(){ clearSession(); sess = null; if (TGD) tgLogin().catch(function(){}); });
-      else { clearSession(); sess = null; if (TGD) tgLogin().catch(function(){}); }
-    }).catch(function(){});
-  }
+      else if (r.status === 401 && s0.refresh_token) refresh().then(enter).catch(function(){ clearSession(); sess = null; if (TGD) tgLogin().catch(reveal); else reveal(); });
+      else { clearSession(); sess = null; if (TGD) tgLogin().catch(reveal); else reveal(); }
+    }).catch(function(){ reveal(); });
+  } else { reveal(); }
+  setTimeout(function(){ var b = $('#boot'); if (b && !b.classList.contains('out') && $('#app').classList.contains('hidden')) reveal(); }, 15000);
 })();
 </script>
 </body>
