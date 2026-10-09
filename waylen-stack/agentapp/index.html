@@ -1557,13 +1557,25 @@
     try{ history.replaceState(null, '', location.pathname); }catch(e){}
     setMsg('Ссылка устарела или уже использована. Запросите новую.', true);
   }
+  var TGD = h ? (h.get('tgWebAppData') || '') : '';
+  function tgLogin(){
+    if (!TGD) return Promise.reject(new Error('no tg'));
+    return fetch(BASE + '/functions/v1/tg-login', {method:'POST', headers:{'Content-Type':'application/json','apikey':KEY}, body: JSON.stringify({initData: TGD})})
+      .then(function(r){ return r.json(); })
+      .then(function(j){ if (!j || !j.token_hash) throw new Error('tg'); return authApi('/auth/v1/verify', {type:'magiclink', token_hash:j.token_hash}); })
+      .then(function(r){
+        if (!r.ok || !r.data.access_token) throw new Error('tg');
+        sess = {access_token:r.data.access_token, refresh_token:r.data.refresh_token, email:(r.data.user || {}).email}; saveSession(sess); enter();
+      });
+  }
   var s0 = loadSession();
+  if (!s0 && TGD){ tgLogin().catch(function(){ setMsg('Не получилось войти через Telegram. Войдите по почте.', true); }); return; }
   if (s0 && s0.access_token){
     sess = s0;
     authApi('/auth/v1/user', null, s0.access_token).then(function(r){
       if (r.ok && r.data.email) enter();
-      else if (r.status === 401 && s0.refresh_token) refresh().then(enter).catch(function(){ clearSession(); sess = null; });
-      else { clearSession(); sess = null; }
+      else if (r.status === 401 && s0.refresh_token) refresh().then(enter).catch(function(){ clearSession(); sess = null; if (TGD) tgLogin().catch(function(){}); });
+      else { clearSession(); sess = null; if (TGD) tgLogin().catch(function(){}); }
     }).catch(function(){});
   }
 })();
