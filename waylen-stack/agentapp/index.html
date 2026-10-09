@@ -26,7 +26,7 @@
     --font-body:'Manrope','Onest',system-ui,sans-serif;
   }
   *,*::before,*::after{box-sizing:border-box;}
-  html,body{margin:0;padding:0;min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
+  html,body{margin:0;padding:0;min-height:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-y:none;background:var(--bg);color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
   button,input,select,textarea{font-family:inherit;color:inherit;}
   button{cursor:pointer;border:none;background:none;}
   :focus-visible{outline:2px solid var(--lime);outline-offset:3px;border-radius:8px;}
@@ -204,6 +204,8 @@
     .lcard h2{font-size:25px;}
   }
   @media (max-width:820px){
+    main#view,main#view>*{min-width:0;max-width:100%;}
+    main#view{overflow-x:hidden;}
     .kbsec{display:none;}
     .seg button{font-size:13px;padding:10px 8px;}
     #app{display:block;}
@@ -402,9 +404,6 @@
   window.Telegram = window.Telegram || {};
   window.Telegram.WebView = {receiveEvent: onEvent};
   window.addEventListener('message', function(e){ try{ var m = JSON.parse(e.data); if (m && m.eventType) onEvent(m.eventType, m.eventData); }catch(_){} });
-  /* запасной вариант против смахивания: страница всегда прокручена хотя бы на 1px */
-  function keep1(){ if (window.scrollY < 1 && document.documentElement.scrollHeight > window.innerHeight + 2) window.scrollTo(0, 1); }
-  window.addEventListener('scroll', keep1, {passive:true}); window.addEventListener('load', function(){ setTimeout(keep1, 400); });
   root.style.overscrollBehaviorY = 'none';
   post('web_app_ready');
   post('web_app_expand');
