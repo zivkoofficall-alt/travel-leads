@@ -117,7 +117,7 @@
   .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
   .pill{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:800;padding:11px 20px;border-radius:999px;background:var(--lime);color:var(--lime-ink);transition:transform .2s var(--ease),opacity .2s;}
   .pill:active{transform:scale(.97);}
-  .pill.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line);}
+  .pill.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line);text-decoration:none;}
   .pill.ghost:hover{border-color:var(--lime);}
   .pill.danger{background:transparent;color:var(--danger);border:1.5px solid rgba(255,138,128,.3);}
   .pill[disabled]{opacity:.5;cursor:default;}
@@ -184,7 +184,7 @@
 
   /* sheet */
   #sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;}
-  #sheet .sp{width:100%;max-width:640px;max-height:92vh;max-height:92dvh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom) + var(--tg-bottom,0px));}
+  #sheet .sp{width:100%;max-width:640px;max-height:92vh;max-height:92dvh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:22px 20px calc(24px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px)));}
   #sheet .sh{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;}
   #sheet .sh h2{font-family:var(--font-head);font-weight:800;font-size:22px;margin:0;}
   .x{width:40px;height:40px;border-radius:50%;background:var(--card-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -196,7 +196,7 @@
   .mh{font-size:14px;color:var(--muted);line-height:1.6;}
   .mh b{color:var(--text);}
   #toast.bad{background:var(--danger);color:#1a0b0a;}
-  #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom) + var(--tg-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);font-weight:700;font-size:14px;padding:12px 20px;border-radius:999px;z-index:80;max-width:90vw;text-align:center;}
+  #toast{position:fixed;left:50%;bottom:calc(96px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px)));transform:translateX(-50%);background:var(--text);color:var(--bg);font-weight:700;font-size:14px;padding:12px 20px;border-radius:999px;z-index:80;max-width:90vw;text-align:center;}
 
   @media (max-width:980px){
     .tiles{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -221,7 +221,7 @@
     #app{display:block;}
     .side{display:none;}
     main#view{padding:16px 16px 130px;}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top) + var(--tg-top,0px)) 16px 10px;position:sticky;top:0;z-index:30;background:var(--bg);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + max(env(safe-area-inset-top), var(--tg-top,0px))) 16px 10px;position:sticky;top:0;z-index:30;background:var(--bg);}
     .topbar .logo{font-size:15px;}
     .topbar .logo-mark{width:28px;height:28px;}
     .topbar .x{background:var(--card);}
@@ -232,7 +232,7 @@
     .head.col{flex-direction:column;gap:12px;}
     .two,.row2{grid-template-columns:1fr;}
     .row2.keep{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
-    .tabbar{display:flex;position:fixed;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));bottom:calc(12px + env(safe-area-inset-bottom) + var(--tg-bottom,0px));z-index:40;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:8px;justify-content:space-between;align-items:center;}
+    .tabbar{display:flex;position:fixed;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));bottom:calc(12px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px)));z-index:40;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:8px;justify-content:space-between;align-items:center;}
     .tabbar .tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--muted);padding:6px 0;border-radius:999px;position:relative;}
     .tabbar .tb.on{color:var(--lime);}
     .tabbar .tb .cnt{position:absolute;top:0;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:999px;background:var(--lime);color:var(--lime-ink);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;}
@@ -1219,26 +1219,26 @@
     if (id){ var lc = lastContact(id), em = D.emails.filter(function(e){ return e.partner_id === id && e.folder !== 'draft'; }).length; h += '<div class="phead">' + avRing(p) + '<div class="pm"><b>' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + '</b>' + esc(RLAB[ratingOf(p)]) + (p.priority === 'high' ? ' · важный' : '') + ' · писем: ' + em + (lc ? ' · контакт ' + esc(ago(new Date(lc).toISOString())) + ' назад' : '') + '</div></div>'; }
     if (id) h += '<div class="quick">' + Object.keys(PST).map(function(k){ return '<button type="button" class="' + (p.status === k ? 'on st ' + k : '') + '" data-act="p-quick" data-id="' + k + '">' + PST[k] + '</button>'; }).join('') + '</div>';
     h += ins('p_name', 'Название', p.name) +
-      '<div class="row2">' + sel('p_kind', 'Тип', KIND, p.kind) + sel('p_st', 'Статус', PST, p.status) + '</div>' +
+      '<div class="row2 keep">' + sel('p_kind', 'Тип', KIND, p.kind) + sel('p_st', 'Статус', PST, p.status) + '</div>' +
       '<div class="fld"><label>Оценка: ' + esc(RLAB[ratingOf(p)]) + '</label><div class="rs" id="p_rate" data-v="' + ratingOf(p) + '">' + [1,2,3,4,5].map(function(n){ return '<button type="button" class="' + (ratingOf(p) === n ? 'on' : '') + '" data-act="p-rate" data-id="' + n + '">' + n + '</button>'; }).join('') + '</div><p class="hint">Насколько партнёр релевантен нам: 1 — не подходит, 5 — отлично. Агент ставит оценку сам, вы можете её поправить.</p></div>' +
-      '<div class="row2">' + sel('p_prio', 'Важность', PRIO, p.priority || 'normal') +
+      '<div class="row2 keep">' + sel('p_prio', 'Важность', PRIO, p.priority || 'normal') +
       '<div class="fld"><label>Избранный</label><button type="button" id="p_star" class="chip' + (p.starred ? ' on' : '') + '" data-on="' + (p.starred ? '1' : '0') + '" data-act="p-startog" style="justify-content:center;padding:14px 16px">' + starI(p.starred) + (p.starred ? 'Да' : 'Нет') + '</button></div></div>' +
-      '<div class="row2">' + ins('p_country', 'Страна партнёра', p.country, 'Таиланд') + ins('p_countries', 'Работает со странами', p.countries, 'Таиланд, Вьетнам, ОАЭ') + '</div>' +
-      '<div class="row2">' + ins('p_person', 'Контактное лицо', p.contact_person) + ins('p_lang', 'Языки общения', p.languages, 'Английский, русский') + '</div>' +
-      '<div class="row2">' + ins('p_email', 'Почта', p.email, '', 'email') + ins('p_site', 'Сайт', p.website, 'clinic.example') + '</div>' +
-      '<div class="row2">' + ins('p_source', 'Откуда узнали', p.source, 'Поиск агента, рекомендация') + ins('p_srcurl', 'Ссылка на источник', p.source_url, 'https://…') + '</div>' +
-      '<div class="row2">' + ins('p_na', 'Следующее действие', p.next_action, 'Позвонить, отправить прайс') + ins('p_nad', 'Когда', p.next_action_at ? dkey(p.next_action_at) : '', '', 'date') + '</div>' +
+      '<div class="row2 keep">' + ins('p_country', 'Страна партнёра', p.country, 'Таиланд') + ins('p_countries', 'Работает со странами', p.countries, 'Таиланд, Вьетнам, ОАЭ') + '</div>' +
+      '<div class="row2 keep">' + ins('p_person', 'Контактное лицо', p.contact_person) + ins('p_lang', 'Языки общения', p.languages, 'Английский, русский') + '</div>' +
+      '<div class="row2 keep">' + ins('p_email', 'Почта', p.email, '', 'email') + ins('p_site', 'Сайт', p.website, 'clinic.example') + '</div>' +
+      '<div class="row2 keep">' + ins('p_source', 'Откуда узнали', p.source, 'Поиск агента, рекомендация') + ins('p_srcurl', 'Ссылка на источник', p.source_url, 'https://…') + '</div>' +
+      '<div class="row2 keep">' + ins('p_na', 'Следующее действие', p.next_action, 'Позвонить, отправить прайс') + ins('p_nad', 'Когда', p.next_action_at ? dkey(p.next_action_at) : '', '', 'date') + '</div>' +
       (p.fit_score != null ? '<div class="note"><b>Подходит нам: ' + p.fit_score + ' из 100.</b>' + (p.fit_note ? ' ' + esc(p.fit_note) : '') + '<div class="meter"><span style="width:' + p.fit_score + '%"></span></div></div>' : '') +
       '<div class="fld"><label for="p_serv">Услуги</label><textarea id="p_serv" placeholder="Что предлагает: чипирование, справки, перевозка, карантин">' + esc(p.services || '') + '</textarea></div>' +
       '<div class="fld"><label for="p_terms">Условия сотрудничества</label><textarea id="p_terms" placeholder="Комиссия, скидка клиентам, порядок оплаты, договор">' + esc(p.terms || '') + '</textarea><p class="hint">Агент использует это поле, когда отвечает партнёру и когда предлагает его клиентам.</p></div>' +
       '<div class="fld"><label for="p_notes">Заметки</label><textarea id="p_notes">' + esc(p.notes || '') + '</textarea></div>' +
       '<div id="p_warn"></div>' +
-      '<div class="acts sticky"><button class="pill" data-act="p-save" data-id="' + esc(id || '') + '">Сохранить</button>' +
-      (id && p.email ? '<button class="pill ghost" data-act="p-write" data-id="' + esc(id) + '">Написать</button>' : '') +
-      (id ? '<button class="pill ghost" data-act="p-task" data-id="' + esc(id) + '">Задача</button>' : '') +
+      (id ? '<div class="acts sec">' + '<button class="pill ghost" data-act="p-task" data-id="' + esc(id) + '">Задача</button>' +
       (site ? '<a class="pill ghost" href="' + esc(site) + '" target="_blank" rel="noopener noreferrer">Сайт</a>' : '') +
-      (id && p.email ? '<button class="pill ghost" data-act="p-block" data-id="' + esc(id) + '">В чёрный список</button>' : '') +
-      (id ? '<button class="pill danger" data-act="p-del" data-id="' + esc(id) + '">Удалить</button>' : '') + '</div>';
+      (p.email ? '<button class="pill ghost" data-act="p-block" data-id="' + esc(id) + '">В чёрный список</button>' : '') +
+      '<button class="pill danger" data-act="p-del" data-id="' + esc(id) + '">Удалить</button></div>' : '') +
+      '<div class="acts sticky"><button class="pill" data-act="p-save" data-id="' + esc(id || '') + '">Сохранить</button>' +
+      (id && p.email ? '<button class="pill ghost" data-act="p-write" data-id="' + esc(id) + '">Написать</button>' : '') + '</div>';
     if (id){
       var ev = [];
       D.emails.forEach(function(e){ if (e.partner_id === id) ev.push({t:new Date(tm(e)).getTime(), c:e.direction === 'in' ? 'in' : 'out', h:'<button data-act="mail-open" data-id="' + esc(e.id) + '">' + (e.direction === 'in' ? 'Письмо от партнёра: ' : (e.folder === 'draft' ? (e.status === 'approved' ? 'В очереди: ' : 'Черновик' + (e.author === 'agent' ? ' агента' : '') + ': ') : 'Отправлено: ')) + esc(e.subject || '(без темы)') + '</button>'}); });
@@ -1247,7 +1247,7 @@
       if (p.status_changed_at && p.status_changed_at !== p.created_at) ev.push({t:new Date(p.status_changed_at).getTime(), c:'', h:'Статус: ' + PST[p.status]});
       ev.push({t:new Date(p.created_at).getTime(), c:'', h:'Партнёр добавлен' + (p.source ? ' · ' + esc(p.source) : '')});
       ev.sort(function(a, b){ return b.t - a.t; });
-      h += '<h3 class="sec" style="margin-top:26px">История <span class="tag">' + ev.length + '</span></h3><div class="tl">' + ev.map(function(x){ return '<div class="tle ' + x.c + '"><div class="tt">' + esc(fullDate(new Date(x.t).toISOString())) + '</div>' + x.h + '</div>'; }).join('') + '</div>';
+      h += '<h3 class="sec" style="margin-top:26px">История <span class="tag">' + ev.length + '</span></h3><div class="tline">' + ev.map(function(x){ return '<div class="tle ' + x.c + '"><div class="tt">' + esc(fullDate(new Date(x.t).toISOString())) + '</div>' + x.h + '</div>'; }).join('') + '</div>';
     }
     openSheet(id ? p.name : 'Новый партнёр', h + '</div>');
   }
