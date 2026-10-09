@@ -360,8 +360,18 @@
     d = d || {};
     if (t === 'safe_area_changed'){ sa.top = +d.top || 0; sa.bottom = +d.bottom || 0; apply(); }
     else if (t === 'content_safe_area_changed'){ ca.top = +d.top || 0; ca.bottom = +d.bottom || 0; apply(); }
-    else if (t === 'viewport_changed' && !(d.is_state_stable === false)){ /* высота берётся из dvh */ }
+    else if (t === 'fullscreen_changed'){ fsOn = !!d.is_fullscreen; if (fsOn) fsNote(''); }
+    else if (t === 'fullscreen_failed'){ fsErr = d.error || 'unknown'; if (fsErr !== 'ALREADY_FULLSCREEN') fsNote('Полный экран отклонён: ' + fsErr); }
   }
+  var hp = new URLSearchParams(location.hash.slice(1)), ver = hp.get('tgWebAppVersion') || '?', plat = hp.get('tgWebAppPlatform') || '?', fsOn = false, fsErr = '';
+  function fsNote(msg){
+    var el = document.getElementById('fsn');
+    if (!msg){ if (el) el.remove(); return; }
+    if (!document.body) return;
+    if (!el){ el = document.createElement('div'); el.id = 'fsn'; el.style.cssText = 'position:fixed;left:12px;right:12px;bottom:90px;z-index:200;background:#1F2227;color:#F3F5F7;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px 14px;font:600 13px/1.4 system-ui,sans-serif'; el.onclick = function(){ el.remove(); }; document.body.appendChild(el); }
+    el.textContent = msg + ' (Telegram ' + ver + ', ' + plat + ')';
+  }
+  setTimeout(function(){ if (!fsOn && !fsErr) fsNote('Telegram не ответил на запрос полного экрана'); }, 3000);
   window.Telegram = window.Telegram || {};
   window.Telegram.WebView = {receiveEvent: onEvent};
   window.addEventListener('message', function(e){ try{ var m = JSON.parse(e.data); if (m && m.eventType) onEvent(m.eventType, m.eventData); }catch(_){} });
