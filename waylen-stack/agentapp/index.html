@@ -30,7 +30,7 @@
   button,input,select,textarea{font-family:inherit;color:inherit;}
   button{cursor:pointer;border:none;background:none;}
   :focus-visible{outline:2px solid var(--lime);outline-offset:3px;border-radius:8px;}
-  .sp:focus,.sp:focus-visible{outline:none;}
+  .sp:focus,.sp:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;}
   .hidden{display:none !important;}
   svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
 
@@ -997,8 +997,7 @@
     var p = pById(x.partner_id);
     openSheet('Вопрос агента', '<div class="stack"><div class="q" style="padding:0;border:0;background:none"><div class="qt">' + esc(x.question) + '</div>' +
       '<div class="qc">' + (p ? '<b>' + esc(p.name) + '.</b> ' : '') + esc(x.context || '') + ' <span class="tm">' + esc(fullDate(x.created_at)) + '</span></div>' +
-      (x.draft ? '<div class="qd"><b>Агент предлагает</b>' + esc(x.draft) + '</div>' : '') +
-      '<textarea id="qa-' + esc(x.id) + '" placeholder="Ваш ответ агенту" autofocus>' + esc(x.draft || '') + '</textarea>' +
+      '<label for="qa-' + esc(x.id) + '">' + (x.draft ? 'Агент предлагает такой ответ, можно поправить' : 'Ваш ответ агенту') + '</label><textarea id="qa-' + esc(x.id) + '" placeholder="Ваш ответ агенту" autofocus>' + esc(x.draft || '') + '</textarea>' +
       '<div class="acts"><button class="pill" data-act="q-answer" data-id="' + esc(x.id) + '">Ответить</button><button class="pill ghost" data-act="q-answer" data-id="' + esc(x.id) + '" data-kb="1" title="Агент запомнит ответ и больше не спросит">Ответить и запомнить</button><button class="pill ghost" data-act="q-skip" data-id="' + esc(x.id) + '">Пропустить</button></div>' +
       '<div class="acts" style="margin-top:4px">' + (p ? '<button class="pill ghost" data-act="p-open" data-id="' + esc(p.id) + '">Партнёр</button>' : '') + (x.email_id ? '<button class="pill ghost" data-act="mail-open" data-id="' + esc(x.email_id) + '">Письмо</button>' : '') + '</div></div></div>');
   }
@@ -1143,7 +1142,7 @@
       '<div class="fld"><label>Тема</label><input id="c_sub" value="' + esc(pre.subject || '') + '"></div>' +
       '<div class="fld"><label>Текст</label><textarea id="c_body" autofocus style="min-height:170px">' + esc(pre.body || '') + '</textarea></div>' +
       '<div class="acts sticky"><button class="pill" data-act="c-send" data-id="' + esc(pre.id || '') + '" data-p="' + esc(pre.partner_id || '') + '">Отправить</button><button class="pill ghost" data-act="c-save" data-id="' + esc(pre.id || '') + '" data-p="' + esc(pre.partner_id || '') + '">Сохранить черновик</button></div>' +
-      '<p class="sub">«Отправить» ставит письмо в очередь. Оно уйдёт после подключения ящика. В шаблонах {{имя}}, {{компания}} и {{страна}} подставляются сами.</p></div>');
+      '<p class="sub">«Отправить» ставит письмо в очередь: агент отправит его при следующем запуске, в течение 30 минут. В шаблонах {{имя}}, {{компания}} и {{страна}} подставляются сами.</p></div>');
   }
   function saveCompose(id, pid, status){
     var to = val('c_to'), sub = val('c_sub'), body = val('c_body'), acc = val('c_acc');
@@ -1155,7 +1154,7 @@
     var row = {account_id: acc || null, partner_id: pid || (pm ? pm.id : null), direction:'out', status:status, folder:'draft', subject:sub, body:body, from_addr: a ? a.address : null, to_addr:to, is_read:true};
     if (!id) row.author = 'owner';
     var req = id ? rest('PATCH','emails?id=eq.' + id, row) : rest('POST','emails', row);
-    req.then(function(){ return status === 'approved' ? markContacted(row.partner_id) : null; }).then(function(){ closeSheet(); toast(status === 'approved' ? 'Письмо в очереди' : 'Черновик сохранён'); S.tab = 'mail'; S.folder = 'draft'; return reload(); }).catch(function(){ toast('Не получилось сохранить'); });
+    req.then(function(){ return status === 'approved' ? markContacted(row.partner_id) : null; }).then(function(){ closeSheet(); toast(status === 'approved' ? 'Письмо в очереди, уйдёт в течение 30 минут' : 'Черновик сохранён'); S.tab = 'mail'; S.folder = 'draft'; return reload(); }).catch(function(){ toast('Не получилось сохранить'); });
   }
   function isBlocked(addr){ addr = String(addr || '').toLowerCase(); var dom = domainOf(addr); return (D.settings.blocked_domains || []).some(function(b){ return b === addr || b === dom; }); }
   function markContacted(pid){
@@ -1602,7 +1601,7 @@
     approve: function(d){ var e = byId(D.emails, d.id); if (e && isBlocked(e.to_addr)){ toast('Адрес в чёрном списке. Уберите его в настройках', true); return; } rest('PATCH','emails?id=eq.' + d.id, {status:'approved'}).then(function(){ return markContacted(e && e.partner_id); }).then(function(){ closeSheet(); toast('Письмо в очереди'); return reload(); }).catch(fail); },
     'approve-all': function(){
       var n = D.emails.filter(function(e){ return e.folder === 'draft' && e.status !== 'approved' && (S.mailAcc === 'all' || e.account_id === S.mailAcc); }).length;
-      confirmSheet('Утвердить все черновики?', 'Будет поставлено в очередь писем: ' + n + '. Они уйдут после подключения ящика.', 'approve-go', 'Утвердить все');
+      confirmSheet('Утвердить все черновики?', 'Будет поставлено в очередь писем: ' + n + '. Агент отправит их при следующих запусках.', 'approve-go', 'Утвердить все');
     },
     'approve-go': function(){
       var skip = 0, ids = D.emails.filter(function(e){ if (!(e.folder === 'draft' && e.status !== 'approved' && (S.mailAcc === 'all' || e.account_id === S.mailAcc))) return false; if (isBlocked(e.to_addr)){ skip++; return false; } return true; }).map(function(e){ return e.id; });
@@ -1663,7 +1662,9 @@
           return;
         }
       }
-      (d.id ? rest('PATCH','partners?id=eq.' + d.id, row) : rest('POST','partners', row)).then(function(){ closeSheet(); toast('Сохранено'); return reload(); }).catch(function(e){ toast(/duplicate|23505/.test(String(e.message)) ? 'Такой партнёр уже есть' : 'Не получилось'); });
+      (d.id ? rest('PATCH','partners?id=eq.' + d.id, row).then(function(){ return d.id; }) : rest('POST','partners', row, 'return=representation').then(function(r){ return r && r[0] && r[0].id; })).then(function(pid){
+        if (pid && row.email) return rest('PATCH','emails?partner_id=is.null&or=(from_addr.ilike.*' + encodeURIComponent(row.email) + '*,to_addr.ilike.*' + encodeURIComponent(row.email) + '*)', {partner_id:pid}).catch(function(){});
+      }).then(function(){ closeSheet(); toast('Сохранено'); return reload(); }).catch(function(e){ toast(/duplicate|23505/.test(String(e.message)) ? 'Такой партнёр уже есть' : 'Не получилось'); });
     },
     'p-del': function(d){ var n = D.emails.filter(function(e){ return e.partner_id === d.id; }).length; confirmSheet('Удалить партнёра?', 'Карточка будет удалена. ' + (n ? 'Письма (' + n + ') останутся в почте, но отвяжутся от партнёра.' : 'Писем с ним нет.'), 'p-del-go', 'Удалить'); $('#sheet .sp').dataset.id = d.id; },
     'p-del-go': function(){ var id = $('#sheet .sp').dataset.id; rest('DELETE','partners?id=eq.' + id).then(function(){ closeSheet(); toast('Партнёр удалён'); return reload(); }).catch(fail); },
