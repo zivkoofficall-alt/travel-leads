@@ -94,7 +94,7 @@
   .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
   .tile{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;min-height:158px;text-align:left;transition:transform .2s var(--ease);}
   .tile{overflow:hidden;}
-  .tile .row>div:first-child{min-width:0;}
+  .tile .row>div:first-child{min-width:0;flex:1;}
   button,.x{flex-shrink:0;}
   .tile:active{transform:scale(.985);}
   .tile.lime{background:var(--lime);color:var(--lime-ink);border-color:transparent;}
@@ -312,8 +312,8 @@
   @media (min-width:821px){ #sheet .sp::before{display:none;} }
   .tile .rb{transition:transform .25s var(--ease);}
   .tile:hover .rb{transform:rotate(45deg);}
-  .tl{position:relative;padding-left:22px;}
-  .tl::before{content:"";position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--line);border-radius:2px;}
+  .tline{position:relative;padding-left:22px;}
+  .tline::before{content:"";position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--line);border-radius:2px;}
   .tle{position:relative;padding:8px 0 10px;font-size:14px;}
   .tle::before{content:"";position:absolute;left:-20px;top:13px;width:10px;height:10px;border-radius:50%;background:var(--card-2);border:2px solid var(--faint);box-sizing:border-box;}
   .tle.in::before{background:var(--lime);border-color:var(--lime);}
@@ -371,64 +371,57 @@
 </style>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-/* Telegram Mini App: полный экран, без закрытия свайпом (без внешнего SDK, по протоколу Telegram) */
+/* Telegram Mini App: полный экран, безопасные отступы, без закрытия свайпом */
 (function(){
-  var proxy0 = window.TelegramWebviewProxy;
   var hashTg = /tgWebApp(Data|Platform)=/.test(location.hash);
   try{ var m0 = new URLSearchParams(location.hash.slice(1)).get('tgWebAppData'); if (m0) sessionStorage.setItem('wl_tgd', m0); }catch(e){}
-  if (!hashTg && !proxy0) return;
-  var root = document.documentElement, proxy = window.TelegramWebviewProxy;
+  var W = window.Telegram && window.Telegram.WebApp;
+  if (!hashTg && !window.TelegramWebviewProxy && !(W && W.initData)) return;
+  var root = document.documentElement;
+  root.classList.add('tg');
+  function setIns(top, bottom){ root.style.setProperty('--tg-top', top + 'px'); root.style.setProperty('--tg-bottom', bottom + 'px'); }
+  if (W){
+    function ap(){ var s = W.safeAreaInset || {}, c = W.contentSafeAreaInset || {}; setIns((+s.top || 0) + (+c.top || 0), (+s.bottom || 0)); root.classList.toggle('tg-fs', !!W.isFullscreen); }
+    function safe(f){ try{ f(); }catch(e){} }
+    safe(function(){ W.ready(); });
+    safe(function(){ W.expand(); });
+    safe(function(){ W.disableVerticalSwipes(); });
+    safe(function(){ W.enableClosingConfirmation(); });
+    safe(function(){ W.setBackgroundColor('#0D0E10'); });
+    safe(function(){ W.setHeaderColor('#0D0E10'); });
+    safe(function(){ W.setBottomBarColor('#0D0E10'); });
+    ['safeAreaChanged','contentSafeAreaChanged','fullscreenChanged','viewportChanged'].forEach(function(ev){ safe(function(){ W.onEvent(ev, ap); }); });
+    function fs(){ safe(function(){ if (W.requestFullscreen && !W.isFullscreen) W.requestFullscreen(); }); }
+    fs(); ap();
+    window.addEventListener('load', function(){ setTimeout(function(){ fs(); ap(); }, 300); setTimeout(ap, 1200); });
+    return;
+  }
+  /* запасной мост без SDK */
   function post(t, d){
     try{
-      var px = window.TelegramWebviewProxy; if (!px && window.Telegram && window.Telegram.WebView && window.Telegram.WebView.postEvent){ window.Telegram.WebView.postEvent(t, function(){}, d || {}); return; }
+      var px = window.TelegramWebviewProxy;
       if (px && px.postEvent) px.postEvent(t, JSON.stringify(d || {}));
-      else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.performAction) window.webkit.messageHandlers.performAction.postMessage({eventName:t, eventData:JSON.stringify(d || {})});
       else if (window.external && 'notify' in window.external) window.external.notify(JSON.stringify({eventType:t, eventData:d || {}}));
       else if (window.parent !== window) window.parent.postMessage(JSON.stringify({eventType:t, eventData:d || {}}), '*');
     }catch(e){}
   }
   var sa = {top:0, bottom:0}, ca = {top:0, bottom:0};
-  function apply(){
-    root.style.setProperty('--tg-top', (sa.top + ca.top) + 'px');
-    root.style.setProperty('--tg-bottom', (sa.bottom + ca.bottom) + 'px');
-  }
   function onEvent(t, d){
     if (typeof d === 'string'){ try{ d = JSON.parse(d); }catch(e){ d = {}; } }
     d = d || {};
-    if (t === 'safe_area_changed'){ sa.top = +d.top || 0; sa.bottom = +d.bottom || 0; apply(); }
-    else if (t === 'content_safe_area_changed'){ ca.top = +d.top || 0; ca.bottom = +d.bottom || 0; apply(); }
-    else if (t === 'fullscreen_changed'){ fsOn = !!d.is_fullscreen; if (fsOn) fsNote(''); }
-    else if (t === 'fullscreen_failed'){ fsErr = d.error || 'unknown'; if (fsErr !== 'ALREADY_FULLSCREEN') fsNote('Полный экран отклонён: ' + fsErr); }
+    if (t === 'safe_area_changed'){ sa.top = +d.top || 0; sa.bottom = +d.bottom || 0; }
+    else if (t === 'content_safe_area_changed'){ ca.top = +d.top || 0; ca.bottom = +d.bottom || 0; }
+    else if (t === 'fullscreen_changed') root.classList.toggle('tg-fs', !!d.is_fullscreen);
+    setIns(sa.top + ca.top, sa.bottom);
   }
-  var hp = new URLSearchParams(location.hash.slice(1)), ver = hp.get('tgWebAppVersion') || '?', plat = hp.get('tgWebAppPlatform') || '?', fsOn = false, fsErr = '';
-  function fsNote(msg){
-    var el = document.getElementById('fsn');
-    if (!msg){ if (el) el.remove(); return; }
-    if (!document.body) return;
-    if (!el){ el = document.createElement('div'); el.id = 'fsn'; el.style.cssText = 'position:fixed;left:12px;right:12px;bottom:90px;z-index:200;background:#1F2227;color:#F3F5F7;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px 14px;font:600 13px/1.4 system-ui,sans-serif'; el.onclick = function(){ el.remove(); }; document.body.appendChild(el); }
-    el.textContent = msg + ' (Telegram ' + ver + ', ' + plat + ')';
-  }
-  setTimeout(function(){ if (!fsOn && !fsErr) fsNote('Telegram не ответил на запрос полного экрана'); }, 3000);
-  window.Telegram = window.Telegram || {}; window.Telegram.WebView = window.Telegram.WebView || {};
-  var oldRecv = window.Telegram.WebView.receiveEvent;
-  window.Telegram.WebView.receiveEvent = function(t, d){ try{ if (oldRecv) oldRecv(t, d); }catch(e){} onEvent(t, d); };
+  window.Telegram = window.Telegram || {}; window.Telegram.WebView = {receiveEvent: onEvent};
   window.addEventListener('message', function(e){ try{ var m = JSON.parse(e.data); if (m && m.eventType) onEvent(m.eventType, m.eventData); }catch(_){} });
-  root.style.overscrollBehaviorY = 'none';
-  post('web_app_ready');
-  post('web_app_expand');
+  post('web_app_ready'); post('web_app_expand');
   post('web_app_setup_swipe_behavior', {allow_vertical_swipe:false});
   post('web_app_setup_closing_behavior', {need_confirmation:true});
-  post('web_app_set_background_color', {color:'#0D0E10'});
-  post('web_app_set_header_color', {color:'#0D0E10'});
+  post('web_app_set_background_color', {color:'#0D0E10'}); post('web_app_set_header_color', {color:'#0D0E10'});
   function goFs(){ post('web_app_request_fullscreen'); post('web_app_request_safe_area'); post('web_app_request_content_safe_area'); }
-  goFs();
-  window.addEventListener('load', function(){ setTimeout(goFs, 300); setTimeout(function(){ if (!fsOn) goFs(); }, 1500); });
-  function probe(){
-    var k = []; try{ k = Object.getOwnPropertyNames(window).filter(function(x){ return /telegram|tgweb|webview|proxy/i.test(x); }); }catch(e){}
-    var mh = []; try{ mh = Object.keys(window.webkit.messageHandlers); }catch(e){}
-    return 'win=[' + k.join(',') + '] wk=' + (window.webkit ? 'да' : 'нет') + ' mh=[' + mh.join(',') + '] pa=' + (function(){ try{ return typeof window.webkit.messageHandlers.performAction; }catch(e){ return 'err'; } })() + ' sdk=' + (window.Telegram && window.Telegram.WebApp ? (window.Telegram.WebApp.version + '/' + window.Telegram.WebApp.platform) : 'нет');
-  }
-  setTimeout(function(){ fsNote('Диагностика: proxy=' + (window.TelegramWebviewProxy ? 'да' : 'нет') + ', iframe=' + (window.parent !== window ? 'да' : 'нет') + ', hash=' + location.hash.length + ', fs=' + (fsOn ? 'да' : 'нет') + (fsErr ? ', ошибка ' + fsErr : '') + ' ' + probe()); }, 3500);
+  goFs(); window.addEventListener('load', function(){ setTimeout(goFs, 300); });
 })();
 </script>
 </head>
@@ -1467,7 +1460,7 @@
     'alerts-more': function(){ S.alertsAll = !S.alertsAll; render(); },
     retry: function(){ enter(); },
     refresh: function(){ toast('Обновляем…'); reload(); },
-    'q-hist': function(){ var qs = D.questions.filter(function(x){ return x.status !== 'open'; }); openSheet('Отвеченные вопросы', '<div class="tl">' + qs.map(function(q){ var p = pById(q.partner_id); return '<div class="tle"><div class="tt">' + esc(fullDate(q.created_at)) + (p ? ' · ' + esc(p.name) : '') + '</div><b>' + esc(q.question) + '</b><div class="sub" style="margin-top:4px">' + (q.status === 'skipped' ? 'Пропущен' : 'Ответ: ' + esc(q.answer || '')) + '</div></div>'; }).join('') + '</div>'); },
+    'q-hist': function(){ var qs = D.questions.filter(function(x){ return x.status !== 'open'; }); openSheet('Отвеченные вопросы', '<div class="tline">' + qs.map(function(q){ var p = pById(q.partner_id); return '<div class="tle"><div class="tt">' + esc(fullDate(q.created_at)) + (p ? ' · ' + esc(p.name) : '') + '</div><b>' + esc(q.question) + '</b><div class="sub" style="margin-top:4px">' + (q.status === 'skipped' ? 'Пропущен' : 'Ответ: ' + esc(q.answer || '')) + '</div></div>'; }).join('') + '</div>'); },
     close: closeSheet,
     search: searchSheet,
     tab: function(d){ closeSheet(); setTab(d.tab); },
