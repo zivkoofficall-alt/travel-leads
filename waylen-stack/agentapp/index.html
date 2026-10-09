@@ -370,8 +370,10 @@
   var root = document.documentElement, proxy = window.TelegramWebviewProxy;
   function post(t, d){
     try{
-      if (proxy && proxy.postEvent) proxy.postEvent(t, JSON.stringify(d || {}));
-      else if (window.parent !== window) window.parent.postMessage(JSON.stringify({eventType:t, eventData:d || {}}), 'https://web.telegram.org');
+      var px = window.TelegramWebviewProxy;
+      if (px && px.postEvent) px.postEvent(t, JSON.stringify(d || {}));
+      else if (window.external && 'notify' in window.external) window.external.notify(JSON.stringify({eventType:t, eventData:d || {}}));
+      else if (window.parent !== window) window.parent.postMessage(JSON.stringify({eventType:t, eventData:d || {}}), '*');
     }catch(e){}
   }
   var sa = {top:0, bottom:0}, ca = {top:0, bottom:0};
@@ -408,7 +410,7 @@
   function goFs(){ post('web_app_request_fullscreen'); post('web_app_request_safe_area'); post('web_app_request_content_safe_area'); }
   goFs();
   window.addEventListener('load', function(){ setTimeout(goFs, 300); setTimeout(function(){ if (!fsOn) goFs(); }, 1500); });
-  setTimeout(function(){ fsNote('Диагностика: proxy=' + (proxy ? 'да' : 'нет') + ', hash=' + location.hash.length + ', fs=' + (fsOn ? 'да' : 'нет') + (fsErr ? ', ошибка ' + fsErr : '')); }, 3500);
+  setTimeout(function(){ fsNote('Диагностика: proxy=' + (window.TelegramWebviewProxy ? 'да' : 'нет') + ', iframe=' + (window.parent !== window ? 'да' : 'нет') + ', hash=' + location.hash.length + ', fs=' + (fsOn ? 'да' : 'нет') + (fsErr ? ', ошибка ' + fsErr : '')); }, 3500);
 })();
 </script>
 </head>
