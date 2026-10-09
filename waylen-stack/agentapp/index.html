@@ -90,7 +90,8 @@
   .tg.on{background:var(--lime);}
   .tg.on::after{transform:translateX(18px);background:var(--lime-ink);}
 
-  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .tiles>*,.two>*,.row2>*,.grid2>*{min-width:0;box-sizing:border-box;}
+  .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
   .tile{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;min-height:158px;text-align:left;transition:transform .2s var(--ease);}
   .tile:active{transform:scale(.985);}
   .tile.lime{background:var(--lime);color:var(--lime-ink);border-color:transparent;}
@@ -103,7 +104,7 @@
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;}
   .stack{display:flex;flex-direction:column;gap:12px;}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;}
   .q{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;}
   .q .qt{font-weight:800;font-size:16px;line-height:1.35;margin-bottom:6px;}
   .q .qc{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:12px;}
@@ -161,7 +162,7 @@
 
   .set{display:flex;flex-direction:column;gap:16px;}
   .fld{display:flex;flex-direction:column;}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;}
   .checks{display:flex;flex-wrap:wrap;gap:8px;}
   .seg{display:flex;background:var(--bg);border-radius:999px;padding:4px;gap:4px;}
   .seg button{flex:1;padding:10px 12px;border-radius:999px;font-size:14px;font-weight:800;color:var(--muted);}
@@ -191,7 +192,7 @@
   #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom) + var(--tg-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);font-weight:700;font-size:14px;padding:12px 20px;border-radius:999px;z-index:80;max-width:90vw;text-align:center;}
 
   @media (max-width:980px){
-    .tiles{grid-template-columns:repeat(2,1fr);}
+    .tiles{grid-template-columns:repeat(2,minmax(0,1fr));}
   }
   @media (max-width:860px){
     .shell{grid-template-columns:1fr;gap:14px;padding:14px;}
@@ -265,7 +266,7 @@
   .down{color:var(--danger);}
   .cardt{font-family:var(--font-head);font-weight:800;font-size:17px;margin:0 0 4px;}
   .cardn{color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.4;}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+  .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px;}
   .wk{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:8px;padding:9px 0;border-top:1px solid var(--line);font-size:14px;align-items:center;}
   .wk:first-of-type{border-top:none;}
   .wk.h{color:var(--faint);font-size:12px;font-weight:700;}
@@ -362,6 +363,7 @@
   #app.in,#login.in{animation:appin .5s cubic-bezier(.2,.7,.2,1) both;}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
 </style>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
 /* Telegram Mini App: полный экран, без закрытия свайпом (без внешнего SDK, по протоколу Telegram) */
 (function(){
@@ -372,7 +374,7 @@
   var root = document.documentElement, proxy = window.TelegramWebviewProxy;
   function post(t, d){
     try{
-      var px = window.TelegramWebviewProxy;
+      var px = window.TelegramWebviewProxy; if (!px && window.Telegram && window.Telegram.WebView && window.Telegram.WebView.postEvent){ window.Telegram.WebView.postEvent(t, function(){}, d || {}); return; }
       if (px && px.postEvent) px.postEvent(t, JSON.stringify(d || {}));
       else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.performAction) window.webkit.messageHandlers.performAction.postMessage({eventName:t, eventData:JSON.stringify(d || {})});
       else if (window.external && 'notify' in window.external) window.external.notify(JSON.stringify({eventType:t, eventData:d || {}}));
@@ -401,8 +403,9 @@
     el.textContent = msg + ' (Telegram ' + ver + ', ' + plat + ')';
   }
   setTimeout(function(){ if (!fsOn && !fsErr) fsNote('Telegram не ответил на запрос полного экрана'); }, 3000);
-  window.Telegram = window.Telegram || {};
-  window.Telegram.WebView = {receiveEvent: onEvent};
+  window.Telegram = window.Telegram || {}; window.Telegram.WebView = window.Telegram.WebView || {};
+  var oldRecv = window.Telegram.WebView.receiveEvent;
+  window.Telegram.WebView.receiveEvent = function(t, d){ try{ if (oldRecv) oldRecv(t, d); }catch(e){} onEvent(t, d); };
   window.addEventListener('message', function(e){ try{ var m = JSON.parse(e.data); if (m && m.eventType) onEvent(m.eventType, m.eventData); }catch(_){} });
   root.style.overscrollBehaviorY = 'none';
   post('web_app_ready');
@@ -417,7 +420,7 @@
   function probe(){
     var k = []; try{ k = Object.getOwnPropertyNames(window).filter(function(x){ return /telegram|tgweb|webview|proxy/i.test(x); }); }catch(e){}
     var mh = []; try{ mh = Object.keys(window.webkit.messageHandlers); }catch(e){}
-    return 'win=[' + k.join(',') + '] wk=' + (window.webkit ? 'да' : 'нет') + ' mh=[' + mh.join(',') + ']';
+    return 'win=[' + k.join(',') + '] wk=' + (window.webkit ? 'да' : 'нет') + ' mh=[' + mh.join(',') + '] pa=' + (function(){ try{ return typeof window.webkit.messageHandlers.performAction; }catch(e){ return 'err'; } })() + ' sdk=' + (window.Telegram && window.Telegram.WebApp ? (window.Telegram.WebApp.version + '/' + window.Telegram.WebApp.platform) : 'нет');
   }
   setTimeout(function(){ fsNote('Диагностика: proxy=' + (window.TelegramWebviewProxy ? 'да' : 'нет') + ', iframe=' + (window.parent !== window ? 'да' : 'нет') + ', hash=' + location.hash.length + ', fs=' + (fsOn ? 'да' : 'нет') + (fsErr ? ', ошибка ' + fsErr : '') + ' ' + probe()); }, 3500);
 })();
@@ -1176,7 +1179,7 @@
     if (S.agTab === 'runs'){
       var month = D.runs.filter(function(r){ return thisMonth(r.created_at); });
       var errs = D.runs.filter(function(r){ return !r.ok; }).length;
-      h += '<div class="tiles" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">' +
+      h += '<div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:18px">' +
         '<div class="card"><div class="sub" style="margin:0">Действий за месяц</div><div style="font-family:var(--font-head);font-weight:800;font-size:26px;margin-top:6px">' + month.length + '</div></div>' +
         '<div class="card"><div class="sub" style="margin:0">Расходы</div><div style="font-family:var(--font-head);font-weight:800;font-size:26px;margin-top:6px">' + usd(sumCost(month)) + '</div></div>' +
         '<div class="card"><div class="sub" style="margin:0">Ошибки</div><div style="font-family:var(--font-head);font-weight:800;font-size:26px;margin-top:6px">' + errs + '</div></div></div>';
@@ -1321,7 +1324,7 @@
     var month = D.runs.filter(function(r){ return thisMonth(r.created_at); }), recvM = D.emails.filter(function(e){ return e.direction === 'in' && e.folder !== 'spam' && thisMonth(tm(e)); }).length;
     var newM = D.partners.filter(function(p){ return thisMonth(p.created_at); }).length, agreed = D.partners.filter(function(p){ return p.status === 'agreed'; }).length;
     var per = function(n){ return n ? usd(b.cost / n) : '—'; };
-    h += '<div class="tiles" style="grid-template-columns:repeat(3,1fr);margin-top:14px">' +
+    h += '<div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-top:14px">' +
       '<div class="card"><div class="sub" style="margin:0">За партнёра</div><div style="font-family:var(--font-head);font-weight:800;font-size:24px;margin-top:6px">' + per(newM) + '</div><div class="sub" style="margin:4px 0 0">новых: ' + newM + '</div></div>' +
       '<div class="card"><div class="sub" style="margin:0">За ответ</div><div style="font-family:var(--font-head);font-weight:800;font-size:24px;margin-top:6px">' + per(recvM) + '</div><div class="sub" style="margin:4px 0 0">писем: ' + recvM + '</div></div>' +
       '<div class="card"><div class="sub" style="margin:0">За договорённость</div><div style="font-family:var(--font-head);font-weight:800;font-size:24px;margin-top:6px">' + per(agreed) + '</div><div class="sub" style="margin:4px 0 0">всего: ' + agreed + '</div></div></div>';
