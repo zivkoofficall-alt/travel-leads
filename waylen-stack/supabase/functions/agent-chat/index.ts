@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
         db.from("agent_settings").select("*").eq("id", 1).single(),
         db.from("knowledge").select("topic,content").eq("is_demo", false),
         db.from("partners").select("name,kind,country,status,email,rating,priority,fit_note,last_contact_at,created_at,mission_id").eq("is_demo", false).order("created_at", { ascending: false }).limit(80),
-        db.from("missions").select("id,title,goal,kind,region,target,write_letters,letters_per_day,searches_per_day,status,last_search_at,created_at"),
+        db.from("missions").select("id,title,goal,kind,region,target,write_letters,letters_per_day,searches_per_day,status,last_search_at,created_at,allow_repeat"),
         db.from("questions").select("question,context,status,created_at").eq("status", "open").limit(10),
         db.from("tasks").select("title,due_at,done").eq("done", false).eq("is_demo", false).limit(20),
         db.from("agent_runs").select("created_at,kind,ok,summary,cost_usd").eq("is_demo", false).order("created_at", { ascending: false }).limit(25),
@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
 ПАРТНЁРЫ: всего ${pTotal || 0}; по статусам: ${Object.entries(byStatus).map(([k, v]) => k + "=" + v).join(", ") || "-"} (found — найден, contacted — написали, replied — ответил, agreed — договорились, declined — отказ).
 Последние партнёры (до 80): ${partners.map((p) => `${p.name} [${p.kind}, ${p.country || "?"}, ${p.status}, ${p.rating || "-"}/5${p.email ? ", есть почта" : ", без почты"}]`).join("; ")}
 ПОЧТА (последние 40): непрочитанных входящих ${inboxUnread}, черновиков на утверждение ${drafts}. ${emails.slice(0, 15).map((e) => `${e.created_at.slice(0, 10)} ${e.direction === "in" ? "ВХ" : "ИСХ"} [${e.folder}/${e.status}] ${e.direction === "in" ? e.from_addr : e.to_addr}: ${e.subject || ""}${e.summary_ru ? " — " + e.summary_ru : ""}`).join(" | ")}
-ЗАДАНИЯ (missions): ${(ms.data || []).map((m) => `«${m.title}» [${m.status}] цель ${m.goal} | регион ${m.region || "-"} | тип ${m.kind} | найдено ${missionsById[m.id] || 0} из ${m.target} | письма ${m.write_letters ? "да, " + m.letters_per_day + "/день" : "нет"} | поисков/день ${m.searches_per_day} | последний поиск ${m.last_search_at || "-"}`).join("; ") || "нет"}
+ЗАДАНИЯ (missions): ${(ms.data || []).map((m) => `«${m.title}» [${m.status}] цель ${m.goal} | регион ${m.region || "-"} | тип ${m.kind} | найдено ${missionsById[m.id] || 0} из ${m.target} | письма ${m.write_letters ? "да, " + m.letters_per_day + "/день" : "нет"} | писать тем, с кем уже переписывались: ${m.allow_repeat ? "да (новое предложение)" : "нет"} | поисков/день ${m.searches_per_day} | последний поиск ${m.last_search_at || "-"}`).join("; ") || "нет"}
 ОТКРЫТЫЕ ВОПРОСЫ АГЕНТА К ВЛАДЕЛЬЦУ: ${(qs.data || []).map((q) => q.question).join(" | ") || "нет"}
 ЗАДАЧИ ВЛАДЕЛЬЦА (не сделаны): ${(ts.data || []).map((t) => t.title + (t.due_at ? " до " + t.due_at.slice(0, 10) : "")).join("; ") || "нет"}
 ЖУРНАЛ ДЕЙСТВИЙ (последние 25): ${(runs.data || []).map((r) => `${r.created_at.slice(5, 16).replace("T", " ")} ${r.ok ? "✓" : "✗"} ${r.summary} ($${Number(r.cost_usd || 0).toFixed(2)})`).join(" | ")}
@@ -116,8 +116,8 @@ ${(kb.data || []).map((k) => `• ${k.topic}: ${k.content}`).join("\n") || "(п�
 Ты умеешь ВЫПОЛНЯТЬ поручения. Если владелец просит что-то сделать — сделай это через блок действий В САМОМ НАЧАЛЕ ответа (до текста), строго в формате:
 <actions>[{...},{...}]</actions>
 Поддерживаемые действия:
-- {"type":"mission","title":"","goal":"подробная цель","kind":"clinic|carrier|blogger|community|other","region":"страна/город","target":20,"write_letters":true,"letters_per_day":5,"searches_per_day":1,"letter_brief":"что обязательно сказать в письме"} — создать задание на поиск партнёров и рассылку (поиск стоит ~$0.3 за запуск, письмо ~$0.01).
-- {"type":"mission_update","title":"точное название существующего задания","patch":{"status":"active|paused|done","region":"","target":30,"write_letters":true,"letters_per_day":5,"letter_brief":""}} — изменить задание.
+- {"type":"mission","title":"","goal":"подробная цель","kind":"clinic|carrier|blogger|community|other","region":"страна/город","target":20,"write_letters":true,"letters_per_day":5,"searches_per_day":1,"letter_brief":"что обязательно сказать в письме","allow_repeat":false} — создать задание на поиск партнёров и рассылку; allow_repeat=true только если владелец говорит, что это новое предложение и писать надо даже тем, кому уже писали (иначе агент пропускает всех, с кем уже была переписка) (поиск стоит ~$0.3 за запуск, письмо ~$0.01).
+- {"type":"mission_update","title":"точное название существующего задания","patch":{"status":"active|paused|done","region":"","target":30,"write_letters":true,"letters_per_day":5,"letter_brief":"","allow_repeat":false}} — изменить задание.
 - {"type":"task","title":"","due":"YYYY-MM-DD или null"} — задача владельцу в список дел.
 - {"type":"knowledge","topic":"","content":""} — добавить факт в базу знаний (из него ты потом пишешь письма).
 - {"type":"settings","patch":{"enabled":true,"daily_email_limit":10,"search_runs_per_day":1,"monthly_budget_usd":20,"focus_countries":["Вьетнам"],"focus_kinds":["clinic"],"followup_days":4}} — изменить настройки (только перечисленные ключи).
@@ -158,12 +158,12 @@ ${(kb.data || []).map((k) => `• ${k.topic}: ${k.content}`).join("\n") || "(п�
         try {
             if (a.type === "mission" && a.title && a.goal) {
                 const kind = ["clinic", "carrier", "blogger", "community", "other"].includes(a.kind) ? a.kind : "other";
-                await db.from("missions").insert({ title: String(a.title).slice(0, 120), goal: String(a.goal).slice(0, 2000), kind, region: a.region || null, target: Math.max(1, Math.min(200, Number(a.target) || 20)), write_letters: a.write_letters !== false, letters_per_day: Math.max(0, Math.min(30, Number(a.letters_per_day) || 5)), searches_per_day: Math.max(1, Math.min(4, Number(a.searches_per_day) || 1)), letter_brief: a.letter_brief || null, status: "active" });
+                await db.from("missions").insert({ title: String(a.title).slice(0, 120), goal: String(a.goal).slice(0, 2000), kind, region: a.region || null, target: Math.max(1, Math.min(200, Number(a.target) || 20)), write_letters: a.write_letters !== false, letters_per_day: Math.max(0, Math.min(30, Number(a.letters_per_day) || 5)), searches_per_day: Math.max(1, Math.min(4, Number(a.searches_per_day) || 1)), letter_brief: a.letter_brief || null, allow_repeat: a.allow_repeat === true, status: "active" });
                 done.push("Создано задание «" + a.title + "»");
             }
             else if (a.type === "mission_update" && a.title && a.patch) {
                 const p: any = {};
-                for (const k of ["status", "region", "target", "write_letters", "letters_per_day", "searches_per_day", "letter_brief", "goal"])
+                for (const k of ["status", "region", "target", "write_letters", "letters_per_day", "searches_per_day", "letter_brief", "goal", "allow_repeat"])
                     if (a.patch[k] !== undefined)
                         p[k] = a.patch[k];
                 if (p.status && !["active", "paused", "done"].includes(p.status))

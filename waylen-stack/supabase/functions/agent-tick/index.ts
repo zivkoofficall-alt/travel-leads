@@ -152,6 +152,7 @@ class Ctx {
     partners: any[] = [];
     accounts: any[] = [];
     templates: any[] = [];
+    history: any[] = [];
     constructor(db: Db, s: Settings) { this.db = db; this.s = s; }
     async run(kind: string, summary: string, details: string, ok: boolean, r?: ClaudeResult) {
         this.log.push((ok ? "✓ " : "✗ ") + summary);
@@ -462,13 +463,15 @@ async function followUps(c: Ctx) {
     for (const p of cands || []) {
         if (!p.email)
             continue;
+        if (pastContact(c, p.email, p.website).some((h) => h.direction === "in"))
+            continue;
         const { data: hasIn } = await c.db.from("emails").select("id").eq("partner_id", p.id).eq("direction", "in").limit(1);
         if (hasIn && hasIn.length)
             continue;
         const { data: hasDraft } = await c.db.from("emails").select("id").eq("partner_id", p.id).eq("folder", "draft").limit(1);
         if (hasDraft && hasDraft.length)
             continue;
-        const { data: last } = await c.db.from("emails").select("subject,body,account_id").eq("partner_id", p.id).eq("direction", "out").order("created_at", { ascending: false }).limit(1);
+        const { data: last } = await c.db.from("emails").select("subject,body,account_id").eq("partner_id", p.id).eq("direction", "out").eq("folder", "sent").order("created_at", { ascending: false }).limit(1);
         const l = last?.[0];
         if (!l)
             continue;
@@ -489,7 +492,28 @@ async function followUps(c: Ctx) {
 }
 const KN: Record<string, string> = { clinic: "ветеринарные клиники, которые оформляют документы для вывоза животных (чипирование, прививки, международные ветпаспорта, справки)", carrier: "компании и сервисы по перевозке домашних животных (pet relocation, pet cargo, курьеры-сопровождающие)", blogger: "блогеры и авторы каналов о переезде, релокации и путешествиях с питомцами (Telegram, YouTube, Instagram)", community: "сообщества и чаты релокантов и владельцев животных, форумы, группы в Telegram и Facebook", other: "организации, полезные для перевозки питомцев (отели для животных, грумеры, зоомагазины, юристы по релокации)" };
 const SEARCH_JSON = `[{"name":"","kind":"","country":"","website":"","email":"","contact_person":"","services":"","languages":"","countries":"","rating":3,"fit_note":"","source_url":""}]`;
-async function savePartners(c: Ctx, arr: any[], kind: string, country: string, extra: Record<string, unknown>): Promise<string[]> {
+function pastContact(c: Ctx, email: string | null | undefined, website?: string | null): any[] {
+    const em = addrOf(email || ""), dm = domainOf(email) || domainOf(website);
+    if (!em && !dm)
+        return [];
+    return c.history.filter((h) => {
+        const who = addrOf(h.direction === "out" ? h.to_addr : h.from_addr);
+        if (!who)
+            return false;
+        return (em && who === em) || (dm && !FREE.has(dm) && domainOf(who) === dm);
+    });
+}
+function contactedList(c: Ctx): string {
+    const seen = new Set<string>();
+    for (const h of c.history) {
+        if (h.direction !== "out")
+            continue;
+        const d = domainOf(h.to_addr);
+        seen.add(d && !FREE.has(d) ? d : addrOf(h.to_addr));
+    }
+    return [...seen].filter(Boolean).slice(0, 300).join("; ");
+}
+async function savePartners(c: Ctx, arr: any[], kind: string, country: string, extra: Record<string, unknown>, allowRepeat = false): Promise<string[]> {
     const names: string[] = [];
     for (const x of arr || []) {
         if (!x?.name)
@@ -499,6 +523,8 @@ async function savePartners(c: Ctx, arr: any[], kind: string, country: string, e
             continue;
         const dup = c.partners.some((p) => (em && p.email && p.email.toLowerCase() === em) || (nm && norm(p.name) === nm) || (dm && !FREE.has(dm) && (domainOf(p.email) === dm || domainOf(p.website) === dm)));
         if (dup)
+            continue;
+        if (!allowRepeat && pastContact(c, em, x.website).length)
             continue;
         const rating = Math.min(5, Math.max(1, Math.round(Number(x.rating) || 3)));
         const row = { name: String(x.name).slice(0, 200), kind, country: x.country || country || null, website: x.website || null, email: /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em) ? em : null, contact_person: x.contact_person || null, services: x.services || null, languages: x.languages || null, countries: x.countries || null, rating, fit_score: rating * 20, fit_note: x.fit_note || null, source: "Поиск агента", source_url: x.source_url || x.website || null, status: "found", priority: rating >= 4 ? "high" : "normal", status_changed_at: new Date().toISOString(), ...extra };
@@ -531,7 +557,7 @@ async function partnerSearch(c: Ctx) {
     const kind = kinds[n % kinds.length];
     const countries: string[] = (c.s.focus_countries || []).filter(Boolean);
     const country = countries.length ? countries[Math.floor(n / kinds.length) % countries.length] : "";
-    const known = c.partners.map((p) => (p.website || p.email || p.name)).filter(Boolean).slice(0, 300).join("; ");
+    const known = [c.partners.map((p) => (p.website || p.email || p.name)).filter(Boolean).slice(0, 300).join("; "), contactedList(c)].filter(Boolean).join("; ");
     const blocked = (c.s.blocked_domains || []).join(", ");
     const prompt = `Найди через веб-поиск 6–8 новых потенциальных партнёров: ${KN[kind]}${country ? ` в стране: ${country}` : " в странах, куда чаще всего переезжают с питомцами из СНГ (Турция, ОАЭ, Грузия, Сербия, Таиланд, Испания, Германия, Черногория, Казахстан)"}.
 Нужны реальные организации с сайтом или публичной почтой. Не повторяй уже известных: ${known || "(нет)"}. Не предлагай домены: ${blocked || "(нет)"}.
@@ -617,7 +643,7 @@ async function missions(c: Ctx) {
         const found = foundN || 0;
         if (found < Number(m.target || 0) && hoursAgo(m.last_search_at) >= 24 / Math.max(1, Number(m.searches_per_day) || 1) - 0.4) {
             await c.db.from("missions").update({ last_search_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", m.id);
-            const known = c.partners.map((p) => (p.website || p.email || p.name)).filter(Boolean).slice(0, 300).join("; ");
+            const known = [c.partners.map((p) => (p.website || p.email || p.name)).filter(Boolean).slice(0, 300).join("; "), contactedList(c)].filter(Boolean).join("; ");
             const prompt = `Задание владельца (это главнее любых общих настроек компании): ${m.goal}
 ${m.region ? `РЕГИОН ПОИСКА: ${m.region}. Ищи ТОЛЬКО организации, которые физически находятся в этом регионе. Организации из других стран не возвращай вообще.` : "Регион в задании не указан: определи его из текста задания и ищи только там."}
 Найди через веб-поиск 6–8 новых ${KN[kind]}. Нужны реальные организации с сайтом и публичной почтой: обязательно ищи e-mail на сайте (страница «Контакты»), в каталогах и справочниках; организация без почты нам почти бесполезна, ставь ей rating не выше 2.
@@ -628,7 +654,7 @@ ${m.region ? `РЕГИОН ПОИСКА: ${m.region}. Ищи ТОЛЬКО орг
                 const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), prompt, webSearch: 8, maxTokens: 8000 });
                 const raw: any[] = Array.isArray(r.json) ? r.json : (r.json?.partners || []);
                 const arr = raw.filter((x) => x && x.in_region !== false && x.in_region !== "false");
-                const names = await savePartners(c, arr, kind, m.region || "", { mission_id: m.id, source: "Задание: " + m.title });
+                const names = await savePartners(c, arr, kind, m.region || "", { mission_id: m.id, source: "Задание: " + m.title }, !!m.allow_repeat);
                 await c.run("partner_search", `Задание «${m.title}»: найдено новых ${names.length} (всего ${found + names.length} из ${m.target})`, names.join("\n") || r.text.slice(0, 800), true, r);
                 if (names.length)
                     await c.notify(`Задание «${m.title}»: нашёл ${names.length}, всего ${found + names.length} из ${m.target}\n` + names.slice(0, 6).join("\n"));
@@ -647,14 +673,25 @@ ${m.region ? `РЕГИОН ПОИСКА: ${m.region}. Ищи ТОЛЬКО орг
                 for (const p of cands || []) {
                     if (!room)
                         break;
-                    const { data: has } = await c.db.from("emails").select("id").eq("partner_id", p.id).eq("direction", "out").limit(1);
-                    if (has && has.length)
+                    const { data: has } = await c.db.from("emails").select("id,mission_id,folder,status").eq("partner_id", p.id).eq("direction", "out").neq("status", "failed");
+                    const past = pastContact(c, p.email, p.website);
+                    const sameMission = (has || []).some((e) => e.mission_id === m.id) || past.some((h) => h.mission_id === m.id);
+                    const pending = past.some((h) => h.direction === "out" && h.folder === "draft");
+                    if (sameMission || pending)
                         continue;
+                    if (!m.allow_repeat && ((has && has.length) || past.length)) {
+                        const last = past.map((h) => h.created_at).sort().pop() || new Date().toISOString();
+                        await c.db.from("partners").update({ status: past.some((h) => h.direction === "in") ? "replied" : "contacted", status_changed_at: new Date().toISOString(), last_contact_at: last, notes: "Переписка уже была раньше — повторное письмо не готовилось" }).eq("id", p.id).eq("status", "found");
+                        await c.run("reply_draft", `Задание «${m.title}»: ${p.name} — уже писали раньше, пропущено`, past.map((h) => `${String(h.created_at).slice(0, 10)} ${h.subject || ""}`).join("\n").slice(0, 800), true);
+                        continue;
+                    }
+                    const prev = past.filter((h) => h.direction === "out" || h.direction === "in").slice(-4).map((h) => `${String(h.created_at).slice(0, 10)} ${h.direction === "out" ? "мы написали" : "они ответили"}: «${h.subject || ""}»${h.summary_ru ? " — " + h.summary_ru : ""}`).join("\n");
                     if ((c.s.blocked_domains || []).some((b: string) => b === String(p.email).toLowerCase() || b === domainOf(p.email)))
                         continue;
                     try {
                         const ru = /росси|russia|беларус|казахстан|узбекистан|кыргыз|армени|грузи|украин|молдов|снг/i.test((p.country || "") + " " + (m.region || ""));
-                        const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), maxTokens: 1200, prompt: `Напиши первое письмо от имени Waylen Travel потенциальному партнёру по заданию владельца.
+                        const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), maxTokens: 1200, prompt: `Напиши ${prev ? "письмо" : "первое письмо"} от имени Waylen Travel ${prev ? "партнёру, с которым мы уже переписывались," : "потенциальному партнёру"} по заданию владельца.
+${prev ? "РАНЬШЕ УЖЕ БЫЛА ПЕРЕПИСКА:\n" + prev + "\nЭто НОВОЕ предложение: в начале коротко напомни о прошлом контакте, не повторяй прошлое письмо, объясни, что нового мы предлагаем сейчас.\n" : ""}
 Кто мы: Waylen Travel — сервис сопровождения переездов и поездок с питомцами (НЕ ветеринарная клиника и НЕ перевозчик): мы ведём клиента по документам, требованиям стран, маршруту, а ветеринарную часть и оформление доверяем партнёрским клиникам.
 Кто они: ${p.name} — ${KN[kind]}, ${p.country || m.region || ""}. Их услуги: ${p.services || "-"}. Контакт: ${p.contact_person || "-"}. Почему подходят: ${p.fit_note || "-"}.
 Задание владельца: ${m.goal}
@@ -666,6 +703,7 @@ ${m.letter_brief ? "Что обязательно сказать в письме
                             throw new Error("пустой ответ");
                         const auto = c.s.send_mode === "auto";
                         await c.db.from("emails").insert({ account_id: acc.id, partner_id: p.id, mission_id: m.id, direction: "out", status: auto ? "approved" : "draft", folder: "draft", is_read: true, author: "agent", subject: j.subject || ("Сотрудничество с Waylen Travel"), body: j.body, from_addr: acc.address, to_addr: p.email });
+                        c.history.push({ direction: "out", folder: "draft", status: "draft", to_addr: p.email, from_addr: acc.address, subject: j.subject, created_at: new Date().toISOString(), mission_id: m.id });
                         written++;
                         room--;
                         await c.run("reply_draft", `Задание «${m.title}»: письмо для ${p.name}`, j.body.slice(0, 1200), true, r);
@@ -741,16 +779,18 @@ Deno.serve(async (req) => {
         c.apiKey = sec.anthropic_api_key || "";
         c.tgToken = sec.telegram_bot_token || "";
         c.tgChat = sec.telegram_chat_id || "";
-        const [kb, ps, ac, tp] = await Promise.all([
+        const [kb, ps, ac, tp, hi] = await Promise.all([
             db.from("knowledge").select("topic,content").eq("is_demo", false),
             db.from("partners").select("id,name,email,website,kind,status,country,terms,notes,last_contact_at").eq("is_demo", false),
             db.from("mail_accounts").select("*").eq("is_demo", false),
             db.from("templates").select("title,subject,body").eq("is_demo", false),
+            db.from("emails").select("direction,folder,status,to_addr,from_addr,subject,summary_ru,created_at,mission_id,partner_id").eq("is_demo", false).neq("status", "failed").in("folder", ["sent", "draft", "inbox"]).order("created_at").limit(3000),
         ]);
         c.knowledge = kb.data || [];
         c.partners = ps.data || [];
         c.accounts = ac.data || [];
         c.templates = tp.data || [];
+        c.history = (hi.data || []).filter((h) => !/mailer-daemon|postmaster|no-?reply/i.test(String(h.from_addr || "") + String(h.to_addr || "")));
         await telegramInbox(c);
         await absorbAnswers(c);
         if (!c.apiKey) {

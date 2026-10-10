@@ -2141,6 +2141,8 @@
             '<div class="row2 keep"><div class="fld"><label for="m_target">Сколько найти</label><input id="m_target" type="number" inputmode="numeric" min="1" max="500" value="' + esc(m.target) + '"></div><div class="fld"><label for="m_spd">Поисков в день</label><input id="m_spd" type="number" inputmode="numeric" min="1" max="6" value="' + esc(m.searches_per_day) + '"></div></div>' +
             '<p class="hint" style="margin-top:-8px">Один поиск находит 6–8 организаций и стоит около $0.25. Письмо — около $0.02.</p>' +
             '<div class="fld"><label>Письма найденным</label><div class="seg" id="m_wl"><button type="button" class="' + (m.write_letters ? 'on' : '') + '" data-act="m-wl" data-id="1">Писать</button><button type="button" class="' + (!m.write_letters ? 'on' : '') + '" data-act="m-wl" data-id="0">Только искать</button></div></div>' +
+            '<div class="fld"><label>Кому мы уже писали раньше</label><div class="seg" id="m_rep"><button type="button" class="' + (!m.allow_repeat ? 'on' : '') + '" data-act="m-wl" data-id="0">Пропускать</button><button type="button" class="' + (m.allow_repeat ? 'on' : '') + '" data-act="m-wl" data-id="1">Новое предложение</button></div></div>' +
+            '<p class="hint" style="margin-top:-8px">«Пропускать» — агент не пишет тем, с кем уже была переписка. «Новое предложение» — пишет и им, упоминая прошлый контакт.</p>' +
             '<div class="row2 keep"><div class="fld"><label for="m_lpd">Писем в день</label><input id="m_lpd" type="number" inputmode="numeric" min="0" max="100" value="' + esc(m.letters_per_day) + '"></div><div class="fld"><label for="m_status">Статус</label><select id="m_status">' + Object.keys(MST).map(function (k) { return '<option value="' + k + '"' + (m.status === k ? ' selected' : '') + '>' + MST[k] + '</option>'; }).join('') + '</select></div></div>' +
             '<div class="fld"><label for="m_brief">Что обязательно сказать в письме</label><textarea id="m_brief" style="min-height:80px" placeholder="Условия: 10% с каждого клиента, оплата по факту. Предложить созвон на 15 минут">' + esc(m.letter_brief || '') + '</textarea></div>' +
             '<div class="acts sticky"><button class="pill" data-act="m-save" data-id="' + esc(id || '') + '">' + (id ? 'Сохранить' : 'Запустить задание') + '</button>' + (id ? '<button class="pill danger" data-act="m-del" data-id="' + esc(id) + '">Удалить</button>' : '') + '</div>';
@@ -2583,7 +2585,10 @@
             var wl = ($('#m_wl') || { dataset: {} }).dataset.v;
             if (wl == null)
                 wl = $('#m_wl .on') && $('#m_wl .on').dataset.id;
-            var row = { title: val('m_title'), goal: val('m_goal'), kind: val('m_kind'), region: val('m_region') || null, target: Math.max(1, parseInt(val('m_target'), 10) || 30), searches_per_day: Math.max(1, Math.min(6, parseInt(val('m_spd'), 10) || 1)), letters_per_day: Math.max(0, parseInt(val('m_lpd'), 10) || 0), write_letters: wl === '1', letter_brief: val('m_brief') || null, status: val('m_status') || 'active', updated_at: new Date().toISOString() };
+            var rep = ($('#m_rep') || { dataset: {} }).dataset.v;
+            if (rep == null)
+                rep = $('#m_rep .on') && $('#m_rep .on').dataset.id;
+            var row = { allow_repeat: rep === '1', title: val('m_title'), goal: val('m_goal'), kind: val('m_kind'), region: val('m_region') || null, target: Math.max(1, parseInt(val('m_target'), 10) || 30), searches_per_day: Math.max(1, Math.min(6, parseInt(val('m_spd'), 10) || 1)), letters_per_day: Math.max(0, parseInt(val('m_lpd'), 10) || 0), write_letters: wl === '1', letter_brief: val('m_brief') || null, status: val('m_status') || 'active', updated_at: new Date().toISOString() };
             if (!row.title || !row.goal) {
                 toast('Нужны название и описание задания');
                 return;
