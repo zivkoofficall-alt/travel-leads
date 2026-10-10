@@ -79,6 +79,24 @@
   .seg2{display:inline-flex;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;margin:6px 0 10px;}
   .seg2 button{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;color:var(--muted);}
   .seg2 button.on{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12);}
+  .fnl{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 10px;}
+  .fnl button{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 8px 9px;text-align:left;position:relative;overflow:hidden;min-width:0;}
+  .fnl button b{display:block;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;}
+  .fnl button span{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .fnl button i{position:absolute;left:0;right:0;bottom:0;height:3px;}
+  .fnl button.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset;}
+  .fnl button.on span{color:var(--text);}
+  .it .why{font-size:12.5px;color:var(--muted);margin-top:3px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+  .ptabs{display:flex;width:100%;}
+  .ptabs button{flex:1;white-space:nowrap;padding:7px 4px;font-size:12.5px;}
+  .ptabs .tcnt{margin-left:4px;}
+  .cbtns{display:flex;gap:8px;margin:4px 0 14px;}
+  .cbtns>*{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:700;padding:10px 4px 9px;border-radius:16px;background:var(--card-2);border:1px solid var(--line);color:var(--text);text-decoration:none;}
+  .cbtns>* svg{width:20px;height:20px;}
+  .set .fld>.hint{margin-bottom:14px;}
+  .cbtns>.pri{background:var(--acc);border-color:var(--acc);color:#0B1220;}
+  html[data-theme="light"] .cbtns>.pri{color:#fff;}
+  .ppane.hidden{display:none;}
   .diffb{border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:12px 0;font-size:14px;line-height:1.5;white-space:pre-wrap;}
   .diffb del{background:rgba(255,138,128,.16);color:var(--danger);text-decoration:line-through;}
   .diffb ins{background:rgba(var(--acc-rgb),.16);text-decoration:none;}
@@ -935,7 +953,7 @@
         }
         catch (e) {
             return 'home';
-        } })(), mailAcc: 'all', folder: 'threads', q: '', pq: '', pst: 'all', pkind: 'all', agTab: '', runFilter: 'all', selMode: false, sel: {}, unread: false, psort: 'new', pstar: false, page: {}, days: 30, runDays: 0 };
+        } })(), mailAcc: 'all', folder: 'threads', q: '', pq: '', pst: 'all', pkind: 'all', agTab: '', runFilter: 'all', selMode: false, sel: {}, pSel: false, psel: {}, ptab: 'ov', unread: false, psort: 'new', pstar: false, page: {}, days: 30, runDays: 0 };
     function saveSession(s) { try {
         localStorage.setItem(STORE, JSON.stringify(s));
     }
@@ -1880,6 +1898,17 @@
     function threadMsgs(k) {
         return D.emails.filter(function (e) { return e.folder !== 'spam' && e.folder !== 'trash' && !(e.folder === 'draft' && e.status === 'failed') && tkey(e) === k; }).sort(function (a, b) { return String(tm(a)).localeCompare(String(tm(b))); });
     }
+    function bubsHtml(L) {
+        return '<div class="bubs">' + L.map(function (x) {
+            var me = x.direction === 'out', dr = x.folder === 'draft', t = x.body_ru || x.body || '';
+            var lab = me ? (dr ? (x.status === 'approved' ? 'В очереди' : 'Черновик' + (x.author === 'agent' ? ' агента' : '')) : 'Вы' + (x.author === 'agent' ? ' · агент' : '')) : esc(nameOf(x));
+            return '<div class="bub' + (me ? ' me' : '') + (dr ? ' draft' : '') + '"><div class="bm"><span>' + lab + '</span><span>' + esc(dtime(tm(x))) + '</span></div>' +
+                (x.subject ? '<div class="bs">' + esc(x.subject) + (x.body_ru ? ' · переведено с ' + esc((x.lang || '').toUpperCase()) : '') + '</div>' : '') +
+                '<div class="bt">' + esc(t || '(пусто)') + '</div><div class="bx">' +
+                (dr && x.status !== 'approved' ? '<button class="ok" data-act="approve" data-id="' + esc(x.id) + '">Утвердить</button><button data-act="edit-draft" data-id="' + esc(x.id) + '">Изменить</button>' : '') +
+                '<button data-act="mail-open" data-id="' + esc(x.id) + '">Полностью</button></div></div>';
+        }).join('') + '</div>';
+    }
     function openThread(k) {
         var L = threadMsgs(k);
         if (!L.length)
@@ -1903,15 +1932,7 @@
         }
         S.th = { k: k, to: addr, acc: acc || (D.accounts[0] && D.accounts[0].id) || '', subj: subj ? (/^re:/i.test(subj) ? subj : 'Re: ' + subj) : '', pid: p ? p.id : '' };
         var head = '<div class="thhead">' + (p ? '<button class="link" style="margin:0;padding:0;font-size:14px" data-act="p-open" data-id="' + esc(p.id) + '">' + esc(p.name) + '</button><span class="st ' + p.status + '">' + PST[p.status] + '</span>' : '') + '<span>' + esc(addr) + '</span><span>Писем: ' + L.length + '</span></div>';
-        var b = '<div class="bubs">' + L.map(function (x) {
-            var me = x.direction === 'out', dr = x.folder === 'draft', t = x.body_ru || x.body || '';
-            var lab = me ? (dr ? (x.status === 'approved' ? 'В очереди' : 'Черновик' + (x.author === 'agent' ? ' агента' : '')) : 'Вы' + (x.author === 'agent' ? ' · агент' : '')) : esc(nameOf(x));
-            return '<div class="bub' + (me ? ' me' : '') + (dr ? ' draft' : '') + '"><div class="bm"><span>' + lab + '</span><span>' + esc(dtime(tm(x))) + '</span></div>' +
-                (x.subject ? '<div class="bs">' + esc(x.subject) + (x.body_ru ? ' · переведено с ' + esc((x.lang || '').toUpperCase()) : '') + '</div>' : '') +
-                '<div class="bt">' + esc(t || '(пусто)') + '</div><div class="bx">' +
-                (dr && x.status !== 'approved' ? '<button class="ok" data-act="approve" data-id="' + esc(x.id) + '">Утвердить</button><button data-act="edit-draft" data-id="' + esc(x.id) + '">Изменить</button>' : '') +
-                '<button data-act="mail-open" data-id="' + esc(x.id) + '">Полностью</button></div></div>';
-        }).join('') + '</div>';
+        var b = bubsHtml(L);
         var comp = addr ? '<div class="composer"><textarea id="th_body" placeholder="Ответ ' + esc(name) + '…"></textarea><div class="acts"><button class="pill" data-act="th-send">Отправить</button><button class="pill ghost" data-act="th-ai" id="thAi">' + ic('bolt') + 'Черновик агента</button></div></div>' : '';
         openSheet(name, head + b + comp);
         setTimeout(function () { var sp = document.querySelector('#sheet .sp'); if (sp) sp.scrollTop = sp.scrollHeight; }, 60);
@@ -2196,26 +2217,30 @@
         return L;
     }
     function vPartners() {
-        var work = S.pwork, L = pFiltered();
-        var h = '<div class="head"><div><h1 class="pt">Партнёры</h1><p class="sub">' + D.partners.length + ' в базе' + (work ? ' · в работе' : '') + '</p></div><div class="acts" style="margin:0"><button class="pill" data-act="p-new">' + ic('plus') + 'Добавить</button></div></div>';
-        h += '<div class="chips"><button class="chip' + (S.pst === 'all' && !work ? ' on' : '') + '" data-act="pst" data-id="all">Все</button>' +
-            '<button class="chip' + (work ? ' on' : '') + '" data-act="pst" data-id="work">В работе <span class="n">' + D.partners.filter(function (p) { return p.status === 'contacted' || p.status === 'replied'; }).length + '</span></button>' +
-            Object.keys(PST).map(function (k) {
-                var n = D.partners.filter(function (p) { return p.status === k; }).length;
-                return '<button class="chip' + (S.pst === k ? ' on' : '') + '" data-act="pst" data-id="' + k + '">' + PST[k] + ' <span class="n">' + n + '</span></button>';
-            }).join('') + '<button class="chip' + (S.pstar ? ' on' : '') + '" data-act="pstar">' + starI(S.pstar) + 'Избранные <span class="n">' + D.partners.filter(function (p) { return p.starred; }).length + '</span></button></div>';
+        var work = S.pwork, L = pFiltered(), cnt = function (k) { return D.partners.filter(function (p) { return p.status === k; }).length; };
+        var h = '<div class="head"><div><h1 class="pt">Партнёры</h1><p class="sub">' + D.partners.length + ' в базе</p></div><div class="acts" style="margin:0">' + (D.partners.length ? '<button class="pill ghost" data-act="p-sel-mode">' + (S.pSel ? 'Готово' : 'Выбрать') + '</button>' : '') + '<button class="pill" data-act="p-new">' + ic('plus') + 'Добавить</button></div></div>';
+        h += '<div class="fnl">' + ['found', 'contacted', 'replied', 'agreed'].map(function (k) { return '<button class="' + (S.pst === k && !work ? 'on' : '') + '" data-act="pst" data-id="' + (S.pst === k && !work ? 'all' : k) + '"><b>' + cnt(k) + '</b><span>' + ({ agreed: 'Сделка' }[k] || PST[k]) + '</span><i style="background:' + PCOL[k] + '"></i></button>'; }).join('') + '</div>';
+        h += '<div class="chips"><button class="chip' + (S.pst === 'all' && !work ? ' on' : '') + '" data-act="pst" data-id="all">Все <span class="n">' + D.partners.length + '</span></button>' +
+            '<button class="chip' + (work ? ' on' : '') + '" data-act="pst" data-id="work">Ждём ответа <span class="n">' + cnt('contacted') + '</span></button>' +
+            '<button class="chip' + (S.pstar ? ' on' : '') + '" data-act="pstar">' + starI(S.pstar) + 'Избранные <span class="n">' + D.partners.filter(function (p) { return p.starred; }).length + '</span></button>' +
+            ['declined', 'paused'].map(function (k) { var n = cnt(k); return n || S.pst === k ? '<button class="chip' + (S.pst === k ? ' on' : '') + '" data-act="pst" data-id="' + k + '">' + PST[k] + ' <span class="n">' + n + '</span></button>' : ''; }).join('') + '</div>';
         h += '<div class="search">' + ic('search') + '<input id="pq" type="search" placeholder="Название, страна, почта" value="' + esc(S.pq) + '" autocomplete="off"></div>';
         h += '<div class="row2 keep" style="margin-bottom:14px"><select id="pkind" aria-label="Тип"><option value="all">Все типы</option>' + Object.keys(KIND).map(function (k) { return '<option value="' + k + '"' + (S.pkind === k ? ' selected' : '') + '>' + (KINDP[k] || KIND[k]) + '</option>'; }).join('') + '</select>' +
             '<select id="psort" aria-label="Сортировка">' + [['new', 'Новые'], ['fit', 'По оценке'], ['name', 'По названию'], ['prio', 'По важности'], ['next', 'По дате']].map(function (o) { return '<option value="' + o[0] + '"' + (S.psort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
         if (!L.length)
             return h + '<div class="card empty">' + (D.partners.length ? 'Никого не найдено по этим фильтрам.' : 'Партнёров пока нет. Агент добавит найденных сам, или добавьте вручную.') + '<div class="acts" style="justify-content:center"><button class="pill" data-act="p-new">' + ic('plus') + 'Добавить партнёра</button></div></div>';
+        if (S.pSel) {
+            var sn = L.filter(function (p) { return S.psel[p.id]; }).length;
+            h += '<div class="bulk"><span>Выбрано: ' + sn + '</span><button class="pill ghost" data-act="p-sel-all">' + (sn === L.length ? 'Снять' : 'Все') + '</button><button class="pill ghost" data-act="p-bulk" data-do="st">Статус</button><button class="pill ghost" data-act="p-bulk" data-do="star">В избранное</button><button class="pill danger" data-act="p-bulk" data-do="del">Удалить</button></div>';
+        }
         var pp = more(L.length, 'partners', 80);
         var today0 = new Date();
         today0.setHours(0, 0, 0, 0);
         return h + '<p class="hint" style="margin:0 0 10px">Показано: ' + Math.min(L.length, pp.n) + ' из ' + L.length + '</p><div class="list">' + L.slice(0, pp.n).map(function (p) {
             var over = p.next_action_at && new Date(p.next_action_at) < today0, lc = lastContact(p.id);
             var na = (p.next_action || p.next_action_at) ? '<div class="l3' + (over ? ' bad' : '') + '">→ ' + esc(p.next_action || 'Действие') + (p.next_action_at ? ' · ' + esc(dshort(p.next_action_at)) : '') + '</div>' : '';
-            return '<button class="it" data-act="p-open" data-id="' + esc(p.id) + '">' + avRing(p) + '<div class="mid"><div class="l1"><span>' + (p.starred ? '<span class="star">' + starI(true) + '</span>' : '') + esc(p.name) + (p.priority === 'high' ? ' <span class="tag">важно</span>' : '') + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + (lc ? ' · контакт ' + esc(ago(new Date(lc).toISOString())) + ' назад' : '') + '</div>' + na + '</div></button>';
+            var why = p.fit_note ? '<div class="why">' + esc(RLAB[ratingOf(p)]) + ': ' + esc(p.fit_note) + '</div>' : '';
+            return '<button class="it" data-act="' + (S.pSel ? 'p-sel-toggle' : 'p-open') + '" data-id="' + esc(p.id) + '">' + (S.pSel ? '<span class="cb' + (S.psel[p.id] ? ' on' : '') + '">' + ic('check') + '</span>' : '') + avRing(p) + '<div class="mid"><div class="l1"><span>' + (p.starred ? '<span class="star">' + starI(true) + '</span>' : '') + esc(p.name) + (p.priority === 'high' ? ' <span class="tag">важно</span>' : '') + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + (lc ? ' · контакт ' + esc(ago(new Date(lc).toISOString())) + ' назад' : '') + '</div>' + why + na + '</div></button>';
         }).join('') + '</div>' + pp.html;
     }
     function partnerSheet(id, pre) {
@@ -2225,35 +2250,40 @@
         var ins = function (i, l, v, ph, type) { return '<div class="fld"><label for="' + i + '">' + l + '</label><input id="' + i + '" type="' + (type || 'text') + '" value="' + esc(v || '') + '" placeholder="' + esc(ph || '') + '"></div>'; };
         var sel = function (i, l, obj, cur) { return '<div class="fld"><label for="' + i + '">' + l + '</label><select id="' + i + '">' + Object.keys(obj).map(function (k) { return '<option value="' + k + '"' + (cur === k ? ' selected' : '') + '>' + obj[k] + '</option>'; }).join('') + '</select></div>'; };
         var site = p.website ? (/^https?:\/\//.test(p.website) ? p.website : 'https://' + p.website) : '';
-        var h = '<div class="set">';
+        var h = '<div class="set">', pane = function (k) { return id ? '<div class="ppane' + (S.ptab === k ? '' : ' hidden') + '" data-pane="' + k + '">' : '<div>'; };
+        var TL = id ? threadMsgs(id) : [];
         if (id) {
             var lc = lastContact(id), em = D.emails.filter(function (e) { return e.partner_id === id && e.folder !== 'draft'; }).length;
             h += '<div class="phead">' + avRing(p) + '<div class="pm"><b>' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + '</b>' + esc(RLAB[ratingOf(p)]) + (p.priority === 'high' ? ' · важный' : '') + ' · писем: ' + em + (lc ? ' · контакт ' + esc(ago(new Date(lc).toISOString())) + ' назад' : '') + '</div></div>';
+            h += '<div class="cbtns">' + (p.email ? '<button class="pri" data-act="' + (TL.length ? 'thread-open' : 'p-write') + '" data-id="' + esc(id) + '">' + ic('mail') + (TL.length ? 'Ответить' : 'Написать') + '</button><button data-act="p-copy" data-id="' + esc(p.email) + '">' + ic('doc') + 'Почта</button>' : '') +
+                (site ? '<a href="' + esc(site) + '" target="_blank" rel="noopener noreferrer">' + ic('globe') + 'Сайт</a>' : '') +
+                '<button data-act="p-task" data-id="' + esc(id) + '">' + ic('check') + 'Задача</button></div>';
+            h += '<div class="seg2 ptabs">' + [['ov', 'Обзор'], ['mail', 'Переписка' + (TL.length ? '<span class="tcnt">' + TL.length + '</span>' : '')], ['notes', 'Заметки'], ['hist', 'История']].map(function (t) { return '<button class="' + (S.ptab === t[0] ? 'on' : '') + '" data-act="ptab" data-id="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>';
+            h += '<div class="quick ppane' + (S.ptab === 'ov' ? '' : ' hidden') + '" data-pane="ov">' + Object.keys(PST).map(function (k) { return '<button type="button" class="' + (p.status === k ? 'on st ' + k : '') + '" data-act="p-quick" data-id="' + k + '">' + PST[k] + '</button>'; }).join('') + '</div>';
         }
-        if (id)
-            h += '<div class="quick">' + Object.keys(PST).map(function (k) { return '<button type="button" class="' + (p.status === k ? 'on st ' + k : '') + '" data-act="p-quick" data-id="' + k + '">' + PST[k] + '</button>'; }).join('') + '</div>';
-        h += ins('p_name', 'Название', p.name) +
+        h += pane('ov') +
+            (p.fit_score != null || p.fit_note ? '<div class="note"><b>' + (p.fit_score != null ? 'Подходит нам: ' + p.fit_score + ' из 100.' : 'Почему такая оценка:') + '</b>' + (p.fit_note ? ' ' + esc(p.fit_note) : '') + (p.fit_score != null ? '<div class="meter"><span style="width:' + p.fit_score + '%"></span></div>' : '') + '</div>' : '') +
+            ins('p_name', 'Название', p.name) +
             '<div class="row2 keep">' + sel('p_kind', 'Тип', KIND, p.kind) + sel('p_st', 'Статус', PST, p.status) + '</div>' +
             '<div class="fld"><label>Оценка: ' + esc(RLAB[ratingOf(p)]) + '</label><div class="rs" id="p_rate" data-v="' + ratingOf(p) + '">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" class="' + (ratingOf(p) === n ? 'on' : '') + '" data-act="p-rate" data-id="' + n + '">' + n + '</button>'; }).join('') + '</div><p class="hint">Насколько партнёр релевантен нам: 1 — не подходит, 5 — отлично. Агент ставит оценку сам, вы можете её поправить.</p></div>' +
             '<div class="row2 keep">' + sel('p_prio', 'Важность', PRIO, p.priority || 'normal') +
             '<div class="fld"><label>Избранный</label><button type="button" id="p_star" class="chip' + (p.starred ? ' on' : '') + '" data-on="' + (p.starred ? '1' : '0') + '" data-act="p-startog" style="justify-content:center;padding:14px 16px">' + starI(p.starred) + (p.starred ? 'Да' : 'Нет') + '</button></div></div>' +
-            '<div class="row2 keep">' + ins('p_country', 'Страна партнёра', p.country, 'Таиланд') + ins('p_countries', 'Работает со странами', p.countries, 'Таиланд, Вьетнам, ОАЭ') + '</div>' +
-            '<div class="row2 keep">' + ins('p_person', 'Контактное лицо', p.contact_person) + ins('p_lang', 'Языки общения', p.languages, 'Английский, русский') + '</div>' +
-            '<div class="row2 keep">' + ins('p_email', 'Почта', p.email, '', 'email') + ins('p_site', 'Сайт', p.website, 'clinic.example') + '</div>' +
-            '<div class="row2 keep">' + ins('p_source', 'Откуда узнали', p.source, 'Поиск агента, рекомендация') + ins('p_srcurl', 'Ссылка на источник', p.source_url, 'https://…') + '</div>' +
             '<div class="row2 keep">' + ins('p_na', 'Следующее действие', p.next_action, 'Позвонить, отправить прайс') + ins('p_nad', 'Когда', p.next_action_at ? dkey(p.next_action_at) : '', '', 'date') + '</div>' +
-            (p.fit_score != null ? '<div class="note"><b>Подходит нам: ' + p.fit_score + ' из 100.</b>' + (p.fit_note ? ' ' + esc(p.fit_note) : '') + '<div class="meter"><span style="width:' + p.fit_score + '%"></span></div></div>' : '') +
-            '<div class="fld"><label for="p_serv">Услуги</label><textarea id="p_serv" placeholder="Что предлагает: чипирование, справки, перевозка, карантин">' + esc(p.services || '') + '</textarea></div>' +
+            '<div class="row2 keep">' + ins('p_email', 'Почта', p.email, '', 'email') + ins('p_site', 'Сайт', p.website, 'clinic.example') + '</div>' +
+            '<div class="row2 keep">' + ins('p_person', 'Контактное лицо', p.contact_person) + ins('p_lang', 'Языки общения', p.languages, 'Английский, русский') + '</div>' +
+            '<div class="row2 keep">' + ins('p_country', 'Страна партнёра', p.country, 'Таиланд') + ins('p_countries', 'Работает со странами', p.countries, 'Таиланд, Вьетнам, ОАЭ') + '</div>' +
+            '<div class="row2 keep">' + ins('p_source', 'Откуда узнали', p.source, 'Поиск агента, рекомендация') + ins('p_srcurl', 'Ссылка на источник', p.source_url, 'https://…') + '</div></div>' +
+            pane('notes') +
+            '<div class="fld"><label for="p_notes">Заметки</label><textarea id="p_notes" placeholder="Что важно помнить о партнёре">' + esc(p.notes || '') + '</textarea></div>' +
             '<div class="fld"><label for="p_terms">Условия сотрудничества</label><textarea id="p_terms" placeholder="Комиссия, скидка клиентам, порядок оплаты, договор">' + esc(p.terms || '') + '</textarea><p class="hint">Агент использует это поле, когда отвечает партнёру и когда предлагает его клиентам.</p></div>' +
-            '<div class="fld"><label for="p_notes">Заметки</label><textarea id="p_notes">' + esc(p.notes || '') + '</textarea></div>' +
+            '<div class="fld"><label for="p_serv">Услуги</label><textarea id="p_serv" placeholder="Что предлагает: чипирование, справки, перевозка, карантин">' + esc(p.services || '') + '</textarea></div></div>' +
             '<div id="p_warn"></div>' +
-            (id ? '<div class="acts sec">' + '<button class="pill ghost" data-act="p-task" data-id="' + esc(id) + '">Задача</button>' +
-                (site ? '<a class="pill ghost" href="' + esc(site) + '" target="_blank" rel="noopener noreferrer">Сайт</a>' : '') +
+            (id ? '<div class="acts sec ppane' + (S.ptab === 'ov' || S.ptab === 'notes' ? '' : ' hidden') + '" data-pane="ov notes">' +
                 (p.email ? '<button class="pill ghost" data-act="p-block" data-id="' + esc(id) + '">В чёрный список</button>' : '') +
-                '<button class="pill danger" data-act="p-del" data-id="' + esc(id) + '">Удалить</button></div>' : '') +
-            '<div class="acts sticky"><button class="pill" data-act="p-save" data-id="' + esc(id || '') + '">Сохранить</button>' +
-            (id && p.email ? '<button class="pill ghost" data-act="p-write" data-id="' + esc(id) + '">Написать</button>' : '') + '</div>';
+                '<button class="pill danger" data-act="p-del" data-id="' + esc(id) + '">Удалить партнёра</button></div>' : '') +
+            '<div class="acts sticky' + (id ? ' ppane' + (S.ptab === 'ov' || S.ptab === 'notes' ? '' : ' hidden') : '') + '" data-pane="ov notes"><button class="pill" data-act="p-save" data-id="' + esc(id || '') + '">Сохранить</button></div>';
         if (id) {
+            h += pane('mail') + (TL.length ? bubsHtml(TL) + '<div class="acts" style="margin-top:14px"><button class="pill" data-act="thread-open" data-id="' + esc(id) + '">Открыть переписку и ответить</button></div>' : '<div class="card empty">Писем с партнёром пока нет.' + (p.email ? '<div class="acts" style="justify-content:center"><button class="pill" data-act="p-write" data-id="' + esc(id) + '">Написать первое письмо</button></div>' : '') + '</div>') + '</div>';
             var ev = [];
             D.emails.forEach(function (e) { if (e.partner_id === id)
                 ev.push({ t: new Date(tm(e)).getTime(), c: e.direction === 'in' ? 'in' : 'out', h: '<button data-act="mail-open" data-id="' + esc(e.id) + '">' + (e.direction === 'in' ? 'Письмо от партнёра: ' : (e.folder === 'draft' ? (e.status === 'approved' ? 'В очереди: ' : 'Черновик' + (e.author === 'agent' ? ' агента' : '') + ': ') : 'Отправлено: ')) + esc(e.subject || '(без темы)') + '</button>' }); });
@@ -2265,7 +2295,7 @@
                 ev.push({ t: new Date(p.status_changed_at).getTime(), c: '', h: 'Статус: ' + PST[p.status] });
             ev.push({ t: new Date(p.created_at).getTime(), c: '', h: 'Партнёр добавлен' + (p.source ? ' · ' + esc(p.source) : '') });
             ev.sort(function (a, b) { return b.t - a.t; });
-            h += '<h3 class="sec" style="margin-top:26px">История <span class="tag">' + ev.length + '</span></h3><div class="tline">' + ev.map(function (x) { return '<div class="tle ' + x.c + '"><div class="tt">' + esc(fullDate(new Date(x.t).toISOString())) + '</div>' + x.h + '</div>'; }).join('') + '</div>';
+            h += pane('hist') + '<div class="tline">' + ev.map(function (x) { return '<div class="tle ' + x.c + '"><div class="tt">' + esc(fullDate(new Date(x.t).toISOString())) + '</div>' + x.h + '</div>'; }).join('') + '</div></div>';
         }
         openSheet(id ? p.name : 'Новый партнёр', h + '</div>');
     }
@@ -2822,7 +2852,7 @@
     function setTab(t) { var ch = S.tab !== t; try {
         localStorage.setItem('wl_tab', t);
     }
-    catch (e) { } render.dir = ch ? (tabIdx(t) > tabIdx(S.tab) ? 'r' : 'l') : ''; S.tab = t; S.selMode = false; S.sel = {}; S.page = {}; S.queueAll = false; render(ch); sy(0); }
+    catch (e) { } render.dir = ch ? (tabIdx(t) > tabIdx(S.tab) ? 'r' : 'l') : ''; S.tab = t; S.selMode = false; S.sel = {}; S.pSel = false; S.psel = {}; S.page = {}; S.queueAll = false; render(ch); sy(0); }
     function byId(arr, id) { return arr.filter(function (x) { return x.id === id; })[0]; }
     function fail() { toast('Не получилось. Проверьте связь и попробуйте ещё раз', true); }
     function more(total, key, step) {
@@ -3048,7 +3078,27 @@
         'c-save': function (d) { saveCompose(d.id, d.p, 'draft'); },
         pst: function (d) { S.pwork = d.id === 'work'; S.pst = S.pwork ? 'all' : d.id; render(); },
         pstar: function () { S.pstar = !S.pstar; render(); },
-        'p-open': function (d) { partnerSheet(d.id); },
+        'p-open': function (d) { S.ptab = 'ov'; partnerSheet(d.id); },
+        ptab: function (d, el) { S.ptab = d.id; Array.prototype.forEach.call(el.parentNode.children, function (b) { b.classList.toggle('on', b === el); }); Array.prototype.forEach.call(document.querySelectorAll('#sheet [data-pane]'), function (x) { x.classList.toggle('hidden', x.getAttribute('data-pane').split(' ').indexOf(d.id) < 0); }); },
+        'p-copy': function (d) { try { navigator.clipboard.writeText(d.id).then(function () { toast('Почта скопирована'); }, function () { toast(d.id); }); } catch (e) { toast(d.id); } },
+        'p-sel-mode': function () { S.pSel = !S.pSel; S.psel = {}; render(); },
+        'p-sel-toggle': function (d) { if (S.psel[d.id]) delete S.psel[d.id]; else S.psel[d.id] = true; render(); },
+        'p-sel-all': function () { var L = pFiltered(), all = L.every(function (p) { return S.psel[p.id]; }); S.psel = {}; if (!all) L.forEach(function (p) { S.psel[p.id] = true; }); render(); },
+        'p-bulk': function (d) {
+            var ids = pFiltered().filter(function (p) { return S.psel[p.id]; }).map(function (p) { return p.id; });
+            if (!ids.length) { toast('Сначала выберите партнёров'); return; }
+            if (d['do'] === 'st') { openSheet('Новый статус · ' + ids.length, '<div class="list">' + Object.keys(PST).map(function (k) { return '<button class="it" data-act="p-bulk-st" data-id="' + k + '"><div class="mid"><div class="l1"><span><span class="st ' + k + '">' + PST[k] + '</span></span></div></div></button>'; }).join('') + '</div>'); return; }
+            if (d['do'] === 'del') { confirmSheet('Удалить партнёров?', 'Будет удалено карточек: ' + ids.length + '. Письма останутся в почте.', 'p-bulk-del-go', 'Удалить'); return; }
+            rest('PATCH', 'partners?' + inList(ids), { starred: true }).then(function () { S.psel = {}; toast('В избранном: ' + ids.length); return reload(); }).catch(fail);
+        },
+        'p-bulk-st': function (d) {
+            var ids = pFiltered().filter(function (p) { return S.psel[p.id]; }).map(function (p) { return p.id; });
+            rest('PATCH', 'partners?' + inList(ids), { status: d.id, status_changed_at: new Date().toISOString() }).then(function () { closeSheet(); S.psel = {}; toast(PST[d.id] + ': ' + ids.length); return reload(); }).catch(fail);
+        },
+        'p-bulk-del-go': function () {
+            var ids = pFiltered().filter(function (p) { return S.psel[p.id]; }).map(function (p) { return p.id; });
+            rest('DELETE', 'partners?' + inList(ids)).then(function () { closeSheet(); S.psel = {}; S.pSel = false; toast('Удалено: ' + ids.length); return reload(); }).catch(fail);
+        },
         'p-new': function () { partnerSheet(''); },
         'key-save': function (d) {
             var el = document.getElementById('key-' + d.id), v = el ? el.value.trim() : '';
