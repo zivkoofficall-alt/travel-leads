@@ -6,6 +6,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 const OWNER_EMAIL = "zivkoofficall@gmail.com";
+const OWNER_ID = "1e070b66-c1a5-4865-b98f-3e0b12aca8e6";
 const SONNET = "claude-sonnet-5-5";
 const HAIKU = "claude-haiku-5-5";
 // цена за миллион токенов, $ (вход / выход) и за один веб-поиск
@@ -127,7 +128,7 @@ class Ctx {
     const { data: dup } = await this.db.from("questions").select("id").eq("status", "open").eq("question", question).limit(1);
     if (dup && dup.length) return;
     const { data: q } = await this.db.from("questions").insert({ question, context, draft, partner_id: partnerId, email_id: emailId, status: "open" }).select("id").single();
-    const msgId = await this.notify("Вопрос от агента\n\n" + question + (context ? "\n\n" + context : "") + (draft ? "\n\nЧерновик ответа:\n" + draft : "") + "\n\nОтветьте на это сообщение (reply) или в панели waylen.travel/agentapp");
+    const msgId = await this.notify("Вопрос от агента\n\n" + question + (context ? "\n\n" + context : "") + (draft ? "\n\nЧерновик ответа:\n" + draft : "") + "\n\nОтветьте на это сообщение (reply) или в панели www.waylen.travel/agentapp");
     if (q && msgId) await this.db.from("questions").update({ tg_msg_id: msgId }).eq("id", q.id);
   }
   companyContext(): string {
@@ -267,6 +268,9 @@ async function sendQueued(c: Ctx) {
     if (!a) continue; // ящик не подключён — ждём
     const blocked = (c.s.blocked_domains || []).some((b: string) => b === String(e.to_addr).toLowerCase() || b === domainOf(e.to_addr));
     if (blocked) { await c.db.from("emails").update({ status: "failed" }).eq("id", e.id); continue; }
+    // забираем письмо из очереди до отправки, чтобы параллельный запуск не отправил его второй раз
+    const { data: claim } = await c.db.from("emails").update({ folder: "sent", status: "sent" }).eq("id", e.id).eq("status", "approved").eq("folder", "draft").select("id");
+    if (!claim || !claim.length) continue;
     const r = await sendMail(a, e);
     if (r.ok) {
       await c.db.from("emails").update({ folder: "sent", status: "sent", sent_at: new Date().toISOString(), external_id: r.id || null }).eq("id", e.id);
@@ -274,7 +278,7 @@ async function sendQueued(c: Ctx) {
       await c.run("send", `Отправлено: ${e.subject || "(без темы)"} → ${e.to_addr}`, "", true);
       room--; if (!room) break;
     } else {
-      await c.db.from("emails").update({ status: "failed" }).eq("id", e.id);
+      await c.db.from("emails").update({ folder: "draft", status: "failed" }).eq("id", e.id);
       await c.run("send", `Не отправлено: ${e.to_addr}`, r.error || "", false);
     }
   }
@@ -422,7 +426,7 @@ async function partnerSearch(c: Ctx) {
     const arr: any[] = Array.isArray(r.json) ? r.json : (r.json?.partners || []);
     const names = await savePartners(c, arr, kind, country, {}); const added = names.length;
     await c.run("partner_search", `Поиск партнёров (${kind}${country ? ", " + country : ""}): найдено новых ${added}`, names.join("\n") || r.text.slice(0, 800), true, r);
-    if (added) await c.notify(`Нашёл новых партнёров: ${added}\n` + names.slice(0, 6).join("\n") + "\n\nПосмотреть: waylen.travel/agentapp");
+    if (added) await c.notify(`Нашёл новых партнёров: ${added}\n` + names.slice(0, 6).join("\n") + "\n\nПосмотреть: www.waylen.travel/agentapp");
   } catch (err) { await c.run("partner_search", `Поиск партнёров (${kind}): ошибка`, String(err), false); }
 }
 
@@ -475,7 +479,7 @@ async function digest(c: Ctx) {
   const found = await cnt("partners", (q) => q.gte("created_at", since));
   const { data: runs } = await c.db.from("agent_runs").select("cost_usd").gte("created_at", monthStart());
   const cost = (runs || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0);
-  await c.notify(`Доброе утро! Сводка Waylen Travel\n\nНовых писем: ${inbox}\nЧерновиков на утверждение: ${drafts}\nВопросов ко мне: ${open}\nПартнёров найдено за сутки: ${found}\nРасход за месяц: $${cost.toFixed(2)}${c.s.monthly_budget_usd ? " из $" + c.s.monthly_budget_usd : ""}\n\nПанель: waylen.travel/agentapp`);
+  await c.notify(`Доброе утро! Сводка Waylen Travel\n\nНовых писем: ${inbox}\nЧерновиков на утверждение: ${drafts}\nВопросов ко мне: ${open}\nПартнёров найдено за сутки: ${found}\nРасход за месяц: $${cost.toFixed(2)}${c.s.monthly_budget_usd ? " из $" + c.s.monthly_budget_usd : ""}\n\nПанель: www.waylen.travel/agentapp`);
 }
 
 /* ---------- Задания владельца: найти партнёров и написать им ---------- */
@@ -533,7 +537,7 @@ ${m.letter_brief ? "Что обязательно сказать в письме
             await c.run("reply_draft", `Задание «${m.title}»: письмо для ${p.name}`, j.body.slice(0, 1200), true, r);
           } catch (err) { await c.run("reply_draft", `Задание «${m.title}»: не удалось написать ${p.name}`, String(err), false); }
         }
-        if (written && c.s.send_mode !== "auto") await c.notify(`Задание «${m.title}»: готово писем на утверждение: ${written}. Панель: waylen.travel/agentapp`);
+        if (written && c.s.send_mode !== "auto") await c.notify(`Задание «${m.title}»: готово писем на утверждение: ${written}. Панель: www.waylen.travel/agentapp`);
       }
     }
     // 3. завершение: цель набрана и всем, кому можно, написали
@@ -583,7 +587,7 @@ Deno.serve(async (req) => {
     const auth = req.headers.get("authorization") || "";
     const jwt = auth.replace(/^Bearer\s+/i, "");
     const { data: u } = jwt ? await db.auth.getUser(jwt) : { data: { user: null } };
-    if (!u?.user || u.user.email !== OWNER_EMAIL) return json(401, { ok: false, error: "unauthorized" });
+    if (!u?.user || u.user.email !== OWNER_EMAIL || u.user.id !== OWNER_ID) return json(401, { ok: false, error: "unauthorized" });
     manual = true;
   }
 

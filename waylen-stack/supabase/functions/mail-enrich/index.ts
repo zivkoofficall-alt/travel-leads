@@ -6,13 +6,14 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const OWNER_EMAIL = "zivkoofficall@gmail.com";
+const OWNER_ID = "1e070b66-c1a5-4865-b98f-3e0b12aca8e6";
 const HAIKU = "claude-haiku-5-5";
 const PRICE = [0.10, 0.50];
 const BATCH = 20;
 const AM = "https://api.agentmail.to/v0";
 
 function json(status: number, payload: unknown) {
-  return new Response(JSON.stringify(payload), { status, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-agent-key" } });
+  return new Response(JSON.stringify(payload), { status, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "https://www.waylen.travel", "Vary": "Origin", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-agent-key" } });
 }
 function extractJson(text: string): any {
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -39,7 +40,7 @@ async function amGet(key: string, path: string): Promise<any> {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return json(204, {});
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": "https://www.waylen.travel", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-agent-key", "Vary": "Origin" } });
   if (req.method !== "POST") return json(405, { ok: false });
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const { data: secrets } = await db.from("agent_secrets").select("name,value");
@@ -49,7 +50,7 @@ Deno.serve(async (req) => {
   if (!key || key !== sec.cron_key) {
     const jwt = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
     const { data: u } = jwt ? await db.auth.getUser(jwt) : { data: { user: null } };
-    if (!u?.user || u.user.email !== OWNER_EMAIL) return json(401, { ok: false, error: "unauthorized" });
+    if (!u?.user || u.user.email !== OWNER_EMAIL || u.user.id !== OWNER_ID) return json(401, { ok: false, error: "unauthorized" });
   }
   if (!sec.anthropic_api_key) return json(200, { ok: true, skipped: "no_key" });
 
@@ -108,9 +109,12 @@ ${text || "(пусто)"}`;
       if (body !== String(m.body || "")) patch.body = body;
       await db.from("emails").update(patch).eq("id", m.id);
       done++;
-    } catch (_) {
+    } catch (e) {
       failed++;
-      if (body !== String(m.body || "")) await db.from("emails").update({ body }).eq("id", m.id);
+      // письмо, которое модель не может разобрать, не гоняем повторно каждые 10 минут
+      const patch: any = String(e).includes("empty") ? { enriched_at: new Date().toISOString() } : {};
+      if (body !== String(m.body || "")) patch.body = body;
+      if (Object.keys(patch).length) await db.from("emails").update(patch).eq("id", m.id);
     }
   };
   for (let i = 0; i < mails.length; i += 5) await Promise.all(mails.slice(i, i + 5).map(work));

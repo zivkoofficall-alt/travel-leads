@@ -483,15 +483,20 @@
   #ptr.busy svg{animation:spin 1s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg)}}
   .list{overflow:hidden;}
-  .sw{position:relative;overflow:hidden;border-top:1px solid var(--line);}
+  .sw{position:relative;overflow:hidden;border-top:1px solid var(--line);background:var(--bg);}
   .sw:first-child,.dayh + .sw{border-top:none;}
   .sw .it{position:relative;z-index:1;background:var(--card);border-top:none;will-change:transform;}
   .sw-l,.sw-r{position:absolute;top:0;bottom:0;display:flex;z-index:0;}
   .sw-l{left:0;} .sw-r{right:0;}
-  .sw-a{width:78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:800;color:#0D0E10;transition:width .2s var(--ease);}
-  .sw-a svg{width:20px;height:20px;stroke-width:2.2;}
-  .sw-a.read{background:var(--lime);} .sw-a.task{background:#3B80C3;color:#fff;} .sw-a.del{background:#C46A63;color:#fff;} .sw-a.spam{background:#F2B84B;} .sw-a.ok{background:var(--lime);}
-  .sw-a.primary.full{width:100%;}
+  .sw-l,.sw-r{align-items:center;gap:6px;padding:0 8px;}
+  .sw-a{width:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--muted);background:none;border:0;padding:0;transition:width .22s var(--ease);}
+  .sw-a svg{width:100%;height:46px;padding:12px 0;box-sizing:border-box;border-radius:23px;stroke-width:2.2;color:#fff;transition:transform .18s var(--ease);}
+  .sw-a:active svg{transform:scale(.92);}
+  .sw-a.read svg,.sw-a.ok svg{background:var(--lime);color:#0D0E10;} .sw-a.task svg{background:#3B80C3;} .sw-a.del svg{background:#C0453B;} .sw-a.spam svg{background:#D9932B;}
+  .sw-a.primary.full{width:calc(100vw - 40px);}
+  .sw.open-r .it,.sw.open-l .it{transition:border-radius .2s var(--ease);}
+  .sw.open-r .it{border-radius:0 22px 22px 0 !important;} .sw.open-l .it{border-radius:22px 0 0 22px !important;}
+  .sw .it{touch-action:pan-y;}
   .sw.open-l .sw-r,.sw.open-r .sw-l{display:none;}
   .mcard{display:block;width:100%;text-align:left;}
   .mcard .mt1{font-family:var(--font-head);font-weight:800;font-size:17px;line-height:1.3;}
@@ -744,6 +749,7 @@
 
   /* ---------- icons ---------- */
   var IC = {
+    trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
     chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/>',
     send:'<path d="M5 12h14M13 6l6 6-6 6"/>',
     home:'<path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
@@ -1347,7 +1353,7 @@
       if (S.unread && e.is_read) return false;
       if (!q) return true;
       return ((e.subject || '') + ' ' + (e.body || '') + ' ' + (e.from_addr || '') + ' ' + (e.to_addr || '')).toLowerCase().indexOf(q) > -1;
-    });
+    }).sort(function(a, b){ return String(tm(b) || '').localeCompare(String(tm(a) || '')); });
   }
   function who(e){ return nameOf(e); }
   function selIds(){ return Object.keys(S.sel); }
@@ -1362,7 +1368,7 @@
     if (S.selMode) return ['', ''];
     var inbox = e.folder === 'inbox', spam = e.folder === 'spam';
     var left = inbox ? '<div class="sw-l"><button class="sw-a spam primary" data-act="mail-move" data-id="' + esc(e.id) + '" data-to="spam">' + ic('x') + '<span>Спам</span></button></div>' : spam ? '<div class="sw-l"><button class="sw-a ok primary" data-act="mail-move" data-id="' + esc(e.id) + '" data-to="inbox">' + ic('mail') + '<span>Не спам</span></button></div>' : '';
-    var right = '<div class="sw-r">' + (inbox ? '<button class="sw-a read primary" data-act="mail-toggle" data-id="' + esc(e.id) + '">' + ic(e.is_read ? 'eyeoff' : 'eye') + '<span>' + (e.is_read ? 'Не прочит.' : 'Прочитано') + '</span></button>' : '') + '<button class="sw-a task' + (inbox ? '' : ' primary') + '" data-act="mail-task" data-id="' + esc(e.id) + '">' + ic('check') + '<span>Задача</span></button><button class="sw-a del" data-act="mail-del" data-id="' + esc(e.id) + '">' + ic('x') + '<span>Удалить</span></button></div>';
+    var right = '<div class="sw-r">' + (inbox ? '<button class="sw-a read primary" data-act="mail-toggle" data-id="' + esc(e.id) + '">' + ic(e.is_read ? 'eyeoff' : 'eye') + '<span>' + (e.is_read ? 'Не прочит.' : 'Прочитано') + '</span></button>' : '') + '<button class="sw-a task' + (inbox ? '' : ' primary') + '" data-act="mail-task" data-id="' + esc(e.id) + '">' + ic('check') + '<span>Задача</span></button><button class="sw-a del" data-act="mail-del" data-id="' + esc(e.id) + '">' + ic('trash') + '<span>Удалить</span></button></div>';
     return [left, right];
   }
   function mailRow(e){
@@ -1891,7 +1897,10 @@
     function closeOpen(){ if (open){ var r = open.querySelector('.it'); r.style.transition = 'transform .28s var(--ease)'; r.style.transform = ''; open.classList.remove('open-l', 'open-r'); open = null; } }
     function setX(x){ row.style.transform = 'translateX(' + x + 'px)'; sw.classList.toggle('open-r', x < -8); sw.classList.toggle('open-l', x > 8); var pr = sw.querySelector('.sw-l .primary'), pl = sw.querySelector('.sw-r .primary'); if (pr) pr.classList.toggle('full', fired && x > 0); if (pl) pl.classList.toggle('full', fired && x < 0); }
     document.addEventListener('touchstart', function(e){ var t = e.target.closest && e.target.closest('.sw'); if (!t){ if (!(e.target.closest && e.target.closest('#sheet'))) closeOpen(); sw = null; return; } if (open && open !== t) closeOpen(); sw = t; row = t.querySelector('.it'); x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; lock = null; fired = false; base = open === t ? (t.classList.contains('open-r') ? -W_R : W_L) : 0; W_R = (t.querySelector('.sw-r') || {offsetWidth:0}).offsetWidth; W_L = (t.querySelector('.sw-l') || {offsetWidth:0}).offsetWidth; row.style.transition = 'none'; }, {passive:true});
-    document.addEventListener('touchmove', function(e){ if (!sw) return; var x = e.touches[0].clientX - x0, y = e.touches[0].clientY - y0; if (lock === null){ if (Math.abs(x) < 6 && Math.abs(y) < 6) return; lock = Math.abs(x) > Math.abs(y) ? 'x' : 'y'; } if (lock !== 'x') return; dx = base + x; var lim = sw.clientWidth * 0.85; dx = Math.max(-lim, Math.min(lim, dx)); var wasFull = fired; var side = dx < 0 ? W_R : W_L; fired = side > 0 && Math.abs(dx) > Math.max(side + 90, sw.clientWidth * 0.55); if (fired && !wasFull) HAP.tap(); setX(dx); }, {passive:true});
+    document.addEventListener('touchmove', function(e){ if (!sw) return; var x = e.touches[0].clientX - x0, y = e.touches[0].clientY - y0; if (lock === null){ if (Math.abs(x) < 10 && Math.abs(y) < 10) return; lock = (Math.abs(x) > Math.abs(y) * 2 && !document.documentElement.classList.contains('scrolling')) ? 'x' : 'y'; } if (lock !== 'x') return; if (e.cancelable) e.preventDefault(); dx = base + x; var lim = sw.clientWidth * 0.85; dx = Math.max(-lim, Math.min(lim, dx)); var wasFull = fired; var side = dx < 0 ? W_R : W_L; fired = side > 0 && Math.abs(dx) > Math.max(side + 90, sw.clientWidth * 0.55); if (fired && !wasFull) HAP.tap(); setX(dx); }, {passive:false});
+    document.addEventListener('touchcancel', function(){ if (!sw) return; if (row){ row.style.transition = 'transform .28s var(--ease)'; if (open !== sw){ row.style.transform = ''; sw.classList.remove('open-l', 'open-r'); } } sw = null; lock = null; }, {passive:true});
+    // во время прокрутки (и сразу после) свайп строк не включается
+    (function(){ var t = null; window.addEventListener('scroll', function(){ document.documentElement.classList.add('scrolling'); clearTimeout(t); t = setTimeout(function(){ document.documentElement.classList.remove('scrolling'); }, 140); }, {passive:true, capture:true}); })();
     document.addEventListener('touchend', function(){ if (!sw) return; var t = sw, r = row, d = dx; sw = null; if (lock !== 'x'){ return; } r.style.transition = 'transform .28s var(--ease)';
       if (fired){ var btn = d < 0 ? t.querySelector('.sw-r .primary') : t.querySelector('.sw-l .primary'); r.style.transform = 'translateX(' + (d < 0 ? -t.clientWidth : t.clientWidth) + 'px)'; setTimeout(function(){ if (btn) btn.click(); }, 120); open = null; return; }
       if (d < -W_R * 0.45){ r.style.transform = 'translateX(-' + W_R + 'px)'; t.classList.add('open-r'); t.classList.remove('open-l'); open = t; HAP.soft(); }
