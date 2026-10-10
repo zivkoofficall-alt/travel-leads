@@ -474,14 +474,16 @@ async function missions(c: Ctx) {
     if (found < Number(m.target || 0) && hoursAgo(m.last_search_at) >= 24 / Math.max(1, Number(m.searches_per_day) || 1) - 0.4) {
       await c.db.from("missions").update({ last_search_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", m.id);
       const known = c.partners.map((p) => (p.website || p.email || p.name)).filter(Boolean).slice(0, 300).join("; ");
-      const prompt = `Задание владельца: ${m.goal}
-Найди через веб-поиск 6–8 новых ${KN[kind]}${m.region ? ` — регион: ${m.region}` : ""}. Это задание важнее общих настроек: ищи именно то, что просит владелец.
-Нужны реальные организации с сайтом и, по возможности, публичной почтой (ищи почту на сайте, в контактах, в каталогах). Не повторяй уже известных: ${known || "(нет)"}. Не предлагай домены: ${(c.s.blocked_domains || []).join(", ") || "(нет)"}.
-Для каждого оцени rating 1–5, насколько партнёр подходит под задание, и кратко объясни в fit_note.
-Верни только JSON-массив: ${SEARCH_JSON.replace('"kind":""', `"kind":"${kind}"`)}`;
+      const prompt = `Задание владельца (это главнее любых общих настроек компании): ${m.goal}
+${m.region ? `РЕГИОН ПОИСКА: ${m.region}. Ищи ТОЛЬКО организации, которые физически находятся в этом регионе. Организации из других стран не возвращай вообще.` : "Регион в задании не указан: определи его из текста задания и ищи только там."}
+Найди через веб-поиск 6–8 новых ${KN[kind]}. Нужны реальные организации с сайтом и публичной почтой: обязательно ищи e-mail на сайте (страница «Контакты»), в каталогах и справочниках; организация без почты нам почти бесполезна, ставь ей rating не выше 2.
+Не повторяй уже известных: ${known || "(нет)"}. Не предлагай домены: ${(c.s.blocked_domains || []).join(", ") || "(нет)"}.
+Для каждого оцени rating 1–5, насколько партнёр подходит под задание, и кратко объясни в fit_note. Поле in_region: true, если организация находится в регионе задания, иначе false.
+Верни только JSON-массив: ${SEARCH_JSON.replace('"kind":""', `"kind":"${kind}"`).replace('"source_url":""', '"source_url":"","in_region":true')}`;
       try {
         const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), prompt, webSearch: 8, maxTokens: 8000 });
-        const arr: any[] = Array.isArray(r.json) ? r.json : (r.json?.partners || []);
+        const raw: any[] = Array.isArray(r.json) ? r.json : (r.json?.partners || []);
+        const arr = raw.filter((x) => x && x.in_region !== false && x.in_region !== "false");
         const names = await savePartners(c, arr, kind, m.region || "", { mission_id: m.id, source: "Задание: " + m.title });
         await c.run("partner_search", `Задание «${m.title}»: найдено новых ${names.length} (всего ${found + names.length} из ${m.target})`, names.join("\n") || r.text.slice(0, 800), true, r);
         if (names.length) await c.notify(`Задание «${m.title}»: нашёл ${names.length}, всего ${found + names.length} из ${m.target}\n` + names.slice(0, 6).join("\n"));
@@ -501,10 +503,13 @@ async function missions(c: Ctx) {
           if (has && has.length) continue;
           if ((c.s.blocked_domains || []).some((b: string) => b === String(p.email).toLowerCase() || b === domainOf(p.email))) continue;
           try {
-            const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), maxTokens: 1200, prompt: `Напиши первое письмо потенциальному партнёру по заданию владельца.
-Задание: ${m.goal}
-${m.letter_brief ? "Что обязательно сказать в письме: " + m.letter_brief + "\n" : ""}Партнёр: ${p.name} (${KN[kind]}), ${p.country || m.region || ""}. Услуги: ${p.services || "-"}. Контакт: ${p.contact_person || "-"}. Почему подходит: ${p.fit_note || "-"}.
-Язык письма: тот, на котором говорит партнёр (Россия и СНГ — русский, иначе английский). 5–8 предложений, по делу, без воды и без обещаний, которых нет в базе знаний. Один конкретный следующий шаг в конце. Подпись «Команда Waylen Travel».
+            const ru = /росси|russia|беларус|казахстан|узбекистан|кыргыз|армени|грузи|украин|молдов|снг/i.test((p.country || "") + " " + (m.region || ""));
+            const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), maxTokens: 1200, prompt: `Напиши первое письмо от имени Waylen Travel потенциальному партнёру по заданию владельца.
+Кто мы: Waylen Travel — сервис сопровождения переездов и поездок с питомцами (НЕ ветеринарная клиника и НЕ перевозчик): мы ведём клиента по документам, требованиям стран, маршруту, а ветеринарную часть и оформление доверяем партнёрским клиникам.
+Кто они: ${p.name} — ${KN[kind]}, ${p.country || m.region || ""}. Их услуги: ${p.services || "-"}. Контакт: ${p.contact_person || "-"}. Почему подходят: ${p.fit_note || "-"}.
+Задание владельца: ${m.goal}
+${m.letter_brief ? "Что обязательно сказать в письме: " + m.letter_brief + "\n" : ""}Суть предложения: мы направляем к ним своих клиентов с питомцами на оформление документов и ветеринарную подготовку; взамен просим понятные условия для наших клиентов (приоритет, скидка или комиссия — только то, что есть в базе знаний или в задании, ничего не выдумывай).
+Язык письма: ${ru ? "русский" : "английский"}. 5–8 предложений, по делу, без воды. Один конкретный следующий шаг в конце (например, короткий созвон или ответ с условиями). Подпись «Команда Waylen Travel».
 Верни только JSON {"subject":"","body":""}` });
             const j = r.json; if (!j?.body) throw new Error("пустой ответ");
             const auto = c.s.send_mode === "auto";
