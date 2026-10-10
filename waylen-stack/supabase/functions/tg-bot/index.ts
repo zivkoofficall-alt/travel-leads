@@ -27,10 +27,20 @@ Deno.serve(async (req) => {
     if (req.method !== "POST")
         return new Response("", { status: 405 });
     const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data: secrets } = await db.from("agent_secrets").select("name,value").in("name", ["telegram_bot_token", "telegram_chat_id", "tg_webhook_secret"]);
+    const { data: secrets } = await db.from("agent_secrets").select("name,value").in("name", ["telegram_bot_token", "telegram_chat_id", "tg_webhook_secret", "cron_key"]);
     const sec: Record<string, string> = {};
     for (const s of secrets || [])
         sec[s.name] = s.value;
+    const ak = req.headers.get("x-agent-key");
+    if (ak && sec.cron_key && ak === sec.cron_key) {
+        if (!sec.telegram_bot_token || !sec.tg_webhook_secret)
+            return new Response(JSON.stringify({ ok: false, error: "no token" }), { status: 200 });
+        const url = Deno.env.get("SUPABASE_URL") + "/functions/v1/tg-bot";
+        const set = await tg(sec.telegram_bot_token, "setWebhook", { url, secret_token: sec.tg_webhook_secret, allowed_updates: ["message", "callback_query"], drop_pending_updates: false });
+        await tg(sec.telegram_bot_token, "setMyCommands", { commands: [{ command: "drafts", description: "Черновики с кнопками" }, { command: "status", description: "Состояние агента" }] });
+        const info = await tg(sec.telegram_bot_token, "getWebhookInfo", {});
+        return new Response(JSON.stringify({ ok: !!set?.ok, set: set?.description || null, url_ok: info?.result?.url === url, pending: info?.result?.pending_update_count ?? null, last_error: info?.result?.last_error_message || null }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
     if (!sec.tg_webhook_secret || req.headers.get("x-telegram-bot-api-secret-token") !== sec.tg_webhook_secret)
         return new Response("", { status: 401 });
     const token = sec.telegram_bot_token, chat = String(sec.telegram_chat_id || "");
@@ -41,7 +51,7 @@ Deno.serve(async (req) => {
         return ok();
     const cb = u.callback_query;
     if (cb) {
-        if (String(cb.from?.id) !== chat && String(cb.message?.chat?.id) !== chat) {
+        if (String(cb.from?.id) !== chat) {
             await tg(token, "answerCallbackQuery", { callback_query_id: cb.id, text: "Нет доступа" });
             return ok();
         }
@@ -58,7 +68,7 @@ Deno.serve(async (req) => {
         }
         if (act === "ap") {
             const { data: e } = await db.from("emails").select("id,to_addr").eq("id", id).single();
-            if (e && (await db.from("agent_settings").select("blocked_domains").eq("id", 1).single()).data?.blocked_domains?.some((b: string) => String(e.to_addr || "").toLowerCase().endsWith(b))) {
+            if (e && (await db.from("agent_settings").select("blocked_domains").eq("id", 1).single()).data?.blocked_domains?.some((b: string) => { const t = String(e.to_addr || "").toLowerCase().replace(/^.*<|>.*$/g, "").trim(); return t === b || t.split("@").pop() === b; })) {
                 await done("Не утверждено: адрес в чёрном списке", "Адрес в чёрном списке");
                 return ok();
             }
@@ -82,7 +92,7 @@ Deno.serve(async (req) => {
         return ok();
     }
     const m = u.message;
-    if (!m || !m.text || String(m.chat?.id) !== chat)
+    if (!m || !m.text || String(m.chat?.id) !== chat || String(m.from?.id) !== chat)
         return ok();
     const text = String(m.text).trim();
     if (text === "/status" || text === "/start") {
