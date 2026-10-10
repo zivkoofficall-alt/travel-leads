@@ -1070,7 +1070,10 @@
     tipEl.style.left = Math.min(Math.max(8, x - w / 2), window.innerWidth - w - 8) + 'px';
     tipEl.style.top = Math.max(8, y - tipEl.offsetHeight - 16) + 'px';
   }
-  function hideTip(){ if (tipEl) tipEl.classList.add('hidden'); }
+  function hideTip(){ if (tipEl) tipEl.classList.add('hidden'); showTip.el = null; }
+  // подсказка закрывается от любого касания, прокрутки или смены экрана
+  document.addEventListener('pointerdown', function(ev){ if (!tipEl || tipEl.classList.contains('hidden')) return; var tp = ev.target.closest && ev.target.closest('[data-tip]'); if (tp && tp === showTip.el) return; hideTip(); }, {passive:true, capture:true});
+  window.addEventListener('scroll', function(){ if (tipEl && !tipEl.classList.contains('hidden')) hideTip(); }, {passive:true, capture:true});
   /* подсказки «?»: что это и как считается */
   var HELP = {
     'Требует внимания':'Очередь дел на сегодня: непрочитанные письма, черновики на утверждение, вопросы агента, напоминания партнёрам и ваши задачи. Собирается автоматически.',
@@ -2168,7 +2171,7 @@
   }, {passive:true});
   document.addEventListener('click', function(ev){
     var tp = ev.target.closest && ev.target.closest('[data-tip]');
-    if (tp){ if (tipEl && !tipEl.classList.contains('hidden') && showTip.el === tp){ hideTip(); return; } showTip(tp, ev.clientX, ev.clientY); showTip.el = tp; HAP.soft(); clearTimeout(showTip.t); showTip.t = setTimeout(hideTip, 7000); ev.preventDefault(); ev.stopPropagation(); return; } else hideTip();
+    if (tp){ if (tipEl && !tipEl.classList.contains('hidden') && showTip.el === tp){ hideTip(); return; } showTip(tp, ev.clientX, ev.clientY); showTip.el = tp; HAP.soft(); clearTimeout(showTip.t); showTip.t = setTimeout(hideTip, 4000); ev.preventDefault(); ev.stopPropagation(); return; } else hideTip();
     var el = ev.target.closest('[data-act]'); if (!el) return;
     if (el.id === 'sheet') return;
     var f = ACT[el.dataset.act]; if (f){ ev.preventDefault(); if (Date.now() - HAP.last > 500) hapFor(el)(); f(el.dataset, el); }
