@@ -13,6 +13,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Waylen">
+<link rel="preconnect" href="https://bgzpnklwdhqzmrifwnkj.supabase.co" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Onest:wght@600;700;800&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Onest:wght@600;700;800&display=swap"></noscript>
@@ -198,8 +199,17 @@
   .body-t{white-space:pre-wrap;font-size:15px;line-height:1.6;background:var(--bg);border-radius:18px;padding:16px;margin:14px 0;word-break:break-word;}
   .mh{font-size:14px;color:var(--muted);line-height:1.6;}
   .mh b{color:var(--text);}
-  #toast.bad{background:var(--danger);color:#1a0b0a;}
-  #toast{position:fixed;left:50%;bottom:calc(96px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px), var(--tg-safe-area-inset-bottom,0px)));transform:translateX(-50%);background:var(--text);color:var(--bg);font-weight:700;font-size:14px;padding:12px 20px;border-radius:999px;z-index:80;max-width:90vw;text-align:center;}
+  #toast.bad .ti{background:var(--danger);color:#1a0b0a;}
+  #toast.info .ti{background:#3B80C3;color:#fff;}
+  #toast{position:fixed;left:50%;bottom:calc(96px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px), var(--tg-safe-area-inset-bottom,0px)));transform:translateX(-50%);display:flex;align-items:center;gap:12px;background:var(--card);color:var(--text);border:1px solid var(--line);font-weight:700;font-size:14px;line-height:1.3;padding:9px 10px 9px 9px;border-radius:999px;z-index:80;width:max-content;max-width:min(92vw,460px);box-shadow:0 16px 40px rgba(0,0,0,.45);overflow:hidden;touch-action:pan-x;}
+  #toast .ti{width:34px;height:34px;border-radius:50%;background:var(--lime);color:var(--lime-ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  #toast .ti svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;}
+  #toast .tx{flex:1;min-width:0;padding-right:4px;}
+  #toast .ta{flex-shrink:0;font-weight:800;font-size:13px;color:var(--lime);padding:8px 12px;border-radius:999px;background:rgba(200,242,123,.12);}
+  #toast .tp{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--lime);opacity:.6;transform-origin:left;animation:tprog var(--tms,2600ms) linear both;}
+  #toast.bad .tp{background:var(--danger);} #toast.info .tp{background:#3B80C3;}
+  @keyframes tprog{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+  @media (min-width:821px){ #toast{bottom:28px;} }
 
   @media (max-width:980px){
     .tiles{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -729,7 +739,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
   <div class="ch-body" id="ch-body"></div>
   <div class="ch-bot"><div class="ch-quick" id="ch-quick"></div><form class="ch-in" id="ch-form"><textarea id="ch-txt" rows="1" placeholder="Напишите агенту…" autocomplete="off"></textarea><button type="submit" class="ch-send" aria-label="Отправить"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form></div>
 </div>
-<div id="toast" class="hidden never" role="status"></div>
+<div id="toast" class="hidden never" role="status"><span class="ti"></span><span class="tx"></span><button class="ta hidden" type="button"></button><i class="tp"></i></div>
 
 <script>
 (function(){
@@ -777,7 +787,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
   var sess = null, D = {}, S = {tab:(function(){ try{ return localStorage.getItem('wl_tab') || 'home'; }catch(e){ return 'home'; } })(), mailAcc:'all', folder:'inbox', q:'', pq:'', pst:'all', pkind:'all', agTab:'ms', runFilter:'all', selMode:false, sel:{}, unread:false, psort:'new', pstar:false, page:{}, days:30, runDays:0};
   function saveSession(s){ try{ localStorage.setItem(STORE, JSON.stringify(s)); }catch(e){} }
   function loadSession(){ try{ return JSON.parse(localStorage.getItem(STORE) || 'null'); }catch(e){ return null; } }
-  function clearSession(){ try{ localStorage.removeItem(STORE); }catch(e){} }
+  function clearSession(){ try{ localStorage.removeItem(STORE); localStorage.removeItem(CACHE_KEY); }catch(e){} }
 
   /* ---------- api ---------- */
   function authApi(path, body, token){
@@ -807,23 +817,18 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     function go(){ return fetch(BASE + '/rest/v1/rpc/' + name, {method:'POST', headers:{'apikey':KEY,'Authorization':'Bearer ' + sess.access_token,'Content-Type':'application/json'}, body: JSON.stringify(args || {})}); }
     return go().then(function(r){ return r.status === 401 ? refresh().then(go) : r; }).then(function(r){ if (!r.ok) throw new Error('rpc ' + r.status); });
   }
+  var CACHE_KEY = 'wl_snapshot_v1';
+  function applySnap(j){
+    D.partners = j.partners || []; D.emails = j.emails || []; D.questions = j.questions || []; D.runs = j.runs || [];
+    D.knowledge = j.knowledge || []; D.templates = j.templates || []; D.accounts = j.accounts || []; D.settings = j.settings || {}; D.secrets = j.secrets || []; D.tasks = j.tasks || []; D.insights = j.insights || []; D.missions = j.missions || [];
+  }
+  function readCache(){ try{ var raw = localStorage.getItem(CACHE_KEY); if (!raw) return null; var c = JSON.parse(raw); if (!c || !c.d || c.u !== (sess && sess.email)) return null; return c; }catch(e){ return null; } }
+  function writeCache(j){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify({t:Date.now(), u:sess && sess.email, d:j})); }catch(e){ try{ localStorage.removeItem(CACHE_KEY); }catch(_){} } }
+  /* один запрос вместо двенадцати: снимок всех таблиц из функции panel_snapshot() */
   function loadAll(){
-    return Promise.all([
-      rest('GET','partners?select=*&order=created_at.desc'),
-      rest('GET','emails?select=*&order=created_at.desc&limit=1000'),
-      rest('GET','questions?select=*&order=created_at.desc'),
-      rest('GET','agent_runs?select=*&order=created_at.desc&limit=1000'),
-      rest('GET','knowledge?select=*&order=updated_at.desc'),
-      rest('GET','templates?select=*&order=created_at.desc'),
-      rest('GET','mail_accounts?select=*&order=created_at.asc'),
-      rest('GET','agent_settings?select=*&id=eq.1'),
-      rest('GET','agent_secrets_meta?select=*'),
-      rest('GET','tasks?select=*&order=created_at.desc'),
-      rest('GET','insights?select=*&order=created_at.desc&limit=300'),
-      rest('GET','missions?select=*&order=created_at.desc')
-    ]).then(function(a){
-      D.partners = a[0] || []; D.emails = a[1] || []; D.questions = a[2] || []; D.runs = a[3] || [];
-      D.knowledge = a[4] || []; D.templates = a[5] || []; D.accounts = a[6] || []; D.settings = (a[7] || [])[0] || {}; D.secrets = a[8] || []; D.tasks = a[9] || []; D.insights = a[10] || []; D.missions = a[11] || [];
+    return rest('POST', 'rpc/panel_snapshot', {}, 'return=representation').then(function(j){
+      if (!j || typeof j !== 'object') throw new Error('empty');
+      applySnap(j); writeCache(j);
     });
   }
   function reload(){ return loadAll().then(function(){ S.loadedAt = Date.now(); render(); }).catch(function(e){ toast('Не удалось обновить данные'); }); }
@@ -852,7 +857,27 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     sel: function(){ try{ var h = H(); if (h) h.selectionChanged(); }catch(e){} },
     ok: function(){ try{ var h = H(); if (h) h.notificationOccurred('success'); }catch(e){} },
     err: function(){ try{ var h = H(); if (h) h.notificationOccurred('error'); }catch(e){} } }; })();
-  function toast(t, bad){ var el = $('#toast'); el.textContent = t; el.classList.toggle('bad', !!bad); el.classList.remove('hidden', 'never'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; clearTimeout(toast.t); toast.t = setTimeout(function(){ el.classList.add('hidden'); setTimeout(function(){ if (el.classList.contains('hidden')) el.classList.add('never'); }, 260); }, 2600); if (bad) HAP.err(); else HAP.ok(); }
+  var TI = {ok:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>', bad:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>', info:'<svg viewBox="0 0 24 24"><path d="M12 8h.01M11 12h1v5h1"/><circle cx="12" cy="12" r="9"/></svg>', wait:'<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/></svg>'};
+  /* toast(text, kind, opts): kind — true/'bad' ошибка, 'info', 'wait', 'ok'; opts {action:{label, fn}, ms} */
+  function toast(t, kind, opts){
+    opts = opts || {}; var k = kind === true || kind === 'bad' ? 'bad' : (kind === 'info' || kind === 'wait' ? kind : 'ok');
+    if (k === 'ok' && /^(обновляем|загружаем|отправляем|сохраняем|ищем)/i.test(t)) k = 'wait';
+    var el = $('#toast'), ms = opts.ms || (opts.action ? 5000 : (k === 'bad' ? 3400 : 2600));
+    el.querySelector('.tx').textContent = t; el.querySelector('.ti').innerHTML = TI[k];
+    var a = el.querySelector('.ta'); a.classList.toggle('hidden', !opts.action); if (opts.action){ a.textContent = opts.action.label; a.onclick = function(){ hideToast(); opts.action.fn(); }; }
+    el.className = k; el.style.setProperty('--tms', ms + 'ms'); el.style.transform = '';
+    el.style.animation = 'none'; var tp = el.querySelector('.tp'); tp.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; tp.style.animation = '';
+    clearTimeout(toast.t); toast.t = setTimeout(hideToast, ms);
+    if (k === 'bad') HAP.err(); else if (k === 'ok') HAP.ok(); else HAP.soft();
+  }
+  if (/[?&]qa=1/.test(location.search)) window.__toast = toast;
+  function hideToast(){ var el = $('#toast'); if (el.classList.contains('hidden')) return; el.classList.add('hidden'); clearTimeout(toast.t); setTimeout(function(){ if (el.classList.contains('hidden')) el.classList.add('never'); }, 260); }
+  (function(){ var el = $('#toast'), x0 = null, dx = 0;
+    el.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; dx = 0; el.style.transition = 'none'; }, {passive:true});
+    el.addEventListener('touchmove', function(e){ if (x0 === null) return; dx = e.touches[0].clientX - x0; el.style.transform = 'translateX(calc(-50% + ' + dx + 'px))'; el.style.opacity = String(Math.max(.2, 1 - Math.abs(dx) / 160)); }, {passive:true});
+    el.addEventListener('touchend', function(){ el.style.transition = ''; if (Math.abs(dx) > 70){ HAP.soft(); hideToast(); setTimeout(function(){ el.style.transform = ''; el.style.opacity = ''; }, 300); } else { el.style.transform = ''; el.style.opacity = ''; } x0 = null; }, {passive:true});
+    el.addEventListener('click', function(e){ if (!e.target.closest('.ta')) hideToast(); });
+  })();
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function animateNums(root){
     if (reduceMotion) return;
@@ -1932,7 +1957,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     'mail-unread': function(d){ rest('PATCH','emails?id=eq.' + d.id, {is_read:false}).then(function(){ closeSheet(); toast('Отмечено непрочитанным'); return reload(); }).catch(fail); },
     unapprove: function(d){ rest('PATCH','emails?id=eq.' + d.id, {status:'draft'}).then(function(){ closeSheet(); toast('Убрано из очереди'); return reload(); }).catch(fail); },
     'mail-partner': function(d){ var e = byId(D.emails, d.id); closeSheet(); partnerSheet('', {name:nameOf(e), email:addrOnly(e.from_addr), source:'Письмо', status:'replied'}); },
-    'mail-move': function(d){ rest('PATCH','emails?id=eq.' + d.id, {folder:d.to}).then(function(){ closeSheet(); toast(d.to === 'spam' ? 'Перенесено в спам' : 'Возвращено во входящие'); return reload(); }).catch(fail); },
+    'mail-move': function(d){ var e = byId(D.emails, d.id), from = e && e.folder; rest('PATCH','emails?id=eq.' + d.id, {folder:d.to}).then(function(){ closeSheet(); toast(d.to === 'spam' ? 'Перенесено в спам' : 'Возвращено во входящие', 'ok', from ? {action:{label:'Отменить', fn:function(){ rest('PATCH','emails?id=eq.' + d.id, {folder:from}).then(function(){ toast('Возвращено'); return reload(); }).catch(fail); }}} : null); return reload(); }).catch(fail); },
     'mail-del': function(d){ confirmSheet('Удалить письмо?', 'Письмо исчезнет из панели. Вернуть его нельзя.', 'mail-del-go', 'Удалить'); $('#sheet .sp').dataset.id = d.id; },
     'mail-del-go': function(){ var id = $('#sheet .sp').dataset.id; rest('DELETE','emails?id=eq.' + id).then(function(){ closeSheet(); toast('Письмо удалено'); return reload(); }).catch(fail); },
     'mail-task': function(d){ var e = byId(D.emails, d.id); rest('POST','tasks', {title:'Ответить: ' + (e.subject || who(e)), partner_id:e.partner_id || null}).then(function(){ closeSheet(); toast('Задача создана'); return reload(); }).catch(fail); },
@@ -2022,7 +2047,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
       var subj = x && x.subj ? (/^re:/i.test(x.subj) ? x.subj : 'Re: ' + x.subj) : (tpl && tpl.subject) || '';
       closeSheet(); composeSheet({account_id: D.accounts[0] && D.accounts[0].id, partner_id:p.id, to_addr:p.email, subject:subj, body:fill(body, p)});
     },
-    't-done': function(d){ rest('PATCH','tasks?id=eq.' + d.id, {done:true}).then(function(){ closeSheet(); toast('Выполнено'); return reload(); }).catch(fail); },
+    't-done': function(d){ rest('PATCH','tasks?id=eq.' + d.id, {done:true}).then(function(){ closeSheet(); toast('Выполнено', 'ok', {action:{label:'Отменить', fn:function(){ rest('PATCH','tasks?id=eq.' + d.id, {done:false}).then(reload).catch(fail); }}}); return reload(); }).catch(fail); },
     't-del': function(d){ rest('DELETE','tasks?id=eq.' + d.id).then(function(){ closeSheet(); return reload(); }).catch(fail); },
     agtab: function(d){ S.agTab = d.id; render(); },
     runf: function(d){ S.runFilter = d.id; S.page.runs = 0; render(); },
@@ -2156,7 +2181,14 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     bootMsg('Загружаем данные'); bootProg(52);
     $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#app').classList.add('in');
     $('#view').innerHTML = '<div class="head"><div><div class="sk" style="width:220px;height:28px"></div><div class="sk" style="width:160px;margin-top:12px"></div></div></div><div class="tiles">' + '<div class="skc"><div class="sk" style="width:60%"></div><div class="sk" style="width:40%;height:30px"></div></div>'.repeat(4) + '</div>';
-    loadAll().then(function(){ S.loadedAt = Date.now(); render(true); bootOut(); }).catch(function(){ bootOut(); $('#view').innerHTML = '<div class="card err-box"><p>Не удалось загрузить данные. Проверьте интернет.</p><button class="pill" data-act="retry">Попробовать снова</button></div>'; });
+    var c = readCache();
+    if (c){ applySnap(c.d); S.loadedAt = c.t; render(true); bootOut(); }
+    loadAll().then(function(){ S.loadedAt = Date.now(); if (c){ render(); } else { render(true); bootOut(); } })
+      .catch(function(e){
+        if (/401|403|JWT|unauthorized/i.test(String(e && e.message || e)) && !c){ clearSession(); sess = null; if (TGD) tgLogin().catch(reveal); else reveal(); return; }
+        if (c){ toast('Показаны сохранённые данные, обновить не удалось', 'info'); return; }
+        bootOut(); $('#view').innerHTML = '<div class="card err-box"><p>Не удалось загрузить данные. Проверьте интернет.</p><button class="pill" data-act="retry">Попробовать снова</button></div>';
+      });
   }
 
   var h = location.hash ? new URLSearchParams(location.hash.slice(1)) : null;
@@ -2189,11 +2221,8 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
   if (!s0 && TGD){ bootMsg('Входим через Telegram'); tgLogin().catch(function(){ reveal(); setMsg('Не получилось войти через Telegram. Войдите по почте.', true); }); return; }
   if (s0 && s0.access_token){
     sess = s0;
-    authApi('/auth/v1/user', null, s0.access_token).then(function(r){
-      if (r.ok && r.data.email) enter();
-      else if (r.status === 401 && s0.refresh_token) refresh().then(enter).catch(function(){ clearSession(); sess = null; if (TGD) tgLogin().catch(reveal); else reveal(); });
-      else { clearSession(); sess = null; if (TGD) tgLogin().catch(reveal); else reveal(); }
-    }).catch(function(){ reveal(); });
+    /* без отдельной проверки сессии: сразу грузим данные, при 401 rest() сам обновит токен */
+    enter();
   } else { reveal(); }
   setTimeout(function(){ var b = $('#boot'); if (b && !b.classList.contains('out')){ if (sess){ bootOut(); $('#app').classList.remove('hidden'); $('#view').innerHTML = '<div class="card err-box"><p>Данные загружаются дольше обычного. Проверьте интернет.</p><button class="pill" data-act="retry">Попробовать снова</button></div>'; } else reveal(); } }, 15000);
 })();
