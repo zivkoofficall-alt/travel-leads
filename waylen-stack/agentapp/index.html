@@ -649,6 +649,9 @@ window.__tgInit = function(){
     safe(function(){ W.setBottomBarColor('#0D0E10'); });
     function guard(){ safe(function(){ W.disableVerticalSwipes(); }); safe(function(){ W.enableClosingConfirmation(); }); safe(function(){ if (W.isVerticalSwipesEnabled === true) W.disableVerticalSwipes(); }); }
     ['safeAreaChanged','contentSafeAreaChanged','fullscreenChanged','viewportChanged'].forEach(function(ev){ safe(function(){ W.onEvent(ev, function(){ ap(); guard(); }); }); });
+    /* из кнопки в чате приложение открывается шторкой: iOS игнорирует запрос полного экрана во время её анимации — повторяем, когда окно раскрылось и стабильно */
+    safe(function(){ W.onEvent('viewportChanged', function(e){ if (e && e.isStateStable && W.isExpanded && !isFull()) setTimeout(fs, 120); }); });
+    [1200, 3000, 6000].forEach(function(ms){ setTimeout(function(){ if (!isFull()){ safe(function(){ W.expand(); }); fs(); } }, ms); });
     safe(function(){ W.onEvent('activated', guard); });
     window.__tgInfo = {platform:plat, version:W.version, fsErr:null, launch:(function(){ try{ var u = W.initDataUnsafe || {}; if (u.chat_type || u.chat_instance) return 'из чата (кнопка)'; if (u.start_param) return 'прямая ссылка'; return 'главная кнопка / меню'; }catch(e){ return '?'; } })()};
     safe(function(){ W.onEvent('fullscreenFailed', function(e){ window.__tgInfo.fsErr = (e && e.error) || 'неизвестно'; fsTries = 9; root.classList.add('tg-fs-failed'); }); });
@@ -658,7 +661,7 @@ window.__tgInit = function(){
     var fsTries = 0, fsLast = 0;
     function isFull(){ return !!W.isFullscreen || root.classList.contains('tg-fs') || window.innerHeight >= screen.height - 2; }
     /* просим полный экран только если его точно нет: повторный запрос в полном экране заставляет iOS заново проигрывать анимацию */
-    function fs(){ safe(function(){ if (!W.requestFullscreen || isFull() || fsTries >= 3 || Date.now() - fsLast < 4000) return; fsTries++; fsLast = Date.now(); W.requestFullscreen(); fsAsked = true; }); }
+    function fs(){ safe(function(){ if (!W.requestFullscreen || isFull() || fsTries >= 5 || Date.now() - fsLast < 900) return; fsTries++; fsLast = Date.now(); W.requestFullscreen(); fsAsked = true; }); }
     fs(); ap();
     function later(){ setTimeout(function(){ fs(); ap(); }, 300); setTimeout(ap, 1200); setTimeout(ap, 3000); }
     if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
