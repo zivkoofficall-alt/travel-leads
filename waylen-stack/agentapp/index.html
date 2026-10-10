@@ -99,12 +99,15 @@
   button,.x{flex-shrink:0;}
   .tile:active{transform:scale(.985);}
   .tile.lime{background:var(--lime);color:var(--lime-ink);border-color:transparent;}
-  .tile .row{display:flex;align-items:flex-start;justify-content:space-between;}
+  .tile .row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
   .tile .rb{flex:0 0 44px;width:44px;height:44px;border-radius:50%;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;}
   .tile.lime .rb{background:var(--lime-ink);color:var(--lime);}
   .tile .tl{font-size:14px;font-weight:600;opacity:.75;margin-bottom:4px;}
   .tile .tv{font-family:var(--font-head);font-weight:800;font-size:34px;letter-spacing:-.02em;line-height:1;}
-  .tile .ts{font-size:12px;font-weight:600;opacity:.6;margin-top:6px;}
+  .tile .ts{font-size:12px;font-weight:600;opacity:.6;margin-top:6px;line-height:1.35;}
+  .tile.sm{min-height:112px;padding:16px;}
+  .tile.sm .tv{font-size:clamp(20px,6vw,26px);}
+  .tile .ts.down{color:var(--danger);opacity:1;}
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;}
   .stack{display:flex;flex-direction:column;gap:12px;}
@@ -184,7 +187,7 @@
 
   /* sheet */
   #sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding-top:calc(var(--tg-top,0px) + 8px);}
-  #sheet .sp{width:100%;max-width:640px;max-height:calc(100dvh - var(--tg-top,0px) - 8px);overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:22px 20px calc(24px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px)));}
+  #sheet .sp{width:100%;max-width:640px;max-height:calc(100dvh - var(--tg-top,0px) - 8px);overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:28px 28px 0 0;padding:22px 20px calc(24px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px), var(--tg-safe-area-inset-bottom,0px)));}
   #sheet .sh{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;}
   #sheet .sh h2{font-family:var(--font-head);font-weight:800;font-size:22px;margin:0;}
   .x{width:40px;height:40px;border-radius:50%;background:var(--card-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -196,7 +199,7 @@
   .mh{font-size:14px;color:var(--muted);line-height:1.6;}
   .mh b{color:var(--text);}
   #toast.bad{background:var(--danger);color:#1a0b0a;}
-  #toast{position:fixed;left:50%;bottom:calc(96px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px)));transform:translateX(-50%);background:var(--text);color:var(--bg);font-weight:700;font-size:14px;padding:12px 20px;border-radius:999px;z-index:80;max-width:90vw;text-align:center;}
+  #toast{position:fixed;left:50%;bottom:calc(96px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px), var(--tg-safe-area-inset-bottom,0px)));transform:translateX(-50%);background:var(--text);color:var(--bg);font-weight:700;font-size:14px;padding:12px 20px;border-radius:999px;z-index:80;max-width:90vw;text-align:center;}
 
   @media (max-width:980px){
     .tiles{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -215,13 +218,13 @@
     main#view,main#view>*{min-width:0;max-width:100%;}
     main#view{overflow-x:hidden;}
     html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;}
-    #app{height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+    #app{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+    #app>.col{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;}
     .kbsec,.dsk{display:none !important;}
     .seg button{font-size:13px;padding:10px 8px;}
-    #app{display:block;}
     .side{display:none;}
     main#view{padding:16px 16px 130px;}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + max(env(safe-area-inset-top), var(--tg-top,0px))) 16px 10px;position:sticky;top:0;z-index:30;background:var(--bg);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + max(env(safe-area-inset-top), var(--tg-top,0px), calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px)))) 16px 10px;position:sticky;top:0;z-index:30;background:var(--bg);}
     .topbar .logo{font-size:15px;}
     .topbar .logo-mark{width:28px;height:28px;}
     .topbar .x{background:var(--card);}
@@ -232,7 +235,7 @@
     .head.col{flex-direction:column;gap:12px;}
     .two,.row2{grid-template-columns:1fr;}
     .row2.keep{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
-    .tabbar{display:flex;position:fixed;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));bottom:calc(12px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px)));z-index:40;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:8px;justify-content:space-between;align-items:center;}
+    .tabbar{display:flex;position:fixed;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));bottom:calc(12px + max(env(safe-area-inset-bottom), var(--tg-bottom,0px), var(--tg-safe-area-inset-bottom,0px)));z-index:40;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:8px;justify-content:space-between;align-items:center;}
     .tabbar .tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--muted);padding:6px 0;border-radius:999px;position:relative;}
     .tabbar .tb.on{color:var(--lime);}
     .tabbar .tb .cnt{position:absolute;top:0;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:999px;background:var(--lime);color:var(--lime-ink);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;}
@@ -444,7 +447,7 @@
   .keyrow .kin input{padding:11px 14px;min-width:0;}
   .keyrow .kin .pill{flex-shrink:0;padding:10px 16px;}
   /* boot screen */
-  #boot{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow:hidden;transition:opacity .45s ease,visibility .45s;padding-top:var(--tg-top,0px);}
+  #boot{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow:hidden;transition:opacity .45s ease,visibility .45s;padding-top:max(var(--tg-top,0px), calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px)));}
   #boot.out{opacity:0;visibility:hidden;pointer-events:none;}
   #boot .bc{position:absolute;border-radius:50%;pointer-events:none;}
   #boot .bc.a{width:300px;height:300px;right:-110px;top:-110px;background:#3B80C3;opacity:.16;animation:bfloat 9s ease-in-out infinite;}
@@ -458,7 +461,7 @@
   #boot .bn{font-family:var(--font-head);font-weight:800;letter-spacing:.16em;font-size:15px;position:relative;}
   #boot .bs{color:var(--muted);font-size:14px;min-height:20px;position:relative;transition:opacity .25s ease;}
   @keyframes bfloat{0%,100%{transform:translate(0,0)}50%{transform:translate(-14px,12px)}}
-  @keyframes appin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes appin{from{opacity:0}to{opacity:1}}
   #app.in,#login.in{animation:appin .5s cubic-bezier(.2,.7,.2,1) both;}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
 </style>
@@ -558,7 +561,7 @@
 
 <div id="app" class="hidden">
   <aside class="side" id="side"></aside>
-  <div>
+  <div class="col">
     <div class="topbar">
       <div class="logo"><div class="logo-mark"></div>WAYLEN</div>
       <div class="rr"><button class="x" data-act="refresh" aria-label="Обновить"><svg class="i" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg></button><button class="x" data-act="search" aria-label="Поиск"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
@@ -926,15 +929,15 @@
     return h;
   }
   function kpi(label, value, sub, cls, tab, arg){
-    return '<button class="kpi" data-act="go" data-tab="' + tab + '" data-arg="' + esc(arg || '') + '"><div class="kl">' + label + '</div><div><div class="kv2 num">' + value + '</div><div class="ks ' + (cls || '') + '">' + esc(sub) + '</div></div></button>';
+    return '<button class="tile' + (cls === 'lime' ? ' lime' : '') + '" data-act="go" data-tab="' + tab + '" data-arg="' + esc(arg || '') + '"><div class="row"><div><div class="tl">' + label + '</div></div><span class="rb">' + ic('arrow') + '</span></div><div><div class="tv num">' + value + '</div><div class="ts">' + esc(sub) + '</div></div></button>';
   }
-  function kcard(label, value, sub, cls){ return '<div class="kpi"><div class="kl">' + label + '</div><div><div class="kv2 num">' + value + '</div>' + (sub ? '<div class="ks ' + (cls || '') + '">' + esc(sub) + '</div>' : '') + '</div></div>'; }
+  function kcard(label, value, sub, cls){ return '<div class="tile sm"><div class="tl">' + label + '</div><div><div class="tv num">' + value + '</div>' + (sub ? '<div class="ts ' + (cls || '') + '">' + esc(sub) + '</div>' : '') + '</div></div>'; }
   function vHome(){
     var st = D.settings || {};
     var hr = new Date().getHours();
     var hello = hr < 5 ? 'Доброй ночи' : hr < 12 ? 'Доброе утро' : hr < 18 ? 'Добрый день' : 'Добрый вечер';
     var b = budgetInfo(), sc = stageCounts(), lr = lastRun('mail_check'), ls = lastRun('partner_search');
-    var inWork = D.partners.filter(function(p){ return p.status === 'contacted' || p.status === 'replied'; }).length;
+    var inWork = inWorkCount();
     var rate = sc.contacted ? Math.round(sc.replied / sc.contacted * 100) : 0;
     var h = '<div class="head col"><div><h1 class="pt">' + hello + ', Филипп</h1>' +
       '<div class="status"><div class="sr"><span class="ok' + (st.enabled ? '' : ' off') + '">' + (st.enabled ? 'Агент работает' : 'Агент выключен') + '</span><span>' + (st.send_mode === 'auto' ? 'отправляет сам' : 'через утверждение') + '</span>' + (st.enabled && quietNow() ? '<span>тихие часы</span>' : '') + '</div>' +
@@ -945,10 +948,10 @@
 
     h += '<div class="qh"><h3>Показатели</h3><button data-act="go" data-tab="agent" data-arg="an">Аналитика</button></div>';
     h += '<div class="tiles">' +
-      kpi('Ответили партнёры', rate + '%', sc.replied + ' из ' + sc.contacted + ' написанных', '', 'agent', 'an') +
-      kpi('В работе', inWork, 'написали или ответили', '', 'partners', 'work') +
-      kpi('Договорились', sc.agreed, 'из ' + D.partners.length + ' партнёров', sc.agreed ? 'up' : '', 'partners', 'agreed') +
-      kpi('Расходы за месяц', usd(b.cost), b.budget ? 'из ' + usd(b.budget) + ' · ' + Math.round(b.pct) + '%' : 'лимит не задан', b.budget && b.pct >= 80 ? 'down' : '', 'agent', 'cost') + '</div>';
+      kpi('Ответили', rate + '%', sc.replied + ' из ' + sc.contacted + ' написанных', 'lime', 'agent', 'an') +
+      kpi('В работе', inWork, 'партнёров в переписке', '', 'partners', 'work') +
+      kpi('Договорились', sc.agreed, 'из ' + D.partners.length + ' партнёров', '', 'partners', 'agreed') +
+      kpi('Расходы', usd(b.cost), b.budget ? 'из ' + usd(b.budget) + ' за месяц' : 'за месяц', '', 'agent', 'cost') + '</div>';
     h += homeDash();
     h += homeInsights();
     h += '<div class="qh"><h3>Действия агента</h3><button data-act="go" data-tab="agent" data-arg="runs">Вся история</button></div>' + runList(D.runs.slice(0, 5));
@@ -1308,29 +1311,35 @@
   }
 
   /* ----- analytics ----- */
+  function sysAddr(a){ return /mailer-daemon|no-?reply|postmaster|notification|bounce/i.test(String(a || '')); }
+  function ckey(e){ return e.partner_id || counterpart(e); }
   function replyMaps(){
     var o = {}, i = {};
     D.emails.forEach(function(e){
-      if (!e.partner_id) return;
+      var k = ckey(e); if (!k || sysAddr(k)) return;
       var t = new Date(tm(e)).getTime();
-      if (e.direction === 'out' && e.folder === 'sent'){ if (!o[e.partner_id] || t < o[e.partner_id]) o[e.partner_id] = t; }
-      if (e.direction === 'in' && e.folder !== 'spam'){ (i[e.partner_id] = i[e.partner_id] || []).push(t); }
+      if (e.direction === 'out' && e.folder === 'sent'){ if (!o[k] || t < o[k]) o[k] = t; }
+      if (e.direction === 'in' && e.folder !== 'spam'){ (i[k] = i[k] || []).push(t); }
     });
     return {out:o, inn:i};
   }
+  function inWorkCount(){ var m = replyMaps(), n = 0; Object.keys(m.out).forEach(function(k){ var p = pById(k); if (!p || (p.status !== 'agreed' && p.status !== 'declined' && p.status !== 'paused')) n++; }); return n; }
   function stageCounts(){
-    var m = replyMaps(), contacted = 0, replied = 0, agreed = 0;
+    var m = replyMaps(), contacted = 0, replied = 0, agreed = 0, seen = {};
+    Object.keys(m.out).forEach(function(k){ seen[k] = 1; contacted++; if (m.inn[k] && m.inn[k].some(function(t){ return t > m.out[k]; })) replied++; });
     D.partners.forEach(function(p){
-      var a = p.status === 'agreed', r = !!m.inn[p.id] || p.status === 'replied' || a, c = !!m.out[p.id] || p.status === 'contacted' || p.status === 'declined' || r;
-      if (c) contacted++; if (r) replied++; if (a) agreed++;
+      var a = p.status === 'agreed'; if (a) agreed++;
+      if (seen[p.id]) return;
+      var r = p.status === 'replied' || a, c = p.status === 'contacted' || p.status === 'declined' || r;
+      if (c){ contacted++; seen[p.id] = 1; } if (r) replied++;
     });
     return {total:D.partners.length, contacted:contacted, replied:replied, agreed:agreed};
   }
   function avgReply(){
     var m = replyMaps(), ds = [];
-    D.partners.forEach(function(p){
-      var o = m.out[p.id]; if (!o || !m.inn[p.id]) return;
-      var later = m.inn[p.id].filter(function(t){ return t > o; }).sort(function(a, b){ return a - b; })[0];
+    Object.keys(m.out).forEach(function(p){
+      var o = m.out[p]; if (!o || !m.inn[p]) return;
+      var later = m.inn[p].filter(function(t){ return t > o; }).sort(function(a, b){ return a - b; })[0];
       if (later) ds.push(later - o);
     });
     return ds.length ? ds.reduce(function(a, b){ return a + b; }, 0) / ds.length : 0;
@@ -1519,7 +1528,7 @@
     hideTip(); renderNav();
     if (anim){ v.classList.remove('fade'); void v.offsetWidth; v.classList.add('fade'); animateNums(v); stagger(v); }
   }
-  function scr(){ return window.matchMedia('(max-width:820px)').matches ? document.getElementById('app') : null; }
+  function scr(){ return window.matchMedia('(max-width:820px)').matches ? document.querySelector('#app>.col') : null; }
   function gy(){ var e = scr(); return e ? e.scrollTop : window.scrollY; }
   function sy(y){ var e = scr(); if (e) e.scrollTop = y; else window.scrollTo(0, y); }
   function setTab(t){ var ch = S.tab !== t; S.tab = t; S.selMode = false; S.sel = {}; S.page = {}; S.queueAll = false; render(ch); sy(0); if (ch) HAP.sel(); }

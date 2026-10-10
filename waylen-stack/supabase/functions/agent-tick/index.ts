@@ -370,7 +370,9 @@ async function partnerSearch(c: Ctx) {
   const perDay = Number(c.s.search_runs_per_day || 0); if (!perDay) return;
   const { data: today } = await c.db.from("agent_runs").select("created_at").eq("kind", "partner_search").eq("ok", true).eq("is_demo", false).gte("created_at", dayStart()).order("created_at", { ascending: false });
   if ((today || []).length >= perDay) return;
-  if (today && today.length && hoursAgo(today[0].created_at) < 24 / perDay - 0.4) return;
+  // между поисками выдерживаем интервал 24ч / perDay независимо от смены суток
+  const { data: lastS } = await c.db.from("agent_runs").select("created_at").eq("kind", "partner_search").eq("ok", true).eq("is_demo", false).order("created_at", { ascending: false }).limit(1);
+  if (lastS && lastS.length && hoursAgo(lastS[0].created_at) < 24 / perDay - 0.4) return;
   const kinds: string[] = (c.s.focus_kinds || []).filter((k: string) => ["clinic", "carrier", "blogger", "community"].includes(k));
   if (!kinds.length) return;
   if (!c.knowledge.length && !c.s.company_summary) {
