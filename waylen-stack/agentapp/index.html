@@ -651,11 +651,14 @@ window.__tgInit = function(){
     ['safeAreaChanged','contentSafeAreaChanged','fullscreenChanged','viewportChanged'].forEach(function(ev){ safe(function(){ W.onEvent(ev, function(){ ap(); guard(); }); }); });
     safe(function(){ W.onEvent('activated', guard); });
     window.__tgInfo = {platform:plat, version:W.version, fsErr:null, launch:(function(){ try{ var u = W.initDataUnsafe || {}; if (u.chat_type || u.chat_instance) return 'из чата (кнопка)'; if (u.start_param) return 'прямая ссылка'; return 'главная кнопка / меню'; }catch(e){ return '?'; } })()};
-    safe(function(){ W.onEvent('fullscreenFailed', function(e){ window.__tgInfo.fsErr = (e && e.error) || 'неизвестно'; root.classList.add('tg-fs-failed'); }); });
+    safe(function(){ W.onEvent('fullscreenFailed', function(e){ window.__tgInfo.fsErr = (e && e.error) || 'неизвестно'; fsTries = 9; root.classList.add('tg-fs-failed'); }); });
     /* некоторые клиенты принимают запрос полного экрана только после жеста пользователя */
-    document.addEventListener('touchend', function once(){ document.removeEventListener('touchend', once); if (!W.isFullscreen) setTimeout(fs, 50); }, {passive:true});
+    document.addEventListener('touchend', function once(){ document.removeEventListener('touchend', once); if (!isFull()) setTimeout(fs, 50); }, {passive:true});
     setTimeout(guard, 600); setTimeout(guard, 2500); setInterval(guard, 15000);
-    function fs(){ safe(function(){ if (W.requestFullscreen && !W.isFullscreen){ W.requestFullscreen(); fsAsked = true; } }); }
+    var fsTries = 0, fsLast = 0;
+    function isFull(){ return !!W.isFullscreen || root.classList.contains('tg-fs') || window.innerHeight >= screen.height - 2; }
+    /* просим полный экран только если его точно нет: повторный запрос в полном экране заставляет iOS заново проигрывать анимацию */
+    function fs(){ safe(function(){ if (!W.requestFullscreen || isFull() || fsTries >= 3 || Date.now() - fsLast < 4000) return; fsTries++; fsLast = Date.now(); W.requestFullscreen(); fsAsked = true; }); }
     fs(); ap();
     function later(){ setTimeout(function(){ fs(); ap(); }, 300); setTimeout(ap, 1200); setTimeout(ap, 3000); }
     if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
