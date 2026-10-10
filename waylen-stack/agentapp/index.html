@@ -516,6 +516,45 @@
   @keyframes bfloat{0%,100%{transform:translate(0,0)}50%{transform:translate(-14px,12px)}}
   @keyframes appin{from{opacity:0}to{opacity:1}}
   #app.in,#login.in{animation:appin .5s cubic-bezier(.2,.7,.2,1) both;}
+  /* ---------- motion v5: нажатия, переходы, шторка ---------- */
+  .pr{transform:scale(.955) !important;transition:transform .09s var(--ease) !important;}
+  .sw .it.pr,.tabbar.pr,.pr.sw{transform:none !important;}
+  .tabbar .tb.pr,.fab.pr{transform:scale(.9) !important;}
+  .btn .go,.compose-b .go{transition:transform .25s var(--ease);}
+  .btn:active .go,.compose-b:active .go{transform:translateX(4px);}
+  .tabbar .fab svg{transition:transform .3s var(--ease);}
+  .tabbar .fab.pr svg{transform:rotate(90deg);}
+  .tabbar .fab{transition:transform .2s var(--ease),box-shadow .2s;}
+  .tg::after{transition:transform .32s cubic-bezier(.34,1.5,.64,1),background .2s;}
+  .tg.on::after{transform:translateX(18px);}
+  .chip.on{animation:pop .32s cubic-bezier(.34,1.4,.64,1) both;}
+  @keyframes pop{from{transform:scale(.94)}to{transform:none}}
+  .it:active,.qi:active{background:var(--card-2);}
+  .cnt.bump{animation:bump .45s cubic-bezier(.34,1.5,.64,1) both;}
+  @keyframes bump{0%{transform:scale(.5)}60%{transform:scale(1.22)}100%{transform:none}}
+  #view.fade.l{animation:vinl .36s var(--ease) both;}
+  #view.fade.r{animation:vinr .36s var(--ease) both;}
+  @keyframes vinl{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+  @keyframes vinr{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+  #sheet{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+  #sheet .sp{animation:up .42s cubic-bezier(.22,1.15,.36,1) both;}
+  #sheet.out{animation:dimout .22s ease both;}
+  #sheet.out .sp{animation:down .22s cubic-bezier(.4,0,1,1) both;}
+  @keyframes dimout{from{background:rgba(0,0,0,.6)}to{background:rgba(0,0,0,0)}}
+  @keyframes down{from{transform:none;opacity:1}to{transform:translateY(40px);opacity:0}}
+  @media (min-width:821px){ @keyframes down{from{transform:none;opacity:1}to{transform:translateY(10px) scale(.985);opacity:0}} }
+  #toast.hidden{display:flex !important;animation:tout .25s ease both;pointer-events:none;}
+  #toast.hidden.never{display:none !important;}
+  @keyframes tout{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,8px)}}
+  .tabbar .ind{position:absolute;top:6px;bottom:6px;width:60px;border-radius:999px;background:rgba(200,242,123,.12);transition:left .38s cubic-bezier(.22,1.1,.36,1),width .3s var(--ease),opacity .2s;pointer-events:none;opacity:0;}
+  .tabbar .ind.on{opacity:1;}
+  .tabbar .tb{z-index:1;}
+  .kv2,.tile .tv{transition:opacity .25s;}
+  .hero-c,.tile,.card,.kpi{will-change:transform;}
+  .x{transition:transform .25s var(--ease),background .2s;}
+  .x:active{transform:rotate(90deg) scale(.95);}
+  input,textarea,select{transition:border-color .2s var(--ease),box-shadow .2s var(--ease);}
+  input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(200,242,123,.14);}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
 </style>
 <script src="https://telegram.org/js/telegram-web-app.js" async onload="window.__tgInit && window.__tgInit()" onerror="window.__tgInit && window.__tgInit()"></script>
@@ -642,7 +681,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
   <nav class="tabbar" id="tabbar"></nav>
 </div>
 <div id="sheet" class="hidden"></div>
-<div id="toast" class="hidden" role="status"></div>
+<div id="toast" class="hidden never" role="status"></div>
 
 <script>
 (function(){
@@ -763,7 +802,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     sel: function(){ try{ var h = H(); if (h) h.selectionChanged(); }catch(e){} },
     ok: function(){ try{ var h = H(); if (h) h.notificationOccurred('success'); }catch(e){} },
     err: function(){ try{ var h = H(); if (h) h.notificationOccurred('error'); }catch(e){} } }; })();
-  function toast(t, bad){ var el = $('#toast'); el.textContent = t; el.classList.toggle('bad', !!bad); el.classList.remove('hidden'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; clearTimeout(toast.t); toast.t = setTimeout(function(){ el.classList.add('hidden'); }, 2600); if (bad) HAP.err(); else HAP.ok(); }
+  function toast(t, bad){ var el = $('#toast'); el.textContent = t; el.classList.toggle('bad', !!bad); el.classList.remove('hidden', 'never'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; clearTimeout(toast.t); toast.t = setTimeout(function(){ el.classList.add('hidden'); setTimeout(function(){ if (el.classList.contains('hidden')) el.classList.add('never'); }, 260); }, 2600); if (bad) HAP.err(); else HAP.ok(); }
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function animateNums(root){
     if (reduceMotion) return;
@@ -799,11 +838,11 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
   function openSheet(title, html){
     var s = $('#sheet');
     s.innerHTML = '<div class="sp" role="dialog" aria-modal="true" tabindex="-1"><div class="sh"><h2>' + esc(title) + '</h2><button class="x" data-act="close" aria-label="Закрыть">' + ic('x') + '</button></div>' + html + '</div>';
-    s.classList.remove('hidden'); document.body.style.overflow = 'hidden';
+    clearTimeout(closeSheet.t); s.classList.remove('hidden', 'out'); document.body.style.overflow = 'hidden';
     openSheet.prev = document.activeElement;
     setTimeout(function(){ var f = s.querySelector('[autofocus]') || s.querySelector('.sp'); if (f){ f.focus({preventScroll:true}); if (f.tagName === 'TEXTAREA') try{ f.setSelectionRange(0, 0); }catch(e){} } }, 30);
   }
-  function closeSheet(){ var s = $('#sheet'); s.classList.add('hidden'); s.innerHTML = ''; document.body.style.overflow = ''; var pv = openSheet.prev; if (pv && pv.focus && document.body.contains(pv)) try{ pv.focus({preventScroll:true}); }catch(e){} openSheet.prev = null; }
+  function closeSheet(){ var s = $('#sheet'); if (s.classList.contains('hidden')) return; var fin = function(){ s.classList.add('hidden'); s.classList.remove('out'); s.innerHTML = ''; }; if (reduceMotion) fin(); else { s.classList.add('out'); clearTimeout(closeSheet.t); closeSheet.t = setTimeout(fin, 230); } document.body.style.overflow = ''; var pv = openSheet.prev; if (pv && pv.focus && document.body.contains(pv)) try{ pv.focus({preventScroll:true}); }catch(e){} openSheet.prev = null; }
 
   /* ---------- helpers v2 ---------- */
   var FREE = {'gmail.com':1,'googlemail.com':1,'yahoo.com':1,'outlook.com':1,'hotmail.com':1,'live.com':1,'icloud.com':1,'me.com':1,'mail.ru':1,'bk.ru':1,'inbox.ru':1,'list.ru':1,'yandex.ru':1,'yandex.com':1,'ya.ru':1,'proton.me':1,'protonmail.com':1,'gmx.com':1,'gmx.de':1,'web.de':1,'aol.com':1};
@@ -935,9 +974,15 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     [['partners','Партнёры','users'],['agent','Агент','bolt']].forEach(function(t){
       tb += '<button class="tb' + (S.tab === t[0] ? ' on' : '') + '" data-act="tab" data-tab="' + t[0] + '">' + ic(t[2]) + '<span>' + t[1] + '</span></button>';
     });
-    $('#tabbar').innerHTML = tb;
+    var prevB = renderNav.badge || {}; renderNav.badge = badge;
+    $('#tabbar').innerHTML = tb + '<i class="ind"></i>';
+    Array.prototype.forEach.call($('#tabbar').querySelectorAll('.tb'), function(b){ var k = b.dataset.tab, c = b.querySelector('.cnt'); if (c && prevB[k] !== undefined && prevB[k] !== badge[k]) c.classList.add('bump'); });
+    moveInd();
     var tot = c.inbox + c.q; document.title = (tot ? '(' + tot + ') ' : '') + 'Панель агента — Waylen Travel';
   }
+
+  function moveInd(){ var bar = $('#tabbar'), ind = bar && bar.querySelector('.ind'), on = bar && bar.querySelector('.tb.on'); if (!ind) return; if (!on){ ind.classList.remove('on'); return; } var w = Math.min(72, on.offsetWidth - 8); ind.style.left = (on.offsetLeft + (on.offsetWidth - w) / 2) + 'px'; ind.style.width = w + 'px'; if (!moveInd.ready){ ind.style.transition = 'none'; void ind.offsetWidth; ind.style.transition = ''; moveInd.ready = true; } ind.classList.add('on'); }
+  window.addEventListener('resize', function(){ moveInd(); });
 
   /* ----- smart helpers: follow-ups, alerts, budget ----- */
   function budgetInfo(){
@@ -1690,12 +1735,13 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     Array.prototype.forEach.call(v.querySelectorAll('.chips, .quick'), function(c, i){ if (chips[i]) c.scrollLeft = chips[i]; var on = c.querySelector('.on'); if (on && !chips[i]){ var r = on.offsetLeft + on.offsetWidth - c.clientWidth; if (r > 0) c.scrollLeft = r + 12; } });
     if (!anim) sy(y);
     hideTip(); renderNav();
-    if (anim){ v.classList.remove('fade'); void v.offsetWidth; v.classList.add('fade'); animateNums(v); stagger(v); }
+    if (anim){ v.classList.remove('fade', 'l', 'r'); void v.offsetWidth; v.classList.add('fade'); if (render.dir) v.classList.add(render.dir); render.dir = ''; animateNums(v); stagger(v); }
   }
   function scr(){ return window.matchMedia('(max-width:820px)').matches ? document.querySelector('#app>.col') : null; }
   function gy(){ var e = scr(); return e ? e.scrollTop : window.scrollY; }
   function sy(y){ var e = scr(); if (e) e.scrollTop = y; else window.scrollTo(0, y); }
-  function setTab(t){ var ch = S.tab !== t; try{ localStorage.setItem('wl_tab', t); }catch(e){} S.tab = t; S.selMode = false; S.sel = {}; S.page = {}; S.queueAll = false; render(ch); sy(0); if (ch) HAP.sel(); }
+  function tabIdx(t){ for (var i = 0; i < TABS.length; i++) if (TABS[i][0] === t) return i; return 0; }
+  function setTab(t){ var ch = S.tab !== t; try{ localStorage.setItem('wl_tab', t); }catch(e){} render.dir = ch ? (tabIdx(t) > tabIdx(S.tab) ? 'r' : 'l') : ''; S.tab = t; S.selMode = false; S.sel = {}; S.page = {}; S.queueAll = false; render(ch); sy(0); }
 
   /* ---------- actions ---------- */
   function byId(arr, id){ return arr.filter(function(x){ return x.id === id; })[0]; }
@@ -1898,18 +1944,43 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     },
     logout: function(){ logout(); }
   };
+  /* виброотклик и «нажатие» на всём интерактивном — в момент касания, а не по click */
+  var SEL_ACT = /^(tab|folder|acc|pst|pstar|agtab|runf|rundays|period|fk|mode|p-quick|p-rate|m-wl|p-startog|toggle-agent)$/;
+  var HARD_ACT = /^(approve|send|run-now|compose|save|m-save|p-save|t-done|mail-send|login)$/;
+  var INTER = '[data-act],button,a[href],.chip,.tile,.it,.qi,.tb,.fab,.tg,.switch,.sw-a,label.ck,input[type=checkbox],input[type=radio],select';
+  HAP.last = 0;
+  function hapFor(el){
+    var a = el.dataset && el.dataset.act || '';
+    if (el.classList.contains('tg') || el.classList.contains('switch') || el.type === 'checkbox' || el.type === 'radio' || el.tagName === 'SELECT' || SEL_ACT.test(a)) return HAP.sel;
+    if (el.classList.contains('fab') || el.classList.contains('btn') || el.classList.contains('primary') || el.classList.contains('danger') || HARD_ACT.test(a)) return HAP.hard;
+    if (el.classList.contains('sw-a')) return HAP.tap;
+    return HAP.soft;
+  }
+  document.addEventListener('pointerdown', function(ev){
+    if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+    var el = ev.target.closest && ev.target.closest(INTER); if (!el || el.disabled) return;
+    if (el.id === 'sheet') return;
+    hapFor(el)(); HAP.last = Date.now();
+    if (reduceMotion) return;
+    var t = el.closest('.sw') ? el.closest('.sw .it') || el : el;
+    if (t.classList.contains('tabbar') || (t.classList.contains('it') && t.closest('.sw'))) t = el.closest('.sw-a') || null;
+    if (!t) return;
+    t.classList.add('pr'); var t0 = Date.now();
+    var off = function(){ var left = 110 - (Date.now() - t0); setTimeout(function(){ t.classList.remove('pr'); }, Math.max(0, left)); document.removeEventListener('pointerup', off); document.removeEventListener('pointercancel', off); };
+    document.addEventListener('pointerup', off); document.addEventListener('pointercancel', off);
+  }, {passive:true});
   document.addEventListener('click', function(ev){
     var tp = ev.target.closest && ev.target.closest('[data-tip]');
     if (tp){ showTip(tp, ev.clientX, ev.clientY); return; } else hideTip();
     var el = ev.target.closest('[data-act]'); if (!el) return;
     if (el.id === 'sheet') return;
-    var f = ACT[el.dataset.act]; if (f){ ev.preventDefault(); if (/^(tab|folder|acc|pst|pstar|agtab|runf|rundays|period|fk|mode|p-quick|p-rate)$/.test(el.dataset.act)) HAP.sel(); else HAP.tap(); f(el.dataset, el); }
+    var f = ACT[el.dataset.act]; if (f){ ev.preventDefault(); if (Date.now() - HAP.last > 500) hapFor(el)(); f(el.dataset, el); }
   });
   document.addEventListener('mousemove', function(ev){
     var tp = ev.target.closest && ev.target.closest('[data-tip]');
     if (tp) showTip(tp, ev.clientX, ev.clientY); else hideTip();
   });
-  $('#sheet').addEventListener('click', function(ev){ if (ev.target.id === 'sheet') closeSheet(); });
+  $('#sheet').addEventListener('click', function(ev){ if (ev.target.id === 'sheet'){ HAP.soft(); closeSheet(); } });
   var gWait = false, gT = null;
   document.addEventListener('keydown', function(ev){
     if (ev.key === 'Escape'){ closeSheet(); return; }
