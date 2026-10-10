@@ -41,7 +41,9 @@ function norm(s: string | null | undefined): string { return String(s || "").toL
 const FREE = new Set(["gmail.com", "googlemail.com", "yahoo.com", "outlook.com", "hotmail.com", "live.com", "icloud.com", "mail.ru", "bk.ru", "inbox.ru", "list.ru", "yandex.ru", "yandex.com", "ya.ru", "proton.me", "protonmail.com", "gmx.com", "web.de", "aol.com"]);
 function extractJson(text: string): any {
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const candidates = [fence ? fence[1] : "", text];
+  // модель иногда ставит сырые переносы строк внутри строк JSON — пробуем и «очищенный» вариант
+  const clean = (t: string) => t.replace(/[\u0000-\u001f]+/g, " ");
+  const candidates = [fence ? fence[1] : "", text, fence ? clean(fence[1]) : "", clean(text)];
   for (const c of candidates) {
     if (!c) continue;
     const i = Math.min(...["{", "["].map((ch) => { const k = c.indexOf(ch); return k < 0 ? 1e9 : k; }));
@@ -478,7 +480,7 @@ async function missions(c: Ctx) {
 ${m.region ? `РЕГИОН ПОИСКА: ${m.region}. Ищи ТОЛЬКО организации, которые физически находятся в этом регионе. Организации из других стран не возвращай вообще.` : "Регион в задании не указан: определи его из текста задания и ищи только там."}
 Найди через веб-поиск 6–8 новых ${KN[kind]}. Нужны реальные организации с сайтом и публичной почтой: обязательно ищи e-mail на сайте (страница «Контакты»), в каталогах и справочниках; организация без почты нам почти бесполезна, ставь ей rating не выше 2.
 Не повторяй уже известных: ${known || "(нет)"}. Не предлагай домены: ${(c.s.blocked_domains || []).join(", ") || "(нет)"}.
-Для каждого оцени rating 1–5, насколько партнёр подходит под задание, и кратко объясни в fit_note. Поле in_region: true, если организация находится в регионе задания, иначе false.
+Для каждого оцени rating 1–5, насколько партнёр подходит под задание, и кратко объясни в fit_note (одной строкой, без переносов). Поле in_region: true, если организация находится в регионе задания, иначе false.
 Верни только JSON-массив: ${SEARCH_JSON.replace('"kind":""', `"kind":"${kind}"`).replace('"source_url":""', '"source_url":"","in_region":true')}`;
       try {
         const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), prompt, webSearch: 8, maxTokens: 8000 });
@@ -509,7 +511,7 @@ ${m.region ? `РЕГИОН ПОИСКА: ${m.region}. Ищи ТОЛЬКО орг
 Кто они: ${p.name} — ${KN[kind]}, ${p.country || m.region || ""}. Их услуги: ${p.services || "-"}. Контакт: ${p.contact_person || "-"}. Почему подходят: ${p.fit_note || "-"}.
 Задание владельца: ${m.goal}
 ${m.letter_brief ? "Что обязательно сказать в письме: " + m.letter_brief + "\n" : ""}Суть предложения: мы направляем к ним своих клиентов с питомцами на оформление документов и ветеринарную подготовку; взамен просим понятные условия для наших клиентов (приоритет, скидка или комиссия — только то, что есть в базе знаний или в задании, ничего не выдумывай).
-Язык письма: ${ru ? "русский" : "английский"}. 5–8 предложений, по делу, без воды. Один конкретный следующий шаг в конце (например, короткий созвон или ответ с условиями). Подпись «Команда Waylen Travel».
+Язык письма: ${ru ? "русский" : "английский"}. 5–8 предложений, по делу, без воды. Пиши от «мы» (например «Мы — Waylen Travel…»), никогда «меня зовут». В первом письме не проси реквизиты, лицензии и юрлицо. Один конкретный следующий шаг в конце (например, короткий созвон или ответ с условиями). Подпись «Команда Waylen Travel».
 Верни только JSON {"subject":"","body":""}` });
             const j = r.json; if (!j?.body) throw new Error("пустой ответ");
             const auto = c.s.send_mode === "auto";
