@@ -644,7 +644,7 @@
     var gp = window.TelegramGameProxy_receiveEvent; if (gp) window.TelegramGameProxy_receiveEvent = function(t, d){ log('in2:' + t, d); return gp.apply(this, arguments); };
     var pout = WV.postEvent; if (pout) WV.postEvent = function(t, cb, d){ log('out:' + t, d); return pout.apply(this, arguments); };
   }
-  log('load', {ua:navigator.userAgent.slice(0, 160), url:location.pathname});
+  log('load', {ua:navigator.userAgent.slice(0, 160), url:location.pathname, origin:location.origin, ref:document.referrer.slice(0, 80)});
   addEventListener('resize', function(){ log('resize'); });
   if (vv) vv.addEventListener('resize', function(){ log('vv-resize'); });
   document.addEventListener('pointerdown', function(e){ var el = e.target, c = el && el.closest ? (el.closest('[data-act],button,.tile,.it') || el) : el; log('tap', {x:Math.round(e.clientX), y:Math.round(e.clientY), el:(c.tagName || '') + '.' + String(c.className || '').slice(0, 40) + (c.dataset && c.dataset.act ? '#' + c.dataset.act : '')}); }, true);
