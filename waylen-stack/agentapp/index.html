@@ -224,7 +224,7 @@
     .seg button{font-size:13px;padding:10px 8px;}
     .side{display:none;}
     main#view{padding:16px 16px 130px;}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + max(env(safe-area-inset-top), var(--tg-top,0px), calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px)))) 16px 10px;position:sticky;top:0;z-index:30;background:var(--bg);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + max(env(safe-area-inset-top), var(--tg-top,0px), calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px)))) 16px 14px;position:sticky;top:0;z-index:30;background:linear-gradient(180deg,var(--bg) 0%,var(--bg) 62%,rgba(13,14,16,.6) 84%,rgba(13,14,16,0) 100%);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);margin-bottom:-14px;}
     .topbar .logo{font-size:15px;}
     .topbar .logo-mark{width:28px;height:28px;}
     .topbar .x{background:var(--card);}
@@ -477,7 +477,16 @@
   root.classList.add('tg');
   function setIns(top, bottom){ root.style.setProperty('--tg-top', top + 'px'); root.style.setProperty('--tg-bottom', bottom + 'px'); }
   if (W){
-    function ap(){ var s = W.safeAreaInset || {}, c = W.contentSafeAreaInset || {}; setIns((+s.top || 0) + (+c.top || 0), (+s.bottom || 0)); root.classList.toggle('tg-fs', !!W.isFullscreen); }
+    var plat = String(W.platform || new URLSearchParams(location.hash.slice(1)).get('tgWebAppPlatform') || ''), fsAsked = false;
+    function ap(){
+      var s = W.safeAreaInset || {}, c = W.contentSafeAreaInset || {};
+      var top = (+s.top || 0) + (+c.top || 0), bottom = +s.bottom || 0;
+      var fs = !!W.isFullscreen || (fsAsked && window.innerHeight >= screen.height - 2);
+      /* если Telegram не прислал отступы, а экран полный — берём типовые значения платформы */
+      if (fs && top < 20) top = /ios/i.test(plat) ? 104 : 72;
+      if (fs && bottom < 1 && /ios/i.test(plat)) bottom = 24;
+      setIns(top, bottom); root.classList.toggle('tg-fs', fs);
+    }
     function safe(f){ try{ f(); }catch(e){} }
     safe(function(){ W.ready(); });
     safe(function(){ W.expand(); });
@@ -487,9 +496,10 @@
     safe(function(){ W.setHeaderColor('#0D0E10'); });
     safe(function(){ W.setBottomBarColor('#0D0E10'); });
     ['safeAreaChanged','contentSafeAreaChanged','fullscreenChanged','viewportChanged'].forEach(function(ev){ safe(function(){ W.onEvent(ev, ap); }); });
-    function fs(){ safe(function(){ if (W.requestFullscreen && !W.isFullscreen) W.requestFullscreen(); }); }
+    function fs(){ safe(function(){ if (W.requestFullscreen && !W.isFullscreen){ W.requestFullscreen(); fsAsked = true; } }); }
     fs(); ap();
-    window.addEventListener('load', function(){ setTimeout(function(){ fs(); ap(); }, 300); setTimeout(ap, 1200); });
+    window.addEventListener('load', function(){ setTimeout(function(){ fs(); ap(); }, 300); setTimeout(ap, 1200); setTimeout(ap, 3000); });
+    window.addEventListener('resize', ap);
     return;
   }
   /* запасной мост без SDK */
