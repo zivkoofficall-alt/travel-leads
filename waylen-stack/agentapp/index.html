@@ -18,6 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Onest:wght@600;700;800&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Onest:wght@600;700;800&display=swap"></noscript>
 <style>
+  :root{--tg-top:calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px));--tg-bottom:var(--tg-safe-area-inset-bottom,0px);}
   :root{
     --bg:#0D0E10; --card:#17191D; --card-2:#1F2227; --line:rgba(255,255,255,.08);
     --text:#F3F5F7; --muted:rgba(243,245,247,.58); --faint:rgba(243,245,247,.34);
@@ -616,87 +617,27 @@
   input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(200,242,123,.14);}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
 </style>
-<script src="https://telegram.org/js/telegram-web-app.js" async onload="window.__tgInit && window.__tgInit()" onerror="window.__tgInit && window.__tgInit()"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-/* Telegram Mini App: полный экран, безопасные отступы, без закрытия свайпом. SDK грузится асинхронно: инициализация идёт, когда он пришёл, или через 2.5 с без него */
-window.__tgInit = function(){
-  if (window.__tgDone) return; window.__tgDone = true;
-  var hashTg = /tgWebApp(Data|Platform)=/.test(location.hash);
+/* Telegram Mini App — как в SOFT OPT: SDK грузится синхронно, всё вызывается один раз при старте */
+(function(){
   try{ var m0 = new URLSearchParams(location.hash.slice(1)).get('tgWebAppData'); if (m0) sessionStorage.setItem('wl_tgd', m0); }catch(e){}
-  var W = window.Telegram && window.Telegram.WebApp;
-  if (!hashTg && !window.TelegramWebviewProxy && !(W && W.initData)) return;
-  var root = document.documentElement;
+  var W = window.Telegram && window.Telegram.WebApp, root = document.documentElement;
+  if (!W || !W.initData) return;
+  try{ if (!sessionStorage.getItem('wl_tgd')) sessionStorage.setItem('wl_tgd', W.initData); }catch(e){}
   root.classList.add('tg');
-  function setIns(top, bottom){ root.style.setProperty('--tg-top', top + 'px'); root.style.setProperty('--tg-bottom', bottom + 'px'); }
-  if (W){
-    var plat = String(W.platform || new URLSearchParams(location.hash.slice(1)).get('tgWebAppPlatform') || ''), fsAsked = false;
-    function ap(){
-      var s = W.safeAreaInset || {}, c = W.contentSafeAreaInset || {};
-      var top = (+s.top || 0) + (+c.top || 0), bottom = +s.bottom || 0;
-      var fs = !!W.isFullscreen || window.innerHeight >= screen.height - 2;
-      /* если Telegram не прислал отступы, а экран полный — берём типовые значения платформы */
-      if (fs && top < 20) top = /ios/i.test(plat) ? 104 : 72;
-      if (fs && bottom < 1 && /ios/i.test(plat)) bottom = 24;
-      setIns(top, bottom); root.classList.toggle('tg-fs', fs);
-    }
-    function safe(f){ try{ f(); }catch(e){} }
-    safe(function(){ W.ready(); });
-    safe(function(){ W.expand(); });
-    safe(function(){ W.disableVerticalSwipes(); });
-    safe(function(){ W.enableClosingConfirmation(); });
-    safe(function(){ W.setBackgroundColor('#0D0E10'); });
-    safe(function(){ W.setHeaderColor('#0D0E10'); });
-    safe(function(){ W.setBottomBarColor('#0D0E10'); });
-    function guard(){ safe(function(){ W.disableVerticalSwipes(); }); safe(function(){ W.enableClosingConfirmation(); }); safe(function(){ if (W.isVerticalSwipesEnabled === true) W.disableVerticalSwipes(); }); }
-    ['safeAreaChanged','contentSafeAreaChanged','fullscreenChanged','viewportChanged'].forEach(function(ev){ safe(function(){ W.onEvent(ev, function(){ ap(); guard(); }); }); });
-    /* из кнопки в чате приложение открывается шторкой: iOS игнорирует запрос полного экрана во время её анимации — повторяем, когда окно раскрылось и стабильно */
-    [1200, 3000].forEach(function(ms){ setTimeout(function(){ if (!W.isExpanded) safe(function(){ W.expand(); }); }, ms); });
-    safe(function(){ W.onEvent('activated', guard); });
-    window.__tgInfo = {platform:plat, version:W.version, fsErr:null, launch:(function(){ try{ var u = W.initDataUnsafe || {}; if (u.chat_type || u.chat_instance) return 'из чата (кнопка)'; if (u.start_param) return 'прямая ссылка'; return 'главная кнопка / меню'; }catch(e){ return '?'; } })()};
-    safe(function(){ W.onEvent('fullscreenFailed', function(e){ window.__tgInfo.fsErr = (e && e.error) || 'неизвестно'; fsTries = 9; root.classList.add('tg-fs-failed'); }); });
-    /* некоторые клиенты принимают запрос полного экрана только после жеста пользователя */
-
-    setTimeout(guard, 600); setTimeout(guard, 2500); setInterval(guard, 15000);
-    var fsTries = 0, fsLast = 0;
-    function isFull(){ return !!W.isFullscreen || root.classList.contains('tg-fs') || window.innerHeight >= screen.height - 2; }
-    /* просим полный экран только если его точно нет: повторный запрос в полном экране заставляет iOS заново проигрывать анимацию */
-    /* полный экран НЕ запрашиваем из кода: в webview из кнопки меню iOS начинает анимацию и откатывает (чёрный экран). Полный экран включается режимом запуска в BotFather (Main App → Fullscreen), кнопка меню ведёт через /agentapp/go */
-    function fs(){}
-    fs(); ap();
-    function later(){ setTimeout(function(){ fs(); ap(); }, 300); setTimeout(ap, 1200); setTimeout(ap, 3000); }
-    if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
-    window.addEventListener('resize', ap);
-    return;
-  }
-  /* запасной мост без SDK */
-  function post(t, d){
-    try{
-      var px = window.TelegramWebviewProxy;
-      if (px && px.postEvent) px.postEvent(t, JSON.stringify(d || {}));
-      else if (window.external && 'notify' in window.external) window.external.notify(JSON.stringify({eventType:t, eventData:d || {}}));
-      else if (window.parent !== window) window.parent.postMessage(JSON.stringify({eventType:t, eventData:d || {}}), '*');
-    }catch(e){}
-  }
-  var sa = {top:0, bottom:0}, ca = {top:0, bottom:0};
-  function onEvent(t, d){
-    if (typeof d === 'string'){ try{ d = JSON.parse(d); }catch(e){ d = {}; } }
-    d = d || {};
-    if (t === 'safe_area_changed'){ sa.top = +d.top || 0; sa.bottom = +d.bottom || 0; }
-    else if (t === 'content_safe_area_changed'){ ca.top = +d.top || 0; ca.bottom = +d.bottom || 0; }
-    else if (t === 'fullscreen_changed') root.classList.toggle('tg-fs', !!d.is_fullscreen);
-    setIns(sa.top + ca.top, sa.bottom);
-  }
-  window.Telegram = window.Telegram || {}; window.Telegram.WebView = {receiveEvent: onEvent};
-  window.addEventListener('message', function(e){ try{ var m = JSON.parse(e.data); if (m && m.eventType) onEvent(m.eventType, m.eventData); }catch(_){} });
-  post('web_app_ready'); post('web_app_expand');
-  post('web_app_setup_swipe_behavior', {allow_vertical_swipe:false});
-  post('web_app_setup_closing_behavior', {need_confirmation:true});
-  post('web_app_set_background_color', {color:'#0D0E10'}); post('web_app_set_header_color', {color:'#0D0E10'});
-  function goFs(){ post('web_app_request_fullscreen'); post('web_app_request_safe_area'); post('web_app_request_content_safe_area'); }
-  goFs(); setTimeout(goFs, 300);
-};
-setTimeout(function(){ if (!window.__tgDone) window.__tgInit(); }, 2500);
-if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
+  try{ W.ready(); W.expand(); W.setHeaderColor && W.setHeaderColor('#0D0E10'); W.setBackgroundColor && W.setBackgroundColor('#0D0E10'); }catch(e){}
+  try{ W.setBottomBarColor && W.setBottomBarColor('#0D0E10'); }catch(e){}
+  try{ W.disableVerticalSwipes && W.disableVerticalSwipes(); }catch(e){}
+  try{ W.enableClosingConfirmation && W.isVersionAtLeast && W.isVersionAtLeast('6.2') && W.enableClosingConfirmation(); }catch(e){}
+  window.__tgInfo = {platform:W.platform, version:W.version, fsErr:null, launch:(function(){ try{ var u = W.initDataUnsafe || {}; if (u.chat_type || u.chat_instance) return 'из чата (кнопка)'; if (u.start_param) return 'прямая ссылка'; return 'главная кнопка / меню'; }catch(e){ return '?'; } })()};
+  try{
+    var fsc = function(){ root.classList.toggle('tg-fs', !!W.isFullscreen); };
+    W.onEvent && W.onEvent('fullscreenChanged', fsc); fsc();
+    W.onEvent && W.onEvent('fullscreenFailed', function(e){ window.__tgInfo.fsErr = (e && e.error) || 'неизвестно'; });
+    if (W.requestFullscreen && !W.isFullscreen && /^(ios|android)/.test(W.platform || '') && W.isVersionAtLeast && W.isVersionAtLeast('8.0')) W.requestFullscreen();
+  }catch(e){}
+})();
 </script>
 </head>
 <body>
