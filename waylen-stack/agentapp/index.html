@@ -124,6 +124,18 @@
   .agcard .acts{display:flex;flex-direction:row;flex-wrap:nowrap;gap:8px;}
   .agcard .acts .pill{flex:1;justify-content:center;white-space:nowrap;padding-left:10px;padding-right:10px;}
   .ldot{width:9px;height:9px;border-radius:50%;background:var(--lime);box-shadow:0 0 0 4px rgba(200,242,123,.22);flex-shrink:0;}
+  .ldot.live{animation:lpulse 1.4s ease-in-out infinite;}
+  @keyframes lpulse{0%,100%{box-shadow:0 0 0 3px rgba(200,242,123,.25);}50%{box-shadow:0 0 0 7px rgba(200,242,123,.05);}}
+  .livel{font-size:13px;color:var(--acc);font-weight:700;}
+  .mring{display:flex;gap:14px;align-items:center;}
+  .mring svg{width:58px;height:58px;flex-shrink:0;transform:rotate(-90deg);}
+  .mring svg circle{fill:none;stroke-width:6;}
+  .mring svg .bg{stroke:var(--line);}
+  .mring svg .fg{stroke:var(--acc);stroke-linecap:round;}
+  .mring .rp{position:relative;flex-shrink:0;}
+  .mring .rp b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .mring .mrow{margin-top:0;}
+  .mtpl{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 14px;}
   .ldot.off{background:var(--faint);box-shadow:none;}
   .today{margin-bottom:4px;}
   .today .dt{font-size:13px;font-weight:700;color:var(--muted);}
@@ -1019,6 +1031,7 @@
         D.tasks = j.tasks || [];
         D.insights = j.insights || [];
         D.missions = j.missions || [];
+        D.mcost = j.mcost || {};
     }
     function readCache() { try {
         var raw = localStorage.getItem(CACHE_KEY);
@@ -1059,7 +1072,7 @@
         var y = gy();
         loadAll().then(function () { S.loadedAt = Date.now(); render(); sy(y); }).catch(function () { });
     }
-    setInterval(softRefresh, 90000);
+    setInterval(function () { if (document.visibilityState !== 'visible') return; var age = Date.now() - (S.loadedAt || 0); if (age > 90000 || (liveStep() && age > 15000)) softRefresh(); }, 15000);
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && sess && S.loadedAt && Date.now() - S.loadedAt > 60000)
         softRefresh(); });
     document.addEventListener('focusout', function () { setTimeout(function () { if (window.scrollY)
@@ -1731,7 +1744,7 @@
         var dt = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
         dt = dt.charAt(0).toUpperCase() + dt.slice(1);
         var h = '<div class="today"><div class="dt">' + esc(dt) + '</div><h1 class="pt">' + hello + ', Филипп</h1>' +
-            '<button class="agline" data-act="go" data-tab="agent" data-arg=""><i class="ldot' + (st.enabled ? '' : ' off') + '"></i><span><b>' + (st.enabled ? 'Агент работает' : 'Агент выключен') + '</b> · ' + (st.send_mode === 'auto' ? 'отправляет сам' : 'через утверждение') + (st.enabled && quietNow() ? ' · тихие часы' : '') + '</span>' + ic('chev') + '</button></div>';
+            '<button class="agline" data-act="go" data-tab="agent" data-arg=""><i class="ldot' + (st.enabled ? '' : ' off') + (liveStep() ? ' live' : '') + '"></i><span><b>' + (st.enabled ? 'Агент работает' : 'Агент выключен') + '</b> · ' + (st.send_mode === 'auto' ? 'отправляет сам' : 'через утверждение') + (st.enabled && quietNow() ? ' · тихие часы' : '') + (liveStep() ? '<br><span class="livel">Сейчас: ' + esc(liveStep()) + '</span>' : '') + '</span>' + ic('chev') + '</button></div>';
         h += '<div class="st3">' +
             '<button class="' + (drafts ? 'hot' : '') + '" data-act="go" data-tab="mail" data-arg="draft"><span class="v num">' + drafts + '</span><span class="l">ждут утверждения</span></button>' +
             '<button data-act="go" data-tab="mail" data-arg="unread"><span class="v num">' + unread + '</span><span class="l">новых писем</span></button>' +
@@ -2349,7 +2362,7 @@
         var top = D.insights.filter(function (x) { return x.kind === 'country'; }).sort(function (a, c) { return (c.metric || 0) - (a.metric || 0); })[0];
         var row = function (id, icon, title, sub, val, cls, act) { return '<button class="hr" data-act="' + (act || 'agtab') + '" data-id="' + id + '"' + (act === 'tab' ? ' data-tab="' + id + '"' : '') + '><span class="hi' + (cls ? ' ' + cls : '') + '">' + ic(icon) + '</span><span class="hm"><b>' + title + '</b><span>' + esc(sub) + '</span></span>' + (val !== '' && val != null ? '<span class="hc' + (cls === 'l' ? ' n' : '') + '">' + val + '</span>' : '') + ic('chev') + '</button>'; };
         var h = '<div class="head"><div><h1 class="pt">Агент</h1><p class="sub">Всё, что агент делает за вас, по разделам.</p></div></div>';
-        h += '<div class="agcard"><div class="row1"><div class="stt"><b><i class="ldot' + (st.enabled ? '' : ' off') + '"></i>' + (st.enabled ? 'Работает' : 'Выключен') + '</b><span>' + (st.send_mode === 'auto' ? 'Отправляет сам' : 'Письма через утверждение') + (st.enabled && quietNow() ? ' · тихие часы' : '') + '</span>' +
+        h += '<div class="agcard"><div class="row1"><div class="stt"><b><i class="ldot' + (st.enabled ? '' : ' off') + (liveStep() ? ' live' : '') + '"></i>' + (liveStep() ? 'Работает прямо сейчас' : st.enabled ? 'Работает' : 'Выключен') + '</b>' + (liveStep() ? '<span class="livel">' + esc(liveStep()) + '…</span>' : '') + '<span>' + (st.send_mode === 'auto' ? 'Отправляет сам' : 'Письма через утверждение') + (st.enabled && quietNow() ? ' · тихие часы' : '') + '</span>' +
             (lr || ls ? '<span>' + (lr ? 'Почта ' + ago(lr.created_at) + ' назад' : '') + (lr && ls ? ' · ' : '') + (ls ? 'поиск ' + ago(ls.created_at) + ' назад' : '') + '</span>' : '') + '</div>' +
             '<button class="tg' + (st.enabled ? ' on' : '') + '" data-act="toggle-agent" aria-label="Включить или выключить агента" aria-pressed="' + (st.enabled ? 'true' : 'false') + '"></button></div>' +
             '<div class="acts" style="margin:0"><button class="pill" data-act="run-now" id="runNow">Запустить сейчас</button><button class="pill ghost" data-act="chat">' + ic('chat') + 'Чат с агентом</button></div></div>';
@@ -2404,6 +2417,7 @@
         }
         return h;
     }
+    function liveStep() { var st = D.settings || {}; return st.live_step && st.live_at && Date.now() - new Date(st.live_at).getTime() < 6e5 ? st.live_step : ''; }
     function mStats(m) {
         var ps = D.partners.filter(function (p) { return p.mission_id === m.id; }), ids = {};
         ps.forEach(function (p) { ids[p.id] = 1; });
@@ -2419,16 +2433,22 @@
             if (D.emails.some(function (e) { return e.partner_id === p.id && e.direction === 'in' && e.folder !== 'spam'; }) || p.status === 'replied' || p.status === 'agreed')
                 replied++;
         });
-        var cost = sumCost(D.runs.filter(function (r) { return (r.summary || '').indexOf('«' + m.title + '»') > -1; }));
+        var cost = D.mcost && D.mcost[m.id] != null ? Number(D.mcost[m.id]) : sumCost(D.runs.filter(function (r) { return r.mission_id === m.id || (r.summary || '').indexOf('«' + m.title + '»') > -1; }));
         return { found: ps.length, written: written, sent: sent, replied: replied, drafts: drafts, cost: cost, partners: ps };
     }
+    var MTPL = [
+        ['Ветклиники', 'clinic', 'Ветклиники — ', 'Найди ветеринарные клиники, которые оформляют документы на вывоз животных за границу (чипирование, прививки, ветпаспорт, справки). Предложи сотрудничество: мы направляем к ним клиентов, они дают нашим клиентам приоритетную запись и понятные условия.', 'Коротко о Waylen Travel, что мы направляем клиентов с питомцами. Предложить короткий созвон.'],
+        ['Перевозчики', 'carrier', 'Перевозчики — ', 'Найди компании, которые перевозят домашних животных (pet relocation, pet cargo, сопровождающие). Предложи партнёрство: мы ведём клиента по документам, они берут перевозку; обмен заявками.', 'Спросить их направления и порядок цен. Предложить обмен заявками.'],
+        ['Блогеры', 'blogger', 'Блогеры — ', 'Найди блогеров и авторов каналов о переезде и путешествиях с питомцами. Предложи сотрудничество: полезный материал для их аудитории о вывозе животных и реферальные условия.', 'Предложить совместный пост или гайд для их аудитории.'],
+        ['Сообщества', 'community', 'Сообщества — ', 'Найди сообщества и чаты релокантов и владельцев животных. Предложи администраторам полезный материал о правилах ввоза животных и контакт для вопросов участников.', 'Без рекламы в лоб: предложить пользу для участников.']
+    ];
     var MST = { active: 'В работе', paused: 'Пауза', done: 'Выполнено' };
     function mCard(m) {
         var st = mStats(m), pct = m.target ? Math.min(100, Math.round(st.found / m.target * 100)) : 0;
         return '<button class="card mcard" data-act="m-open" data-id="' + esc(m.id) + '"><div class="l1" style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><b class="mt1">' + esc(m.title) + '</b><span class="st ' + (m.status === 'active' ? 'contacted' : m.status === 'done' ? 'agreed' : 'paused') + '">' + MST[m.status] + '</span></div>' +
             '<p class="cardn" style="margin:6px 0 10px">' + esc(KINDP[m.kind] || KIND[m.kind] || '') + (m.region ? ' · ' + esc(m.region) : '') + (m.write_letters ? ' · с письмами' : ' · только поиск') + '</p>' +
-            '<div class="meter" style="margin:0"><span style="width:' + pct + '%"></span></div>' +
-            '<div class="mrow"><span><b class="num">' + st.found + '</b> из ' + m.target + ' найдено</span><span><b class="num">' + st.written + '</b> написано</span><span><b class="num">' + st.replied + '</b> ответили</span></div>' +
+            '<div class="mring"><span class="rp"><svg viewBox="0 0 58 58"><circle class="bg" cx="29" cy="29" r="25"/>' + (pct ? '<circle class="fg" cx="29" cy="29" r="25" stroke-dasharray="' + (pct / 100 * 157.08).toFixed(1) + ' 157.08"/>' : '') + '</svg><b>' + pct + '%</b></span>' +
+            '<div class="mrow"><span><b class="num">' + st.found + '</b> из ' + m.target + ' найдено</span><span><b class="num">' + st.written + '</b> написано</span><span><b class="num">' + st.replied + '</b> ответили</span>' + (st.cost > 0 ? '<span>' + usd(st.cost) + (st.found ? ' · ' + usd(st.cost / st.found) + ' за партнёра' : '') + '</span>' : '') + '</div></div>' +
             (st.drafts ? '<p class="hint" style="margin:8px 0 0;color:var(--acc)">Ждут утверждения: ' + st.drafts + '</p>' : '') + '</button>';
     }
     function vMissions() {
@@ -2451,6 +2471,8 @@
         var h = '<div class="set">';
         if (st)
             h += '<div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr))">' + kcard('Найдено', st.found + '<span style="font-size:14px;opacity:.6"> / ' + m.target + '</span>', '') + kcard('Написано', st.written, st.sent + ' отправлено') + kcard('Ответили', st.replied, usd(st.cost) + ' потрачено') + '</div>';
+        if (!id)
+            h += '<p class="hint" style="margin:0 0 8px">Начните с шаблона или опишите задание своими словами.</p><div class="mtpl">' + MTPL.map(function (t, i) { return '<button type="button" class="chip" data-act="m-tpl" data-id="' + i + '">' + esc(t[0]) + '</button>'; }).join('') + '</div>';
         h += '<div class="fld"><label for="m_title">Название</label><input id="m_title" value="' + esc(m.title || '') + '" placeholder="Ветклиники России" ' + (id ? '' : 'autofocus') + '></div>' +
             '<div class="fld"><label for="m_goal">Что сделать</label><textarea id="m_goal" placeholder="Найди ветклиники в России, которые оформляют документы на вывоз животных, и предложи им сотрудничество: мы направляем клиентов, они дают нашим клиентам приоритет и скидку">' + esc(m.goal || '') + '</textarea><p class="hint">Пишите как человеку. Агент использует это и при поиске, и в письмах.</p></div>' +
             '<div class="row2 keep">' + sel('m_kind', 'Кого искать', { clinic: 'Клиники', carrier: 'Перевозчики', blogger: 'Блогеры', community: 'Сообщества', other: 'Другое' }, m.kind) + '<div class="fld"><label for="m_region">Где</label><input id="m_region" value="' + esc(m.region || '') + '" placeholder="Россия, Москва"></div></div>' +
@@ -2899,6 +2921,7 @@
             return; HAP.hard(); rest('DELETE', 'chat_messages?id=not.is.null').then(function () { CH.msgs = []; chRender(); toast('История очищена'); }).catch(fail); },
         'q-open': function (d) { qSheet(d.id); },
         'm-new': function () { mSheet(''); }, 'm-open': function (d) { mSheet(d.id); },
+        'm-tpl': function (d, el) { var t = MTPL[+d.id]; if (!t) return; Array.prototype.forEach.call(el.parentNode.children, function (b) { b.classList.toggle('on', b === el); }); var reg = $('#m_region'), r = reg && reg.value.trim(); $('#m_title').value = t[2] + (r || 'укажите регион'); $('#m_kind').value = t[1]; $('#m_goal').value = t[3]; $('#m_brief').value = t[4]; if (reg && !r) reg.focus(); },
         'm-wl': function (d, el) { Array.prototype.forEach.call(el.parentNode.children, function (b) { b.classList.toggle('on', b === el); }); el.parentNode.dataset.v = d.id; },
         'm-save': function (d) {
             var wl = ($('#m_wl') || { dataset: {} }).dataset.v;

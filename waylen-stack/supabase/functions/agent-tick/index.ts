@@ -153,12 +153,20 @@ class Ctx {
     accounts: any[] = [];
     templates: any[] = [];
     history: any[] = [];
+    edits: any[] = [];
+    mission: string | null = null;
     constructor(db: Db, s: Settings) { this.db = db; this.s = s; }
     async run(kind: string, summary: string, details: string, ok: boolean, r?: ClaudeResult) {
         this.log.push((ok ? "✓ " : "✗ ") + summary);
         if (r)
             this.spent += r.cost;
-        await this.db.from("agent_runs").insert({ kind, summary: summary.slice(0, 300), details: details.slice(0, 4000), ok, cost_usd: r ? +r.cost.toFixed(5) : 0, model: r?.model || null, tokens_in: r?.tokensIn || null, tokens_out: r?.tokensOut || null });
+        await this.db.from("agent_runs").insert({ kind, summary: summary.slice(0, 300), details: details.slice(0, 4000), ok, cost_usd: r ? +r.cost.toFixed(5) : 0, model: r?.model || null, tokens_in: r?.tokensIn || null, tokens_out: r?.tokensOut || null, mission_id: this.mission });
+    }
+    async step(text: string | null) {
+        try {
+            await this.db.from("agent_settings").update({ live_step: text, live_at: text ? new Date().toISOString() : null }).eq("id", 1);
+        }
+        catch (_) { }
     }
     async notify(text: string): Promise<number | null> {
         if (!this.tgToken || !this.tgChat)
@@ -180,7 +188,7 @@ class Ctx {
         return `Компания: Waylen Travel (waylen.travel) — агентство по перевозке домашних животных между странами: документы, ветеринарные требования, маршрут, сопровождение. Клиенты переезжают или путешествуют с питомцами.
 ${this.s.company_summary ? "О компании от владельца: " + this.s.company_summary + "\n" : ""}База знаний (единственный источник фактов об условиях; если факта нет — не выдумывай):
 ${kb || "(пусто)"}
-Тон писем: ${this.s.tone || "вежливо, коротко, по делу, на «вы», без воды"}.`;
+Тон писем: ${this.s.tone || "вежливо, коротко, по делу, на «вы», без воды"}.${this.edits.length ? "\nКак владелец правит твои письма (учитывай его стиль и замечания в новых письмах):\n" + this.edits.map((e) => "БЫЛО: " + String(e.orig_body).slice(0, 600) + "\nСТАЛО: " + String(e.body).slice(0, 600)).join("\n---\n") : ""}`;
     }
 }
 async function telegramInbox(c: Ctx) {
@@ -652,11 +660,13 @@ async function digest(c: Ctx) {
 async function missions(c: Ctx) {
     const { data: ms } = await c.db.from("missions").select("*").eq("status", "active").order("created_at");
     for (const m of ms || []) {
+        c.mission = m.id;
         const kind = ["clinic", "carrier", "blogger", "community", "other"].includes(m.kind) ? m.kind : "other";
         const { count: foundN } = await c.db.from("partners").select("id", { count: "exact", head: true }).eq("mission_id", m.id);
         const found = foundN || 0;
         if (found < Number(m.target || 0) && hoursAgo(m.last_search_at) >= 24 / Math.max(1, Number(m.searches_per_day) || 1) - 0.4) {
             await c.db.from("missions").update({ last_search_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", m.id);
+            await c.step(`Ищет партнёров по заданию «${m.title}»`);
             const known = [c.partners.map((p) => (p.website || p.email || p.name)).filter(Boolean).slice(0, 300).join("; "), contactedList(c)].filter(Boolean).join("; ");
             const prompt = `Задание владельца (это главнее любых общих настроек компании): ${m.goal}
 ${m.region ? `РЕГИОН ПОИСКА: ${m.region}. Ищи ТОЛЬКО организации, которые физически находятся в этом регионе. Организации из других стран не возвращай вообще.` : "Регион в задании не указан: определи его из текста задания и ищи только там."}
@@ -682,6 +692,7 @@ ${m.region ? `РЕГИОН ПОИСКА: ${m.region}. Ищи ТОЛЬКО орг
             let room = Math.max(0, Number(m.letters_per_day || 0) - (todayN || 0));
             const acc = c.accounts.find((a) => a.status === "connected" && a.provider === "agentmail") || c.accounts.find((a) => a.status === "connected");
             if (room && acc) {
+                await c.step(`Пишет письма по заданию «${m.title}»`);
                 const { data: cands } = await c.db.from("partners").select("*").eq("mission_id", m.id).eq("status", "found").not("email", "is", null).order("rating", { ascending: false }).limit(room * 2);
                 let written = 0;
                 for (const p of cands || []) {
@@ -737,7 +748,9 @@ ${m.letter_brief ? "Что обязательно сказать в письме
                 await c.notify(`Задание «${m.title}» выполнено: найдено ${found}${m.write_letters ? ", письма подготовлены" : ""}.`);
             }
         }
+        c.mission = null;
     }
+    c.mission = null;
 }
 async function evening(c: Ctx) {
     if (!c.tgToken || !c.tgChat)
@@ -793,13 +806,15 @@ Deno.serve(async (req) => {
         c.apiKey = sec.anthropic_api_key || "";
         c.tgToken = sec.telegram_bot_token || "";
         c.tgChat = sec.telegram_chat_id || "";
-        const [kb, ps, ac, tp, hi] = await Promise.all([
+        const [kb, ps, ac, tp, hi, ed] = await Promise.all([
             db.from("knowledge").select("topic,content").eq("is_demo", false),
             db.from("partners").select("id,name,email,website,kind,status,country,terms,notes,last_contact_at").eq("is_demo", false),
             db.from("mail_accounts").select("*").eq("is_demo", false),
             db.from("templates").select("title,subject,body").eq("is_demo", false),
             db.from("emails").select("direction,folder,status,to_addr,from_addr,subject,summary_ru,created_at,mission_id,partner_id").eq("is_demo", false).neq("status", "failed").in("folder", ["sent", "draft", "inbox"]).order("created_at").limit(3000),
+            db.from("emails").select("orig_body,body").not("orig_body", "is", null).order("created_at", { ascending: false }).limit(3),
         ]);
+        c.edits = (ed.data || []).filter((e: any) => e.orig_body && e.body && e.orig_body !== e.body);
         c.knowledge = kb.data || [];
         c.partners = ps.data || [];
         c.accounts = ac.data || [];
@@ -823,13 +838,20 @@ Deno.serve(async (req) => {
             return json(200, { ok: true, skipped: "budget", log: c.log });
         }
         AM_KEY = sec.agentmail_api_key || "";
+        await c.step("Проверяет почту");
         await ensureMailbox(c);
         await mailSync(c);
+        await c.step("Разбирает входящие письма");
         await processInbox(c);
+        await c.step("Отправляет письма из очереди");
         await sendQueued(c);
+        await c.step("Проверяет, кому пора напомнить");
         await followUps(c);
+        await c.step("Работает по заданиям");
         await missions(c);
+        await c.step("Ищет новых партнёров");
         await partnerSearch(c);
+        await c.step("Собирает новости рынка");
         await market(c);
         await digest(c);
         await evening(c);
@@ -840,6 +862,6 @@ Deno.serve(async (req) => {
         return json(500, { ok: false, error: String(e).slice(0, 300), log: c.log });
     }
     finally {
-        await db.from("agent_settings").update({ running_since: null }).eq("id", 1);
+        await db.from("agent_settings").update({ running_since: null, live_step: null, live_at: null }).eq("id", 1);
     }
 });
