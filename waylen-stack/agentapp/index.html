@@ -628,6 +628,7 @@
   var WV = window.Telegram && window.Telegram.WebView;
   if (WV){
     var rin = WV.receiveEvent; if (rin) WV.receiveEvent = function(t, d){ log('in:' + t, d); return rin.apply(this, arguments); };
+    var gp = window.TelegramGameProxy_receiveEvent; if (gp) window.TelegramGameProxy_receiveEvent = function(t, d){ log('in2:' + t, d); return gp.apply(this, arguments); };
     var pout = WV.postEvent; if (pout) WV.postEvent = function(t, cb, d){ log('out:' + t, d); return pout.apply(this, arguments); };
   }
   log('load', {ua:navigator.userAgent.slice(0, 160), url:location.pathname});
@@ -644,9 +645,7 @@
   try{ if (!sessionStorage.getItem('wl_tgd')) sessionStorage.setItem('wl_tgd', W.initData); }catch(e){}
   root.classList.add('tg');
   try{ W.ready(); W.expand(); W.setHeaderColor && W.setHeaderColor('#0D0E10'); W.setBackgroundColor && W.setBackgroundColor('#0D0E10'); }catch(e){}
-  try{ W.setBottomBarColor && W.setBottomBarColor('#0D0E10'); }catch(e){}
   try{ W.disableVerticalSwipes && W.disableVerticalSwipes(); }catch(e){}
-  try{ W.enableClosingConfirmation && W.isVersionAtLeast && W.isVersionAtLeast('6.2') && W.enableClosingConfirmation(); }catch(e){}
   window.__tgInfo = {platform:W.platform, version:W.version, fsErr:null, launch:(function(){ try{ var u = W.initDataUnsafe || {}; if (u.chat_type || u.chat_instance) return 'из чата (кнопка)'; if (u.start_param) return 'прямая ссылка'; return 'главная кнопка / меню'; }catch(e){ return '?'; } })()};
   try{
     var fsc = function(){ root.classList.toggle('tg-fs', !!W.isFullscreen); };
@@ -2117,7 +2116,7 @@
   /* виброотклик и «нажатие» на всём интерактивном — в момент касания, а не по click */
   var SEL_ACT = /^(tab|folder|acc|pst|pstar|agtab|runf|rundays|period|fk|mode|p-quick|p-rate|m-wl|p-startog|toggle-agent)$/;
   var HARD_ACT = /^(approve|send|run-now|compose|save|m-save|p-save|t-done|mail-send|login)$/;
-  var INTER = '[data-act],button,a[href],.chip,.tile,.it,.qi,.tb,.fab,.tg,.switch,.sw-a,label.ck,input[type=checkbox],input[type=radio],select';
+  var INTER = '[data-act],button,a[href],.chip,.tile,.it,.qi,.tb,.fab,button.tg,span.tg,.switch,.sw-a,label.ck,input[type=checkbox],input[type=radio],select';
   HAP.last = 0;
   function hapFor(el){
     var a = el.dataset && el.dataset.act || '';
@@ -2128,7 +2127,7 @@
   }
   document.addEventListener('pointerdown', function(ev){
     if (ev.pointerType === 'mouse' && ev.button !== 0) return;
-    var el = ev.target.closest && ev.target.closest(INTER); if (!el || el.disabled) return;
+    var el = ev.target.closest && ev.target.closest(INTER); if (!el || el.disabled || el === document.documentElement || el === document.body) return;
     if (el.id === 'sheet') return;
     hapFor(el)(); HAP.last = Date.now();
     if (reduceMotion) return;
