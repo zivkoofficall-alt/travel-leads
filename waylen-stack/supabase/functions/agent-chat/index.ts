@@ -20,12 +20,17 @@ function json(status: number, payload: unknown) {
 }
 function monthStart(): string { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString(); }
 function dayStart(): string { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString(); }
-function extractActions(text: string): { reply: string; actions: any[] } {
+function extractActions(text: string): { reply: string; actions: any[]; broken: boolean } {
   const m = text.match(/<actions>([\s\S]*?)<\/actions>/);
-  if (!m) return { reply: text.trim(), actions: [] };
+  if (!m) {
+    // ответ оборвался внутри блока действий — убираем обрывок из текста
+    const i = text.indexOf("<actions>");
+    if (i >= 0) return { reply: text.slice(0, i).trim(), actions: [], broken: true };
+    return { reply: text.trim(), actions: [], broken: false };
+  }
   let actions: any[] = [];
   try { const j = JSON.parse(m[1].replace(/[\u0000-\u001f]+/g, " ")); actions = Array.isArray(j) ? j : []; } catch (_) { actions = []; }
-  return { reply: text.replace(m[0], "").trim(), actions };
+  return { reply: text.replace(m[0], "").trim(), actions, broken: !actions.length && m[1].trim().length > 2 };
 }
 
 Deno.serve(async (req) => {
@@ -91,9 +96,9 @@ ${(kb.data || []).map((k) => `• ${k.topic}: ${k.content}`).join("\n") || "(п�
 
   const system = `Ты — ИИ-агент компании Waylen Travel (waylen.travel), сервиса сопровождения переездов и поездок с питомцами. Ты общаешься с владельцем компании Филиппом в его панели управления. Твоя работа в фоне: ищешь партнёров (ветклиники, перевозчики, блогеры), пишешь им письма, разбираешь входящую почту, собираешь новости рынка. Ниже — актуальный снимок данных панели: отвечай на вопросы ТОЛЬКО по нему, не выдумывай цифры; если чего-то нет в снимке — так и скажи.
 
-Стиль: по-русски, коротко, по делу, без воды и без приветствий в каждом сообщении. Цифры и имена — конкретные. Можно короткие списки. Без эмодзи.
+Стиль: по-русски, коротко (обычно до 8–10 строк), по делу, без воды и без приветствий в каждом сообщении. Цифры и имена — конкретные. Можно короткие списки. Без эмодзи. Не используй внутренние названия статусов и полей (found, contacted, replied, agreed, declined, approve, auto, status=…): пиши по-русски — «найден», «написали», «ответил», «договорились», «отказ», «через утверждение», «автоотправка». Не исправляй свои прошлые ответы, если об этом не просили.
 
-Ты умеешь ВЫПОЛНЯТЬ поручения. Если владелец просит что-то сделать — сделай это через блок действий в самом конце ответа (после текста), строго в формате:
+Ты умеешь ВЫПОЛНЯТЬ поручения. Если владелец просит что-то сделать — сделай это через блок действий В САМОМ НАЧАЛЕ ответа (до текста), строго в формате:
 <actions>[{...},{...}]</actions>
 Поддерживаемые действия:
 - {"type":"mission","title":"","goal":"подробная цель","kind":"clinic|carrier|blogger|community|other","region":"страна/город","target":20,"write_letters":true,"letters_per_day":5,"searches_per_day":1,"letter_brief":"что обязательно сказать в письме"} — создать задание на поиск партнёров и рассылку (поиск стоит ~$0.3 за запуск, письмо ~$0.01).
@@ -116,7 +121,7 @@ ${(kb.data || []).map((k) => `• ${k.topic}: ${k.content}`).join("\n") || "(п�
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST", signal: ctl.signal,
       headers: { "x-api-key": sec.anthropic_api_key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: MODEL, max_tokens: 1500, system: [{ type: "text", text: system }, { type: "text", text: snapshot, cache_control: { type: "ephemeral" } }], messages }),
+      body: JSON.stringify({ model: MODEL, max_tokens: 3000, system: [{ type: "text", text: system }, { type: "text", text: snapshot, cache_control: { type: "ephemeral" } }], messages }),
     });
     clearTimeout(t);
     const d = await r.json().catch(() => ({}));
@@ -127,7 +132,7 @@ ${(kb.data || []).map((k) => `• ${k.topic}: ${k.content}`).join("\n") || "(п�
     return json(200, { ok: false, error: String(e).slice(0, 300) });
   }
   const cost = tin / 1e6 * PRICE[0] + tout / 1e6 * PRICE[1];
-  const { reply, actions } = extractActions(text);
+  const { reply, actions, broken } = extractActions(text);
 
   // ---- выполняем действия ----
   const done: string[] = [];
@@ -161,6 +166,7 @@ ${(kb.data || []).map((k) => `• ${k.topic}: ${k.content}`).join("\n") || "(п�
       }
     } catch (e) { done.push("Не удалось: " + String(e).slice(0, 120)); }
   }
+  if (broken) done.push("Не удалось выполнить поручение — повторите его короче");
 
   await db.from("chat_messages").insert({ role: "assistant", content: reply || "(пусто)", actions: done.length ? done : null, cost_usd: +cost.toFixed(5) });
   await db.from("agent_runs").insert({ kind: "chat", summary: ("Чат: " + message).slice(0, 300), details: (reply + (done.length ? "\n\nДействия: " + done.join("; ") : "")).slice(0, 4000), ok: true, cost_usd: +cost.toFixed(5), model: MODEL, tokens_in: tin, tokens_out: tout });

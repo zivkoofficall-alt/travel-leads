@@ -916,7 +916,7 @@
     b.innerHTML = h; b.scrollTop = b.scrollHeight;
   }
   /* простое оформление ответов агента: **жирный**, заголовки # → жирный, списки - → • */
-  function mdLite(t){ return esc(String(t || '').trim()).replace(/^#{1,4}\s*(.+)$/gm, '<b>$1</b>').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/^[-*]\s+/gm, '• ').replace(/\n{3,}/g, '\n\n'); }
+  function mdLite(t){ t = String(t || ''); var ai = t.indexOf('<actions>'); if (ai >= 0) t = t.slice(0, ai); return esc(t.trim()).replace(/^#{1,4}\s*(.+)$/gm, '<b>$1</b>').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/^[-*]\s+/gm, '• ').replace(/\n{3,}/g, '\n\n'); }
   function fmtDay(d){ var t = new Date(d), n = new Date(); if (t.toDateString() === n.toDateString()) return 'Сегодня'; var y = new Date(n); y.setDate(n.getDate() - 1); if (t.toDateString() === y.toDateString()) return 'Вчера'; return t.toLocaleDateString('ru-RU', {day:'numeric', month:'long'}); }
   function chOpen(){
     var c = $('#chat'); clearTimeout(chClose.t); c.classList.remove('hidden', 'out'); CH.open = true; document.body.style.overflow = 'hidden';
