@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0D0E10">
 <meta name="robots" content="noindex, nofollow">
@@ -619,6 +619,23 @@
 </style>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
+/* диагностика: журнал событий Telegram и окна, уходит в базу (client_logs) после входа */
+(function(){
+  var L = window.__tgLog = [], t0 = Date.now(), vv = window.visualViewport;
+  function snap(){ return {w:innerWidth, h:innerHeight, sw:screen.width, sh:screen.height, vs:vv ? +vv.scale.toFixed(3) : null, vw:vv ? Math.round(vv.width) : null, vh:vv ? Math.round(vv.height) : null}; }
+  function log(k, d){ if (L.length > 400) return; var e = snap(); e.t = Date.now() - t0; e.k = k; if (d !== undefined) e.d = d; L.push(e); }
+  window.__tglog = log;
+  var WV = window.Telegram && window.Telegram.WebView;
+  if (WV){
+    var rin = WV.receiveEvent; if (rin) WV.receiveEvent = function(t, d){ log('in:' + t, d); return rin.apply(this, arguments); };
+    var pout = WV.postEvent; if (pout) WV.postEvent = function(t, cb, d){ log('out:' + t, d); return pout.apply(this, arguments); };
+  }
+  log('load', {ua:navigator.userAgent.slice(0, 160), url:location.pathname});
+  addEventListener('resize', function(){ log('resize'); });
+  if (vv) vv.addEventListener('resize', function(){ log('vv-resize'); });
+  document.addEventListener('pointerdown', function(e){ var el = e.target, c = el && el.closest ? (el.closest('[data-act],button,.tile,.it') || el) : el; log('tap', {x:Math.round(e.clientX), y:Math.round(e.clientY), el:(c.tagName || '') + '.' + String(c.className || '').slice(0, 40) + (c.dataset && c.dataset.act ? '#' + c.dataset.act : '')}); }, true);
+  addEventListener('error', function(e){ log('jserr', String(e.message).slice(0, 200)); });
+})();
 /* Telegram Mini App — как в SOFT OPT: SDK грузится синхронно, всё вызывается один раз при старте */
 (function(){
   try{ var m0 = new URLSearchParams(location.hash.slice(1)).get('tgWebAppData'); if (m0) sessionStorage.setItem('wl_tgd', m0); }catch(e){}
@@ -636,6 +653,8 @@
     W.onEvent && W.onEvent('fullscreenChanged', fsc); fsc();
     W.onEvent && W.onEvent('fullscreenFailed', function(e){ window.__tgInfo.fsErr = (e && e.error) || 'неизвестно'; });
     if (W.requestFullscreen && !W.isFullscreen && /^(ios|android)/.test(W.platform || '') && W.isVersionAtLeast && W.isVersionAtLeast('8.0')) W.requestFullscreen();
+    window.__tglog && window.__tglog('init', {platform:W.platform, version:W.version, isFullscreen:W.isFullscreen, isExpanded:W.isExpanded, vh:W.viewportHeight, vsh:W.viewportStableHeight, launch:window.__tgInfo.launch, canFS:!!W.requestFullscreen});
+    setTimeout(function(){ window.__tglog && window.__tglog('after3s', {isFullscreen:W.isFullscreen, isExpanded:W.isExpanded, vh:W.viewportHeight, fsErr:window.__tgInfo.fsErr}); }, 3000);
   }catch(e){}
 })();
 </script>
@@ -2196,6 +2215,12 @@
   function reveal(){ var l = $('#login'); l.classList.remove('hidden'); l.classList.add('in'); bootOut(); }
   bootT = setInterval(function(){ if (bootP < 88) bootProg(bootP + (88 - bootP) * 0.07); }, 350);
   setTimeout(function(){ bootProg(18); }, 60);
+  var LOGID = Math.random().toString(36).slice(2) + Date.now().toString(36), logSent = 0;
+  setInterval(function(){
+    var L = window.__tgLog; if (!sess || !L || L.length <= logSent) return;
+    var part = L.slice(logSent), n = L.length;
+    rest('POST', 'client_logs', {session:LOGID, events:part, meta:{from:logSent}}).then(function(){ logSent = n; }).catch(function(){});
+  }, 4000);
   function enter(){
     bootMsg('Загружаем данные'); bootProg(52);
     $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#app').classList.add('in');
