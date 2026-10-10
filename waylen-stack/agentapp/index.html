@@ -617,6 +617,19 @@
   input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(200,242,123,.14);}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
 </style>
+<script>
+/* iOS Telegram: канал в приложение есть (webkit.messageHandlers.performAction), но объект TelegramWebviewProxy к началу страницы ещё не создан —
+   без него библиотека Telegram молча выбрасывает все команды (полный экран, вибро, разворот). Создаём его сами поверх того же канала. */
+(function(){
+  try{
+    var h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.performAction;
+    if (window.TelegramWebviewProxy === undefined && h){
+      window.TelegramWebviewProxy = {postEvent:function(n, d){ h.postMessage({eventName:n, eventData:d}); }};
+      window.__tgShim = true;
+    }
+  }catch(e){}
+})();
+</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
 /* диагностика: журнал событий Telegram и окна, уходит в базу (client_logs) после входа */
@@ -652,10 +665,10 @@
     W.onEvent && W.onEvent('fullscreenChanged', fsc); fsc();
     W.onEvent && W.onEvent('fullscreenFailed', function(e){ window.__tgInfo.fsErr = (e && e.error) || 'неизвестно'; });
     if (W.requestFullscreen && !W.isFullscreen && /^(ios|android)/.test(W.platform || '') && W.isVersionAtLeast && W.isVersionAtLeast('8.0')) W.requestFullscreen();
-    try{ window.__tglog && window.__tglog('bridge', {proxy:typeof window.TelegramWebviewProxy, proxyPost:!!(window.TelegramWebviewProxy && window.TelegramWebviewProxy.postEvent), wk:!!(window.webkit && window.webkit.messageHandlers), wkPerform:!!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.performAction), ext:!!(window.external && 'notify' in window.external), iframe:window.parent !== window, initLen:(W.initData || '').length, theme:Object.keys(W.themeParams || {}).length, cssTop:getComputedStyle(root).getPropertyValue('--tg-safe-area-inset-top'), cssCTop:getComputedStyle(root).getPropertyValue('--tg-content-safe-area-inset-top')}); }catch(e){}
+    try{ window.__tglog && window.__tglog('bridge', {shim:!!window.__tgShim, proxy:typeof window.TelegramWebviewProxy, proxyPost:!!(window.TelegramWebviewProxy && window.TelegramWebviewProxy.postEvent), wk:!!(window.webkit && window.webkit.messageHandlers), wkPerform:!!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.performAction), ext:!!(window.external && 'notify' in window.external), iframe:window.parent !== window, initLen:(W.initData || '').length, theme:Object.keys(W.themeParams || {}).length, cssTop:getComputedStyle(root).getPropertyValue('--tg-safe-area-inset-top'), cssCTop:getComputedStyle(root).getPropertyValue('--tg-content-safe-area-inset-top')}); }catch(e){}
     try{ var WV = window.Telegram.WebView; ['web_app_request_theme','web_app_request_viewport','web_app_request_safe_area','web_app_request_content_safe_area'].forEach(function(ev){ WV.postEvent(ev, false, {}); }); }catch(e){ window.__tglog && window.__tglog('probe-err', String(e)); }
     window.__tglog && window.__tglog('init', {platform:W.platform, version:W.version, isFullscreen:W.isFullscreen, isExpanded:W.isExpanded, vh:W.viewportHeight, vsh:W.viewportStableHeight, launch:window.__tgInfo.launch, canFS:!!W.requestFullscreen});
-    setTimeout(function(){ window.__tglog && window.__tglog('after3s', {isFullscreen:W.isFullscreen, isExpanded:W.isExpanded, vh:W.viewportHeight, fsErr:window.__tgInfo.fsErr}); }, 3000);
+    setTimeout(function(){ window.__tglog && window.__tglog('after3s', {fs:document.documentElement.classList.contains('tg-fs'), isFullscreen:W.isFullscreen, isExpanded:W.isExpanded, vh:W.viewportHeight, fsErr:window.__tgInfo.fsErr}); }, 3000);
   }catch(e){}
 })();
 </script>
