@@ -427,15 +427,22 @@ async function market(c: Ctx) {
   const countries: string[] = (c.s.focus_countries || []);
   const prompt = `Собери через веб-поиск свежую картину рынка для агентства по перевозке домашних животных (клиенты — переезжающие из России и СНГ, а также путешественники с питомцами).
 1) news: 4–6 новостей за последние 2 недели: изменения правил ввоза/вывоза животных, авиакомпании и перевозка питомцев, туризм и релокация${countries.length ? " (особенно: " + countries.join(", ") + ")" : ""}. Только реальные ссылки.
-2) countries: 8 ведущих стран по потоку переездов и поездок с питомцами из СНГ, с индексом 0–100 (100 — лидер) и короткой заметкой почему.
+2) countries: 8 ведущих направлений для поездок и переездов с питомцами из России. Для каждого: share — оценка доли поездок с питомцами, приходящейся на это направление, в процентах (сумма по всем восьми = 100); visits_mln — общий турпоток россиян в эту страну за последний полный год, млн визитов (по данным Росстата/АТОР/нацстатистики страны; если данных нет — null); growth_pct — рост турпотока к предыдущему году в % (или null); note — короткая заметка о требованиях по ввозу.
 3) ideas: 3 идеи, где искать партнёров или клиентов в ближайший месяц, с опорой на новости.
-Верни только JSON: {"news":[{"title":"","summary":"","url":"","source":"","country":""}],"countries":[{"country":"","index":100,"note":""}],"ideas":[{"title":"","summary":"","country":""}]}`;
+Верни только JSON: {"news":[{"title":"","summary":"","url":"","source":"","country":""}],"countries":[{"country":"","share":20,"visits_mln":6.9,"growth_pct":2.9,"note":""}],"ideas":[{"title":"","summary":"","country":""}]}`;
   try {
     const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), prompt, webSearch: 8, maxTokens: 8000 });
     const j = r.json || {};
     const rows: any[] = [];
     for (const n of j.news || []) if (n?.title) rows.push({ kind: "news", title: String(n.title).slice(0, 200), summary: n.summary || null, url: /^https?:\/\//.test(n.url || "") ? n.url : null, source: n.source || null, country: n.country || null });
-    for (const x of j.countries || []) if (x?.country) rows.push({ kind: "country", title: x.country, country: x.country, summary: x.note || null, metric: Math.min(100, Math.max(0, Number(x.index) || 0)), metric_label: "индекс " + Math.round(Number(x.index) || 0) });
+    const cl = (j.countries || []).filter((x: any) => x?.country);
+    const sum = cl.reduce((a: number, x: any) => a + (Number(x.share) || Number(x.index) || 0), 0) || 1;
+    for (const x of cl) {
+      const share = Math.round((Number(x.share) || Number(x.index) || 0) / sum * 100);
+      const v = x.visits_mln != null && x.visits_mln !== "" ? Number(x.visits_mln) : NaN, g = x.growth_pct != null && x.growth_pct !== "" ? Number(x.growth_pct) : NaN;
+      const label = isFinite(v) ? `турпоток ${v.toLocaleString("ru-RU", { maximumFractionDigits: 2 })} млн/год` + (isFinite(g) ? ` · ${g >= 0 ? "+" : ""}${g.toLocaleString("ru-RU", { maximumFractionDigits: 1 })}% к прошлому году` : "") : "турпоток: нет данных";
+      rows.push({ kind: "country", title: x.country, country: x.country, summary: x.note || null, metric: share, metric_label: label });
+    }
     for (const i of j.ideas || []) if (i?.title) rows.push({ kind: "idea", title: String(i.title).slice(0, 200), summary: i.summary || null, country: i.country || null });
     if (rows.some((x) => x.kind === "country")) await c.db.from("insights").delete().eq("kind", "country").eq("is_demo", false);
     await c.db.from("insights").delete().eq("is_demo", false).neq("kind", "country").lt("created_at", new Date(Date.now() - 45 * 864e5).toISOString());

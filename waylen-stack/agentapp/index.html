@@ -267,6 +267,13 @@
   .hb .ht{height:12px;background:var(--card-2);border-radius:4px;overflow:hidden;display:block;}
   .hb .ht i{display:block;height:100%;border-radius:0 4px 4px 0;}
   .hb .hq{color:var(--muted);font-weight:700;font-size:13px;white-space:nowrap;}
+  .ctry{padding:10px 0;border-top:1px solid var(--line);}
+  .ctry:first-child{border-top:none;padding-top:4px;}
+  .ctry-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:15px;font-weight:700;}
+  .ctry-p{font-family:var(--font-head);font-weight:800;color:var(--lime);font-size:17px;}
+  .ctry .ht{height:10px;background:var(--card-2);border-radius:4px;overflow:hidden;display:block;margin:8px 0 6px;}
+  .ctry .ht i{display:block;height:100%;background:var(--lime);border-radius:0 4px 4px 0;transition:width .7s var(--ease);}
+  .ctry-s{font-size:12.5px;color:var(--muted);font-weight:600;}
   svg.ch{width:100%;height:auto;display:block;}
   svg.ch text{fill:#8D9199;font-size:11px;font-weight:600;font-family:var(--font-body);}
   svg.ch .gl{stroke:rgba(255,255,255,.07);stroke-width:1;}
@@ -935,6 +942,15 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
       return '<div class="hb"><span class="hn" title="' + esc(x.name) + '">' + esc(x.name) + '</span><span class="ht"><i style="width:' + w.toFixed(1) + '%;background:' + (color || 'var(--lime)') + '"></i></span><span class="hq">' + esc(x.label) + '</span></div>';
     }).join('');
   }
+  /* страны: доля поездок с питомцами (%) + турпоток */
+  function cbars(cs){
+    if (!cs.length) return '<p class="sub" style="margin:0">Данных пока нет.</p>';
+    var mx = 0; cs.forEach(function(x){ mx = Math.max(mx, Number(x.metric) || 0); });
+    return cs.map(function(x){
+      var v = Number(x.metric) || 0, w = mx ? Math.max(v > 0 ? 2 : 0, v / mx * 100) : 0;
+      return '<div class="ctry"><div class="ctry-h"><span class="hn">' + esc(x.country || x.title) + '</span><span class="ctry-p num">' + v + '%</span></div><span class="ht"><i style="width:' + w.toFixed(1) + '%"></i></span>' + (x.metric_label ? '<div class="ctry-s">' + esc(x.metric_label) + '</div>' : '') + '</div>';
+    }).join('');
+  }
   var tipEl = null;
   function showTip(el, x, y){
     if (!tipEl){ tipEl = document.createElement('div'); tipEl.id = 'tip'; document.body.appendChild(tipEl); }
@@ -1103,7 +1119,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     var news = D.insights.filter(function(x){ return x.kind === 'news'; }).slice(0, 3);
     if (cs.length || news.length){
       h += '<div class="qh"><h3>Рынок</h3><button data-act="go" data-tab="agent" data-arg="mkt">Весь раздел</button></div><div class="grid2" style="margin-top:0">';
-      if (cs.length) h += '<div class="card"><p class="cardt">Куда едут с питомцами</p><p class="cardn">Ведущие страны по потоку.</p>' + hbars(cs.map(function(x){ return {name:x.country || x.title, val:Number(x.metric) || 0, label:x.metric_label || String(x.metric)}; })) + '</div>';
+      if (cs.length) h += '<div class="card"><p class="cardt">Куда едут с питомцами</p><p class="cardn">Доля поездок с питомцами из России по направлениям и общий турпоток за год.</p>' + cbars(cs) + '</div>';
       if (news.length) h += '<div class="card"><p class="cardt">Новости туризма</p>' + news.map(function(x){ return '<div class="nw"><b>' + esc(x.title) + '</b><span>' + esc(x.summary || '') + '</span>' + (/^https?:\/\//.test(x.url || '') ? ' <a class="lnk" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">Источник</a>' : '') + '</div>'; }).join('') + '</div>';
       h += '</div>';
     }
@@ -1588,7 +1604,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     var news = D.insights.filter(function(x){ return x.kind === 'news'; }), ideas = D.insights.filter(function(x){ return x.kind === 'idea'; });
     var fitL = D.partners.filter(function(p){ return p.fit_score != null; }).sort(function(a, b){ return b.fit_score - a.fit_score; }).slice(0, 6);
     var h = '<p class="sub" style="margin:0 0 14px">Агент собирает новости туризма, считает, в какие страны идёт больше поездок, и оценивает, кто из партнёров нам подходит.</p>';
-    h += '<div class="card"><p class="cardt">Ведущие страны по потоку</p><p class="cardn">Чем длиннее полоса, тем больше поездок с питомцами.</p>' + hbars(cs.map(function(x){ return {name:x.country || x.title, val:Number(x.metric) || 0, label:x.metric_label || String(x.metric)}; })) + '</div>';
+    h += '<div class="card"><p class="cardt">Куда едут с питомцами</p><p class="cardn">Процент — оценка агентом доли поездок с питомцами из России по направлениям (в сумме 100%). Ниже — общий турпоток россиян за год и его рост.</p>' + cbars(cs) + '</div>';
     h += '<div class="card" style="margin-top:14px"><p class="cardt">Кто подходит нам больше всего</p><p class="cardn">Оценка 0–100: услуги, страна, активность и ответы партнёра.</p>' + hbars(fitL.map(function(p){ return {name:p.name, val:p.fit_score, label:String(p.fit_score)}; })) + '</div>';
     h += '<h3 class="sec">Новости туризма <span class="tag">' + news.length + '</span></h3>' + (news.length ? '<div class="list">' + news.map(function(x){ return insRow(x); }).join('') + '</div>' : '<div class="card empty">Новостей пока нет.</div>');
     h += '<h3 class="sec">Идеи для роста <span class="tag">' + ideas.length + '</span></h3>' + (ideas.length ? '<div class="list">' + ideas.map(function(x){ return insRow(x); }).join('') + '</div>' : '<div class="card empty">Идей пока нет.</div>');
