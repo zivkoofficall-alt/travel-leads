@@ -652,13 +652,17 @@
 
 </style>
 <script type="text/javascript">
-    (function(m,e,t,r,i,k,a){
-        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=113549896', 'ym');
-    ym(113549896, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+(function (m, e, t, r, i, k, a) {
+    m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); };
+    m[i].l = 1 * new Date();
+    for (var j = 0; j < document.scripts.length; j++) {
+        if (document.scripts[j].src === r) {
+            return;
+        }
+    }
+    k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a);
+})(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=113549896', 'ym');
+ym(113549896, 'init', { ssr: true, webvisor: true, clickmap: true, ecommerce: "dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce: true, trackLinks: true });
 </script>
 <noscript><div><img src="https://mc.yandex.ru/watch/113549896" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 </head>
@@ -1759,463 +1763,580 @@
 </div>
 
 <script>
-(function(){
-  
-  var EN = {"Наш партнёр: организует перевозку собак и кошек, в том числе международную.": "Our partner: arranges transport of dogs and cats, including international moves.", "7. Аналитика.": "7. Analytics.", "Сайт использует Яндекс.Метрику, в том числе Вебвизор: она собирает обезличенные данные о посещении — просмотренные страницы, клики, прокрутку и источник перехода. Эти данные нужны, чтобы улучшать сайт. Вы можете отключить сбор в настройках браузера или блокировщиком рекламы.": "The site uses Yandex Metrica, including Webvisor: it collects anonymous visit data — pages viewed, clicks, scrolling and the referral source. This data helps us improve the site. You can disable collection in your browser settings or with an ad blocker.", "Запросить расчёт у Starwood": "Request a quote from Starwood", "Партнёрская ссылка": "Partner link", "Работаем по всем направлениям": "We work to any destination", "Клиники-партнёры в разных странах": "Partner clinics in many countries", "Waylen Travel — путешествия с животными по всему миру": "Waylen Travel — traveling the world with your pet", "Собран под вашего питомца и конкретную страну назначения — вакцинация, чип, дегельминтизация, справка о здоровье.": "Built for your pet and your specific destination — vaccination, chip, deworming, health certificate.", "Клиники-партнёры — в России и за рубежом": "Partner clinics — in Russia and abroad", "Реальные истории клиентов, которые путешествовали вместе с животным.": "Stories from clients who traveled together with their animal.", "Подскажем, куда обратиться в России и в стране назначения — с учётом того, что вы уже сделали, а что ещё предстоит.": "We will tell you where to go in Russia and in your destination country, based on what you have already done and what is still ahead.", "Те, кто поможет вам на любом маршруте": "The people who will help you on any route", "Партнёрские клиники в России и за рубежом: вакцинация от бешенства, чипирование, справка о здоровье и оформление экспортных документов. Записываем вас сами, когда это входит в тариф.": "Partner clinics in Russia and abroad: rabies vaccination, microchipping, health certificate and export paperwork. We book you in ourselves when it is included in your plan.", "Другие страны": "Other countries", "Мы открыты к сотрудничеству с теми, кто работает с путешествиями с животными на любом направлении.": "We are open to working with anyone involved in traveling with animals on any destination.", "Путешествия с животными по любым направлениям — чек-лист документов, клиника-партнёр и консьерж под ключ.": "Traveling with animals to any destination — document checklist, partner clinic and turnkey concierge.", "Все направления": "All destinations", "Наш партнёр": "Our partner", "Наш партнёр в сфере путешествий с животными.": "Our partner in pet travel.", "Сервисы и перевозчики": "Services and carriers", "Авиакомпании и сервисы бронирования на маршруте": "Airlines and booking services on the route", "Авиакомпании": "Airlines", "Билеты и жильё": "Tickets and stays", "Яндекс Путешествия": "Yandex Travel", "Островок": "Ostrovok", "Названия авиакомпаний и сервисов приведены для информации о маршруте. Из перечисленных партнёром Waylen Travel является Starwood Pet Travel; остальные компании с нами не связаны, мы не представляем их и не гарантируем решение третьей стороны.": "Airline and service names are given for route information only. Of those listed, Starwood Pet Travel is a Waylen Travel partner; the other companies are not affiliated with us, we do not represent them and do not guarantee any third-party decision.", "от 7 500 ₽": "from 7,500 ₽", "от 21 000 ₽": "from 21,000 ₽", "Консультация — от 7 500 ₽": "Consultation — from 7,500 ₽", "Сложный кейс — от 21 000 ₽": "Complex case — from 21,000 ₽", "Все отзывы": "All reviews", "Назад": "Previous", "Вперёд": "Next", "Телефон": "Phone", "Telegram (необязательно)": "Telegram (optional)", "Укажите номер телефона.": "Enter your phone number.", "Проверьте номер телефона для выбранной страны.": "Please check the phone number for the selected country.", "Поиск страны": "Search country", "Страна": "Country", "Ничего не найдено": "Nothing found", "Ответим в течение дня": "We reply within a day", "Мы свяжемся с вами в течение дня по указанному номеру.": "We will contact you within a day at the number you gave.", "Имя, номер телефона, Telegram-контакт (если указан), вид питомца и комментарий к заявке — то, что вы сами указываете в форме. Дополнительно — технические данные (IP-адрес) для защиты от автоматических и спам-заявок.": "Your name, phone number, Telegram contact (if given), type of pet and a comment on the request — what you enter in the form yourself. In addition, technical data (IP address) to protect against automated and spam requests.", "Россия ↔ Вьетнам": "Russia ↔ Vietnam", "Ответ в течение дня": "We reply within a day", "Финальная проверка за 48–72 часа": "Final check 48–72 hours before departure", "Клиники-партнёры в России и во Вьетнаме": "Partner clinics in Russia and Vietnam", "Личный чек-лист под вашего питомца": "A personal checklist for your pet", "Консьерж по желанию": "Concierge on request", "Waylen Travel — путешествие с животными во Вьетнам": "Waylen Travel — traveling to Vietnam with your pet", "Партнёры": "Partners", "Отзывы": "Reviews", "Оставить заявку": "Request a call", "Заявка": "Request", "Меню": "Menu", "Работаем по маршруту: Россия ↔ Вьетнам": "We work on one route: Russia ↔ Vietnam", "Летите с питомцем — без нервов и догадок": "Fly with your pet — no stress, no guesswork", "Личный чек-лист документов, трекинг сроков вакцинации, клиника-партнёр и консьерж, который может взять весь процесс на себя.": "A personal document checklist, vaccination deadline tracking, a partner clinic and a concierge who can take the whole process off your hands.", "Как это работает": "How it works", "Собака": "Dog", "Кошка": "Cat", "Всё, что обычно раскидано по форумам и чатам — в одном месте": "Everything usually scattered across forums and chats — in one place", "Собираем документы, сроки и клинику в один понятный процесс.": "We bring documents, deadlines and the clinic into one clear process.", "Личный чек-лист": "Personal checklist", "Собран под вашего питомца и конкретно Вьетнам — вакцинация, чип, дегельминтизация, справка о здоровье.": "Built for your pet and for Vietnam specifically — vaccination, microchip, deworming, health certificate.", "Трекинг сроков": "Deadline tracking", "Статус в реальном времени: готово, горит или просрочено. Считается автоматически от введённых дат.": "Live status: done, urgent or overdue. Calculated automatically from the dates you enter.", "Клиника-партнёр": "Partner clinic", "Проверенная клиника берёт на себя вакцинацию, чипирование и оформление экспортных документов.": "A vetted clinic handles vaccination, microchipping and export paperwork.", "Консьерж (по желанию)": "Concierge (optional)", "Личный менеджер ведёт весь кейс — чек-лист, запись в клинику, финальная проверка перед вылетом.": "A personal manager runs the whole case — checklist, clinic booking, final check before departure.", "Выберите свою степень вовлечённости": "Choose how involved you want to be", "От быстрой консультации до менеджера, который делает всё за вас — от заявки до посадки на рейс.": "From a quick consultation to a manager who does everything for you — from request to boarding.", "Консультация": "Consultation", "Проверим чек-лист и ответим на вопросы": "We review your checklist and answer your questions", "Подробнее о тарифе →": "About this plan →", "Сложный кейс": "Complex case", "Запись в клинику, проверка документов, подбор жилья с учётом питомца и трансфер": "Clinic booking, document checks, pet-friendly accommodation search and transfer", "от 34 000 ₽": "from 34,000 ₽", "От 5 питомцев": "5+ pets", "Полное сопровождение, от и до": "Full support, start to finish", "Клиники-партнёры — в России и во Вьетнаме": "Partner clinics — in Russia and in Vietnam", "Вакцинация от бешенства, чипирование, справка о здоровье и оформление экспортных документов.": "Rabies vaccination, microchipping, health certificate and export paperwork.", "Вакцинация": "Vaccination", "Чипирование": "Microchipping", "Справка о здоровье": "Health certificate", "Экспортные документы": "Export documents", "Расскажите о своей поездке": "Tell us about your trip", "Заполните форму, и менеджер поможет собрать чек-лист и подобрать тариф под ваш случай. Мы свяжемся в течение дня.": "Fill in the form and a manager will help you build the checklist and pick the right plan. We will get back to you within a day.", "Ответим в Telegram в течение дня": "We reply on Telegram within a day", "Без предоплаты на этапе консультации": "No prepayment at the consultation stage", "Подскажем, с чего начать, даже без сопровождения": "We will tell you where to start, even without full support", "Как к вам обращаться": "Your name", "Имя": "Name", "Питомец": "Pet", "Другое": "Other", "Комментарий (необязательно)": "Comment (optional)", "Например: планируем вылет в сентябре, прививки ещё не делали": "For example: we plan to fly in September, no vaccinations yet", "Отправить заявку": "Send request", "Не получилось отправить. Попробуйте ещё раз или напишите нам в Telegram.": "Could not send. Please try again or message us on Telegram.", "Отправляя заявку, вы соглашаетесь на обработку персональных данных.": "By submitting the request you agree to the processing of your personal data.", "Заявка отправлена": "Request sent", "Мы свяжемся с вами в течение дня в Telegram.": "We will contact you on Telegram within a day.", "На главную": "Back to home", "Что говорят те, кто уже летал с питомцем": "What people who already flew with a pet say", "Реальные истории клиентов, которые прошли маршрут Россия ↔ Вьетнам вместе с животным.": "Stories from clients who flew the Russia ↔ Vietnam route with their animal.", "Летели с котом первый раз — было страшно из-за титров антител и сроков. Менеджер сама расписала чек-лист по датам, ничего не просрочили.": "It was our first flight with a cat, and the antibody titers and deadlines were scary. The manager laid out the checklist by date and we missed nothing.", "ЕВ": "EV", "Елена В.": "Elena V.", "Россия → Хошимин, март 2026": "Russia → Ho Chi Minh City, March 2026", "Взяли тариф с трансфером и клиникой — прилетели, нас встретили, документы на собаку уже были готовы к вылету обратно. Ни одной нервной минуты.": "We took the plan with transfer and clinic — we landed, someone met us, and the dog's documents were already ready for the flight back. Not one stressful minute.", "ДК": "DK", "Дмитрий К.": "Dmitry K.", "Россия ↔ Вьетнам, май 2026": "Russia ↔ Vietnam, May 2026", "У нас редкая порода, боялись, что не пустят в салон. Заранее уточнили вес переноски вместе с котом — уложились, всё прошло по плану.": "Ours is a rare breed and we were afraid they would not let him into the cabin. We checked the carrier weight with the cat in advance, stayed within the limit and everything went to plan.", "МЛ": "ML", "Мария Л.": "Maria L.", "Россия → Хошимин, июль 2026": "Russia → Ho Chi Minh City, July 2026", "Брали только базовую консультацию за 7 500 ₽ — дальше собирали документы сами. Менеджер расписал, с чего начать и в каком порядке — реально сэкономило время на форумах.": "We took only the basic 7,500 ₽ consultation and collected the documents ourselves. The manager explained what to start with and in which order — it really saved time on forums.", "ИП": "IP", "Игорь П.": "Igor P.", "Россия → Хошимин, январь 2026": "Russia → Ho Chi Minh City, January 2026", "Летели вдвоём с тремя кошками сразу — боялись путаницы в документах. Консьерж вёл три чек-листа параллельно, ничего не перепутали, все три прошли осмотр без вопросов.": "Two of us flew with three cats at once and feared a mix-up in the paperwork. The concierge ran three checklists in parallel, nothing got confused, and all three passed inspection without questions.", "СР": "SR", "Светлана и Алексей Р.": "Svetlana and Alexey R.", "Россия → Ханой, февраль 2026": "Russia → Hanoi, February 2026", "У собаки старая травма лапы, переживали, что не пропустят на осмотре. Ветеринар в клинике-партнёре всё проверил, оформил справку без лишних вопросов.": "Our dog has an old paw injury and we worried she would not pass the exam. The vet at the partner clinic checked everything and issued the certificate with no extra questions.", "ОМ": "OM", "Ольга М.": "Olga M.", "Россия → Хошимин, апрель 2026": "Russia → Ho Chi Minh City, April 2026", "Чуть не пропустили срок ревакцинации — в чек-листе вовремя загорелся статус. Успели записаться в клинику за неделю до вылета, не пришлось переносить рейс.": "We nearly missed the revaccination deadline — the checklist status flagged it in time. We got a clinic slot a week before departure and did not have to move the flight.", "РТ": "RT", "Роман Т.": "Roman T.", "Россия → Вьетнам, июнь 2026": "Russia → Vietnam, June 2026", "Уже второй раз летим с котом через Waylen. В этот раз всё прошло ещё быстрее — чек-лист и история прививок сохранились с прошлой поездки.": "This is our second flight with the cat through Waylen. It went even faster this time — the checklist and vaccination history were saved from the last trip.", "АК": "AK", "Анна и Дмитрий К.": "Anna and Dmitry K.", "Россия ↔ Хошимин, август 2026": "Russia ↔ Ho Chi Minh City, August 2026", "Крупная порода — заранее знали, что полетит в багажном отсеке, и переживали за перевозчика. Консьерж уточнил все требования у авиакомпании заранее, на месте вопросов не возникло.": "A large breed — we knew he would fly in the cargo hold and worried about the carrier. The concierge confirmed every requirement with the airline in advance, so there were no questions at the airport.", "ВС": "VS", "Виктория С.": "Victoria S.", "Россия → Хошимин, август 2026": "Russia → Ho Chi Minh City, August 2026", "Возвращались домой с котом после полугода в Хошимине — переживали, что российские требования отличаются от вьетнамских. Менеджер заранее свёл чек-лист под обе стороны, на границе вопросов не было.": "We were returning home with the cat after half a year in Ho Chi Minh City and worried that Russian requirements differ from Vietnamese ones. The manager merged the checklist for both sides in advance and there were no questions at the border.", "НК": "NK", "Наталья К.": "Natalia K.", "Хошимин → Россия, март 2026": "Ho Chi Minh City → Russia, March 2026", "Жили в Дананге, собаку решили увозить домой. Клиника-партнёр помогла с документами прямо там, не пришлось ехать в Хошимин ради одной справки.": "We lived in Da Nang and decided to take our dog home. The partner clinic helped with the documents right there, so we did not have to go to Ho Chi Minh City for a single certificate.", "ПС": "PS", "Павел С.": "Pavel S.", "Дананг → Россия, май 2026": "Da Nang → Russia, May 2026", "Летели не в Хошимин, а в Нячанг — переживали, будет ли вообще актуальная информация под этот аэропорт. Чек-лист и требования подтвердили именно под наш рейс, без общих шаблонов.": "We flew to Nha Trang, not Ho Chi Minh City, and worried whether there would be current information for that airport at all. The checklist and requirements were confirmed for our exact flight, with no generic templates.", "ЮА": "YA", "Юлия А.": "Yulia A.", "Россия → Нячанг, июнь 2026": "Russia → Nha Trang, June 2026", "Улетали домой с острова Фукуок — расстояние до клиники в Хошимине смущало. Всё решили заранее по телефону с консьержем, приехали туда только один раз, за день до вылета.": "We were flying home from Phu Quoc and the distance to the clinic in Ho Chi Minh City bothered us. We settled everything in advance by phone with the concierge and only went there once, the day before departure.", "ГТ": "GT", "Геннадий Т.": "Gennady T.", "Фукуок → Россия, июль 2026": "Phu Quoc → Russia, July 2026", "Готовы обсудить свой случай?": "Ready to discuss your case?", "Расскажите о питомце и датах — подскажем, с чего начать.": "Tell us about your pet and your dates — we will suggest where to start.", "Тариф": "Plan", "разовая оплата": "one-time payment", "Быстрая точка входа для тех, кто готов собрать документы сам, но хочет для начала свериться с экспертом и не упустить ничего важного.": "A quick entry point for those who are ready to collect the documents themselves but want to check with an expert first and miss nothing important.", "Что входит": "What is included", "Четыре вещи, которые вы получаете": "Four things you get", "Разбор чек-листа": "Checklist review", "Проходим по каждому пункту — вакцинация, чип, дегельминтизация, справка о здоровье — применительно к вашему питомцу и датам вылета.": "We go through every item — vaccination, microchip, deworming, health certificate — for your pet and your travel dates.", "Ответы на вопросы": "Answers to your questions", "По срокам, требованиям конкретной авиакомпании, порядку действий — всё, что обычно ищут по форумам.": "About deadlines, a specific airline's requirements, the order of steps — everything people usually look up on forums.", "Рекомендация клиники": "Clinic recommendation", "Подскажем, куда обратиться в России и во Вьетнаме — с учётом того, что вы уже сделали, а что ещё предстоит.": "We will tell you where to go in Russia and in Vietnam, based on what you have already done and what is still ahead.", "План действий": "Action plan", "С чего начать в первую очередь, что можно отложить на потом — письменно, чтобы не держать в голове.": "What to start with first and what can wait — in writing, so you do not have to keep it all in your head.", "Как проходит": "How it works", "Четыре шага от заявки до плана": "Four steps from request to plan", "Оставляете заявку": "You send a request", "Указываете даты и данные о питомце — вид, породу, возраст, вес.": "You give your dates and your pet's details — species, breed, age, weight.", "Менеджер выходит на связь": "A manager contacts you", "В Telegram, в течение дня.": "On Telegram, within a day.", "Разбираем случай": "We go through your case", "20–30 минут переписки или звонка по вашему чек-листу.": "20–30 minutes of messaging or a call based on your checklist.", "Получаете план": "You get a plan", "Персональный список действий в письменном виде — можно вернуться к нему в любой момент.": "A personal action list in writing — you can return to it at any time.", "Кому подходит": "Who it is for", "Честно о том, для кого этот тариф": "An honest look at who this plan suits", "Подойдёт, если:": "A good fit if:", "у вас стандартный случай — обычная порода, вес позволяет ехать в салоне, до вылета больше месяца, и вы готовы сами ездить в клинику и следить за сроками.": "your case is standard — an ordinary breed, a weight that allows travel in the cabin, more than a month before departure, and you are ready to visit the clinic and watch the deadlines yourself.", "Менеджер не записывает вас в клинику самостоятельно": "The manager does not book the clinic for you", "Документы не проверяются постфактум перед вылетом": "Documents are not re-checked before departure", "Жильё и трансфер не входят — для этого есть тариф «Сложный кейс»": "Accommodation and transfer are not included — the “Complex case” plan covers them", "Готовы начать с консультации?": "Ready to start with a consultation?", "Расскажите о питомце и датах — разберём ваш случай в течение дня.": "Tell us about your pet and your dates — we will go through your case within a day.", "Для ситуаций, где на кону многое: редкая порода, поджимающие сроки, или просто нет времени вникать во все детали самостоятельно.": "For situations where a lot is at stake: a rare breed, tight deadlines, or simply no time to dig into every detail yourself.", "Всё из «Консультации», плюс сопровождение": "Everything in “Consultation”, plus hands-on support", "Запись в клинику": "Clinic booking", "Сами согласовываем даты и время в клинике-партнёре — не нужно созваниваться и договариваться самостоятельно.": "We agree on the dates and times with the partner clinic ourselves — no calls or arrangements on your side.", "Проверка документов": "Document checks", "Менеджер лично сверяет каждую справку перед вылетом — не в последний момент, а по мере готовности.": "The manager personally checks every certificate before departure — not at the last moment, but as each one is ready.", "Подбор жилья": "Accommodation search", "С учётом того, что вы летите с животным — не все отели и апартаменты принимают питомцев.": "With your animal in mind — not every hotel or apartment accepts pets.", "Трансфер": "Transfer", "Организуем встречу и доставку в аэропорту — на месте вас уже будут ждать.": "We arrange pick-up and delivery at the airport — someone will be waiting for you.", "От консультации до финальной сверки": "From consultation to the final check", "Первичная консультация": "Initial consultation", "Та же, что в базовом тарифе — разбираем случай целиком.": "The same as in the basic plan — we go through your whole case.", "Согласование клиники": "Clinic coordination", "Мы сами подбираем даты и записываем вас, ничего не нужно уточнять самим.": "We choose the dates and book you in — there is nothing for you to confirm yourself.", "Проверка по мере готовности": "Checks as documents are ready", "Каждый документ сверяется сразу после получения, а не в последнюю неделю.": "Each document is checked right after you receive it, not in the last week.", "Финальная проверка": "Final check", "За 48–72 часа до вылета — сверяем весь пакет документов ещё раз целиком.": "48–72 hours before departure we review the entire document package once more.", "Жильё и трансфер": "Accommodation and transfer", "Помогаем на месте — от подбора апартаментов до встречи в аэропорту.": "We help on site — from finding an apartment to meeting you at the airport.", "редкая или крупная порода, есть особенности здоровья, сроки поджимают, или просто хочется делегировать организацию целиком и не держать в голове десятки мелочей.": "a rare or large breed, health particularities, tight deadlines, or you simply want to hand over the whole organization and not keep dozens of details in your head.", "Готовы передать организацию нам?": "Ready to hand the organization over to us?", "Расскажите о питомце и датах — возьмём сложный случай на себя.": "Tell us about your pet and your dates — we will take the complex case on.", "итоговая цена зависит от числа питомцев": "final price depends on the number of pets", "Групповой переезд, приют, заводчик — когда одновременно летит несколько животных, и координация становится отдельной задачей.": "A group move, a shelter, a breeder — when several animals fly at once and coordination becomes a task of its own.", "Всё из «Сложного кейса» — на каждого питомца": "Everything in “Complex case” — for every pet", "Параллельные чек-листы": "Parallel checklists", "Отдельный список на каждое животное — статусы не путаются между собой.": "A separate list for every animal — statuses never get mixed up.", "Личный консьерж": "Personal concierge", "Один человек ведёт всю группу от заявки до посадки — единая точка контакта.": "One person runs the whole group from request to boarding — a single point of contact.", "Групповая логистика": "Group logistics", "Согласование клиники, авиакомпании и переноски под каждого питомца отдельно.": "Clinic, airline and carrier arrangements for each pet separately.", "Финальная сверка": "Final review", "За 48–72 часа проверяем весь пакет документов по каждому животному разом.": "48–72 hours before departure we check the full document package for every animal at once.", "Координация группы шаг за шагом": "Group coordination, step by step", "Собираем данные по каждому": "We collect data for each pet", "Порода, возраст, вес, состояние документов — отдельно на каждое животное.": "Breed, age, weight, document status — separately for every animal.", "Общий график по клинике": "A shared clinic schedule", "Составляем расписание — кто и когда едет на осмотр, без накладок.": "We build the schedule — who goes to the exam and when, with no overlaps.", "Отдельный чек-лист на каждого": "A separate checklist for each", "Статусы ведутся параллельно и не путаются между питомцами.": "Statuses are tracked in parallel and never mixed up between pets.", "Координация с авиакомпанией": "Airline coordination", "Согласуем количество мест в салоне и багажном отсеке заранее.": "We agree on the number of cabin and cargo spots in advance.", "Финальная сверка группы": "Final group review", "За 48–72 часа до вылета проверяем документы по всем животным одновременно.": "48–72 hours before departure we check the documents for all animals at the same time.", "вы заводчик, приют или семья, переезжающая с несколькими животными сразу. Итоговая стоимость зависит от количества питомцев и сложности каждого случая — точную цифру согласовываем на первой консультации, «от 34 000 ₽» — стартовая цена для групп от 5 питомцев.": "you are a breeder, a shelter or a family moving with several animals at once. The final price depends on the number of pets and the complexity of each case — we agree on the exact figure at the first consultation; “from 34,000 ₽” is the starting price for groups of 5+ pets.", "Летите группой?": "Flying as a group?", "Расскажите, сколько питомцев и когда вылет — посчитаем стоимость под вашу группу.": "Tell us how many pets and when you fly — we will calculate the price for your group.", "Документы": "Documents", "Политика конфиденциальности": "Privacy policy", "Как мы обрабатываем персональные данные, которые вы оставляете в форме заявки на этом сайте.": "How we process the personal data you leave in the request form on this site.", "1. Оператор данных.": "1. Data controller.", "Индивидуальный предприниматель Феоктистов Филипп (сайт waylen.travel) является оператором персональных данных, обрабатываемых через форму заявки на этой странице.": "Individual entrepreneur Filipp Feoktistov (site waylen.travel) is the controller of the personal data processed through the request form on this page.", "2. Какие данные собираем.": "2. What data we collect.", "Имя, Telegram-контакт, вид питомца и комментарий к заявке — то, что вы сами указываете в форме. Дополнительно — технические данные (IP-адрес) для защиты от автоматических и спам-заявок.": "Your name, Telegram contact, type of pet and a comment on the request — what you enter in the form yourself. In addition, technical data (IP address) to protect against automated and spam requests.", "3. Как используем данные.": "3. How we use the data.", "Только для того, чтобы связаться с вами по вашей заявке, подобрать тариф и организовать сопровождение поездки с животным. Данные не передаются третьим лицам, кроме случаев, когда это необходимо для самой поездки (например, клиника-партнёр при записи на приём) и только с вашего ведома.": "Only to contact you about your request, choose a plan and organize support for your trip with an animal. Data is not passed to third parties except where the trip itself requires it (for example, a partner clinic when booking an appointment) and only with your knowledge.", "4. Хранение и защита.": "4. Storage and protection.", "Данные хранятся в защищённой базе данных (Supabase) с ограниченным доступом. Форма на сайте не может читать или изменять чужие заявки — только создавать новую от вашего имени.": "Data is stored in a protected database (Supabase) with restricted access. The form on the site cannot read or change other people's requests — it can only create a new one on your behalf.", "5. Срок хранения.": "5. Retention period.", "Данные хранятся до завершения работы по вашей заявке и в течение разумного срока после — для истории обращений, если вы обратитесь повторно.": "Data is kept until work on your request is complete and for a reasonable period afterwards — for your contact history if you come back.", "6. Права пользователя.": "6. Your rights.", "Вы вправе запросить удаление или уточнение своих данных, написав нам в Telegram": "You may request deletion or correction of your data by writing to us on Telegram", "Остались вопросы по данным?": "Questions about your data?", "Напишите нам напрямую — ответим в течение дня.": "Write to us directly — we reply within a day.", "Написать нам": "Message us", "Ответственность сторон": "Liability of the parties", "Честно о том, за что отвечаем мы, а что зависит не от нас — чтобы не было неожиданностей.": "An honest look at what we are responsible for and what is outside our control — so there are no surprises.", "1. Роль сервиса.": "1. Role of the service.", "Waylen Travel (ИП Феоктистов Филипп) выступает консультантом и координатором: готовит персональный чек-лист документов, помогает записаться в клинику-партнёр, проверяет комплект документов перед вылетом и на всех этапах на связи с клиентом.": "Waylen Travel (IE Filipp Feoktistov) acts as a consultant and coordinator: it prepares a personal document checklist, helps book a partner clinic, checks the document set before departure and stays in touch with the client at every stage.", "2. Кто принимает финальное решение.": "2. Who makes the final decision.", "Решение о допуске животного к перевозке и пересечению границы всегда остаётся за погранично-ветеринарными службами и авиакомпанией — не за сервисом. Мы отвечаем за подготовку и сопровождение процесса, но не можем гарантировать решение третьей стороны.": "The decision to admit an animal for transport and border crossing always rests with the border veterinary services and the airline — not with the service. We are responsible for preparing and supporting the process, but cannot guarantee a third party's decision.", "3. Ответственность клиента.": "3. Client's responsibility.", "Клиент отвечает за достоверность сведений о питомце (порода, вес, состояние здоровья, даты процедур), которые передаёт сервису. Ошибки в предоставленных клиентом данных не являются ошибкой сервиса.": "The client is responsible for the accuracy of the pet information (breed, weight, health, procedure dates) given to the service. Errors in data supplied by the client are not an error of the service.", "4. Финальная проверка.": "4. Final check.", "За 48–72 часа до вылета сервис проводит точечную проверку — требования могут измениться и после неё по причинам, находящимся вне нашего контроля (решения регулирующих органов, авиакомпании).": "48–72 hours before departure the service runs a spot check — requirements may still change after it for reasons outside our control (decisions of regulators or the airline).", "5. Ответственность сервиса при ошибке.": "5. Service liability in case of an error.", "Если ошибка допущена по вине сервиса, мы полностью возвращаем стоимость услуги и компенсируем прямые расходы на срочное переоформление документов — суммарно не более $150 сверх стоимости оплаченной услуги.": "If the error is the service's fault, we refund the full cost of the service and cover direct costs of urgently reissuing documents — no more than $150 in total above the price of the paid service.", "6. Контакты по спорным ситуациям.": "6. Contacts for disputes.", "Любые вопросы — в Telegram": "Any questions — on Telegram", ", отвечаем в течение дня.": ", we reply within a day.", "Есть вопрос по условиям?": "A question about the terms?", "Расскажите о своей ситуации — разберём до того, как вы оплатите тариф.": "Tell us about your situation — we will sort it out before you pay for a plan.", "Те, с кем вы пройдёте маршрут Россия ↔ Вьетнам": "The people who will take you along the Russia ↔ Vietnam route", "Клиники, перевозчики, жильё и трансфер: мы собираем вокруг вашего питомца людей, которые знают требования маршрута, и берём координацию на себя.": "Clinics, carriers, accommodation and transfer: we gather around your pet the people who know the route's requirements, and we take the coordination on ourselves.", "Кто в маршруте": "Who is on the route", "Четыре звена, которые мы связываем в один процесс": "Four links we join into one process", "Ветеринарные клиники": "Veterinary clinics", "Партнёрские клиники в России и во Вьетнаме: вакцинация от бешенства, чипирование, справка о здоровье и оформление экспортных документов. Записываем вас сами, когда это входит в тариф.": "Partner clinics in Russia and in Vietnam: rabies vaccination, microchipping, health certificate and export paperwork. We book you in ourselves when it is part of your plan.", "Россия": "Russia", "Вьетнам": "Vietnam", "Авиакомпании маршрута": "Airlines on the route", "Заранее уточняем у авиакомпании требования к переноске, весу и документам, чтобы на регистрации не было сюрпризов. Окончательное решение о перевозке всегда принимает авиакомпания.": "We check the airline's carrier, weight and document requirements in advance so there are no surprises at check-in. The airline always makes the final decision on carriage.", "Аэрофлот": "Aeroflot", "Икар": "Ikar", "Жильё, где рады питомцам": "Accommodation that welcomes pets", "Подбираем апартаменты и отели с учётом животного: не все места принимают питомцев, и мы проверяем это до бронирования. Входит в тариф «Сложный кейс».": "We pick apartments and hotels with your animal in mind: not every place accepts pets, and we verify this before booking. Included in the “Complex case” plan.", "Проверка условий": "Terms verified", "Встреча в аэропорту и доставка до жилья на транспорте, который берёт животных. Вы прилетаете, и вас уже ждут.": "Pick-up at the airport and delivery to your accommodation in a vehicle that takes animals. You land and someone is already waiting.", "Встреча в аэропорту": "Airport pick-up", "Перевозка с питомцем": "Travel with a pet", "Названия авиакомпаний приведены для информации о маршруте. Waylen Travel не является их представителем и не гарантирует решение третьей стороны.": "Airline names are given for information about the route. Waylen Travel is not their representative and does not guarantee a third party's decision.", "Сотрудничество": "Cooperation", "Хотите стать партнёром Waylen Travel?": "Want to become a Waylen Travel partner?", "Мы открыты к сотрудничеству с теми, кто работает с путешествиями с животными на маршруте Россия ↔ Вьетнам.": "We are open to working with anyone involved in traveling with animals on the Russia ↔ Vietnam route.", "Клиники и ветеринары": "Clinics and vets", "Вакцинация, чипирование, экспортные документы для вывоза животных.": "Vaccination, microchipping and export documents for taking animals abroad.", "Жильё": "Accommodation", "Отели и апартаменты, которые принимают гостей с животными.": "Hotels and apartments that accept guests with animals.", "Перевозчики": "Carriers", "Трансфер и перевозка питомцев в аэропорт и обратно.": "Transfer and transport of pets to the airport and back.", "Агентства и организации": "Agencies and organizations", "Релокационные компании, заводчики, приюты и корпоративные клиенты.": "Relocation companies, breeders, shelters and corporate clients.", "Расскажите, чем можете быть полезны": "Tell us how you can help", "Напишите нам в Telegram: кратко о себе и об услуге, и мы свяжемся с вами в течение дня.": "Message us on Telegram with a short note about you and your service, and we will get back to you within a day.", "Написать в Telegram": "Message on Telegram", "Путешествия с животными Россия ↔ Вьетнам — чек-лист документов, клиника-партнёр и консьерж под ключ.": "Traveling with animals Russia ↔ Vietnam — document checklist, partner clinic and a turnkey concierge.", "Тарифы": "Plans", "Консультация — 7 500 ₽": "Consultation — 7,500 ₽", "Сложный кейс — 21 000 ₽": "Complex case — 21,000 ₽", "От 5 питомцев — от 34 000 ₽": "5+ pets — from 34,000 ₽", "Компания": "Company", "Контакты": "Contacts", "© 2026 Waylen Travel. ИП Феоктистов Филипп. Все права защищены.": "© 2026 Waylen Travel. IE Filipp Feoktistov. All rights reserved.", "Введите имя (минимум 2 символа).": "Enter your name (at least 2 characters).", "Укажите Telegram.": "Enter your Telegram.", "Telegram похож на неверный — только буквы, цифры, «_», 5–32 символа.": "That Telegram handle looks wrong — letters, digits and “_” only, 5–32 characters.", "Отправляем…": "Sending…", "Telegram похож на неверный.": "That Telegram handle looks wrong.", "Заявка уже отправлена только что — подождите минуту перед повторной попыткой.": "A request was just sent — please wait a minute before trying again."};
-  var lang = 'ru';
-  try { lang = localStorage.getItem('waylen_lang') === 'en' ? 'en' : 'ru'; } catch(e){}
-
-  function t(ru){ return (lang === 'en' && EN[ru]) ? EN[ru] : ru; }
-
-  var SKIP_ID = { leadPetLabel:1, leadError:1 };
-  var origText = new WeakMap();
-  var ATTRS = ['placeholder','aria-label','alt','title'];
-
-  function walk(root, fn){
-    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode: function(n){
-        var p = n.parentNode;
-        if(!p || p.nodeName === 'SCRIPT' || p.nodeName === 'STYLE' || p.nodeName === 'NOSCRIPT') return NodeFilter.FILTER_REJECT;
-        if(p.id && SKIP_ID[p.id]) return NodeFilter.FILTER_REJECT;
-        if(p.closest && p.closest('.split-h')) return NodeFilter.FILTER_REJECT;
-        return /\S/.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-      }
+(function () {
+    var EN = { "Наш партнёр: организует перевозку собак и кошек, в том числе международную.": "Our partner: arranges transport of dogs and cats, including international moves.", "7. Аналитика.": "7. Analytics.", "Сайт использует Яндекс.Метрику, в том числе Вебвизор: она собирает обезличенные данные о посещении — просмотренные страницы, клики, прокрутку и источник перехода. Эти данные нужны, чтобы улучшать сайт. Вы можете отключить сбор в настройках браузера или блокировщиком рекламы.": "The site uses Yandex Metrica, including Webvisor: it collects anonymous visit data — pages viewed, clicks, scrolling and the referral source. This data helps us improve the site. You can disable collection in your browser settings or with an ad blocker.", "Запросить расчёт у Starwood": "Request a quote from Starwood", "Партнёрская ссылка": "Partner link", "Работаем по всем направлениям": "We work to any destination", "Клиники-партнёры в разных странах": "Partner clinics in many countries", "Waylen Travel — путешествия с животными по всему миру": "Waylen Travel — traveling the world with your pet", "Собран под вашего питомца и конкретную страну назначения — вакцинация, чип, дегельминтизация, справка о здоровье.": "Built for your pet and your specific destination — vaccination, chip, deworming, health certificate.", "Клиники-партнёры — в России и за рубежом": "Partner clinics — in Russia and abroad", "Реальные истории клиентов, которые путешествовали вместе с животным.": "Stories from clients who traveled together with their animal.", "Подскажем, куда обратиться в России и в стране назначения — с учётом того, что вы уже сделали, а что ещё предстоит.": "We will tell you where to go in Russia and in your destination country, based on what you have already done and what is still ahead.", "Те, кто поможет вам на любом маршруте": "The people who will help you on any route", "Партнёрские клиники в России и за рубежом: вакцинация от бешенства, чипирование, справка о здоровье и оформление экспортных документов. Записываем вас сами, когда это входит в тариф.": "Partner clinics in Russia and abroad: rabies vaccination, microchipping, health certificate and export paperwork. We book you in ourselves when it is included in your plan.", "Другие страны": "Other countries", "Мы открыты к сотрудничеству с теми, кто работает с путешествиями с животными на любом направлении.": "We are open to working with anyone involved in traveling with animals on any destination.", "Путешествия с животными по любым направлениям — чек-лист документов, клиника-партнёр и консьерж под ключ.": "Traveling with animals to any destination — document checklist, partner clinic and turnkey concierge.", "Все направления": "All destinations", "Наш партнёр": "Our partner", "Наш партнёр в сфере путешествий с животными.": "Our partner in pet travel.", "Сервисы и перевозчики": "Services and carriers", "Авиакомпании и сервисы бронирования на маршруте": "Airlines and booking services on the route", "Авиакомпании": "Airlines", "Билеты и жильё": "Tickets and stays", "Яндекс Путешествия": "Yandex Travel", "Островок": "Ostrovok", "Названия авиакомпаний и сервисов приведены для информации о маршруте. Из перечисленных партнёром Waylen Travel является Starwood Pet Travel; остальные компании с нами не связаны, мы не представляем их и не гарантируем решение третьей стороны.": "Airline and service names are given for route information only. Of those listed, Starwood Pet Travel is a Waylen Travel partner; the other companies are not affiliated with us, we do not represent them and do not guarantee any third-party decision.", "от 7 500 ₽": "from 7,500 ₽", "от 21 000 ₽": "from 21,000 ₽", "Консультация — от 7 500 ₽": "Consultation — from 7,500 ₽", "Сложный кейс — от 21 000 ₽": "Complex case — from 21,000 ₽", "Все отзывы": "All reviews", "Назад": "Previous", "Вперёд": "Next", "Телефон": "Phone", "Telegram (необязательно)": "Telegram (optional)", "Укажите номер телефона.": "Enter your phone number.", "Проверьте номер телефона для выбранной страны.": "Please check the phone number for the selected country.", "Поиск страны": "Search country", "Страна": "Country", "Ничего не найдено": "Nothing found", "Ответим в течение дня": "We reply within a day", "Мы свяжемся с вами в течение дня по указанному номеру.": "We will contact you within a day at the number you gave.", "Имя, номер телефона, Telegram-контакт (если указан), вид питомца и комментарий к заявке — то, что вы сами указываете в форме. Дополнительно — технические данные (IP-адрес) для защиты от автоматических и спам-заявок.": "Your name, phone number, Telegram contact (if given), type of pet and a comment on the request — what you enter in the form yourself. In addition, technical data (IP address) to protect against automated and spam requests.", "Россия ↔ Вьетнам": "Russia ↔ Vietnam", "Ответ в течение дня": "We reply within a day", "Финальная проверка за 48–72 часа": "Final check 48–72 hours before departure", "Клиники-партнёры в России и во Вьетнаме": "Partner clinics in Russia and Vietnam", "Личный чек-лист под вашего питомца": "A personal checklist for your pet", "Консьерж по желанию": "Concierge on request", "Waylen Travel — путешествие с животными во Вьетнам": "Waylen Travel — traveling to Vietnam with your pet", "Партнёры": "Partners", "Отзывы": "Reviews", "Оставить заявку": "Request a call", "Заявка": "Request", "Меню": "Menu", "Работаем по маршруту: Россия ↔ Вьетнам": "We work on one route: Russia ↔ Vietnam", "Летите с питомцем — без нервов и догадок": "Fly with your pet — no stress, no guesswork", "Личный чек-лист документов, трекинг сроков вакцинации, клиника-партнёр и консьерж, который может взять весь процесс на себя.": "A personal document checklist, vaccination deadline tracking, a partner clinic and a concierge who can take the whole process off your hands.", "Как это работает": "How it works", "Собака": "Dog", "Кошка": "Cat", "Всё, что обычно раскидано по форумам и чатам — в одном месте": "Everything usually scattered across forums and chats — in one place", "Собираем документы, сроки и клинику в один понятный процесс.": "We bring documents, deadlines and the clinic into one clear process.", "Личный чек-лист": "Personal checklist", "Собран под вашего питомца и конкретно Вьетнам — вакцинация, чип, дегельминтизация, справка о здоровье.": "Built for your pet and for Vietnam specifically — vaccination, microchip, deworming, health certificate.", "Трекинг сроков": "Deadline tracking", "Статус в реальном времени: готово, горит или просрочено. Считается автоматически от введённых дат.": "Live status: done, urgent or overdue. Calculated automatically from the dates you enter.", "Клиника-партнёр": "Partner clinic", "Проверенная клиника берёт на себя вакцинацию, чипирование и оформление экспортных документов.": "A vetted clinic handles vaccination, microchipping and export paperwork.", "Консьерж (по желанию)": "Concierge (optional)", "Личный менеджер ведёт весь кейс — чек-лист, запись в клинику, финальная проверка перед вылетом.": "A personal manager runs the whole case — checklist, clinic booking, final check before departure.", "Выберите свою степень вовлечённости": "Choose how involved you want to be", "От быстрой консультации до менеджера, который делает всё за вас — от заявки до посадки на рейс.": "From a quick consultation to a manager who does everything for you — from request to boarding.", "Консультация": "Consultation", "Проверим чек-лист и ответим на вопросы": "We review your checklist and answer your questions", "Подробнее о тарифе →": "About this plan →", "Сложный кейс": "Complex case", "Запись в клинику, проверка документов, подбор жилья с учётом питомца и трансфер": "Clinic booking, document checks, pet-friendly accommodation search and transfer", "от 34 000 ₽": "from 34,000 ₽", "От 5 питомцев": "5+ pets", "Полное сопровождение, от и до": "Full support, start to finish", "Клиники-партнёры — в России и во Вьетнаме": "Partner clinics — in Russia and in Vietnam", "Вакцинация от бешенства, чипирование, справка о здоровье и оформление экспортных документов.": "Rabies vaccination, microchipping, health certificate and export paperwork.", "Вакцинация": "Vaccination", "Чипирование": "Microchipping", "Справка о здоровье": "Health certificate", "Экспортные документы": "Export documents", "Расскажите о своей поездке": "Tell us about your trip", "Заполните форму, и менеджер поможет собрать чек-лист и подобрать тариф под ваш случай. Мы свяжемся в течение дня.": "Fill in the form and a manager will help you build the checklist and pick the right plan. We will get back to you within a day.", "Ответим в Telegram в течение дня": "We reply on Telegram within a day", "Без предоплаты на этапе консультации": "No prepayment at the consultation stage", "Подскажем, с чего начать, даже без сопровождения": "We will tell you where to start, even without full support", "Как к вам обращаться": "Your name", "Имя": "Name", "Питомец": "Pet", "Другое": "Other", "Комментарий (необязательно)": "Comment (optional)", "Например: планируем вылет в сентябре, прививки ещё не делали": "For example: we plan to fly in September, no vaccinations yet", "Отправить заявку": "Send request", "Не получилось отправить. Попробуйте ещё раз или напишите нам в Telegram.": "Could not send. Please try again or message us on Telegram.", "Отправляя заявку, вы соглашаетесь на обработку персональных данных.": "By submitting the request you agree to the processing of your personal data.", "Заявка отправлена": "Request sent", "Мы свяжемся с вами в течение дня в Telegram.": "We will contact you on Telegram within a day.", "На главную": "Back to home", "Что говорят те, кто уже летал с питомцем": "What people who already flew with a pet say", "Реальные истории клиентов, которые прошли маршрут Россия ↔ Вьетнам вместе с животным.": "Stories from clients who flew the Russia ↔ Vietnam route with their animal.", "Летели с котом первый раз — было страшно из-за титров антител и сроков. Менеджер сама расписала чек-лист по датам, ничего не просрочили.": "It was our first flight with a cat, and the antibody titers and deadlines were scary. The manager laid out the checklist by date and we missed nothing.", "ЕВ": "EV", "Елена В.": "Elena V.", "Россия → Хошимин, март 2026": "Russia → Ho Chi Minh City, March 2026", "Взяли тариф с трансфером и клиникой — прилетели, нас встретили, документы на собаку уже были готовы к вылету обратно. Ни одной нервной минуты.": "We took the plan with transfer and clinic — we landed, someone met us, and the dog's documents were already ready for the flight back. Not one stressful minute.", "ДК": "DK", "Дмитрий К.": "Dmitry K.", "Россия ↔ Вьетнам, май 2026": "Russia ↔ Vietnam, May 2026", "У нас редкая порода, боялись, что не пустят в салон. Заранее уточнили вес переноски вместе с котом — уложились, всё прошло по плану.": "Ours is a rare breed and we were afraid they would not let him into the cabin. We checked the carrier weight with the cat in advance, stayed within the limit and everything went to plan.", "МЛ": "ML", "Мария Л.": "Maria L.", "Россия → Хошимин, июль 2026": "Russia → Ho Chi Minh City, July 2026", "Брали только базовую консультацию за 7 500 ₽ — дальше собирали документы сами. Менеджер расписал, с чего начать и в каком порядке — реально сэкономило время на форумах.": "We took only the basic 7,500 ₽ consultation and collected the documents ourselves. The manager explained what to start with and in which order — it really saved time on forums.", "ИП": "IP", "Игорь П.": "Igor P.", "Россия → Хошимин, январь 2026": "Russia → Ho Chi Minh City, January 2026", "Летели вдвоём с тремя кошками сразу — боялись путаницы в документах. Консьерж вёл три чек-листа параллельно, ничего не перепутали, все три прошли осмотр без вопросов.": "Two of us flew with three cats at once and feared a mix-up in the paperwork. The concierge ran three checklists in parallel, nothing got confused, and all three passed inspection without questions.", "СР": "SR", "Светлана и Алексей Р.": "Svetlana and Alexey R.", "Россия → Ханой, февраль 2026": "Russia → Hanoi, February 2026", "У собаки старая травма лапы, переживали, что не пропустят на осмотре. Ветеринар в клинике-партнёре всё проверил, оформил справку без лишних вопросов.": "Our dog has an old paw injury and we worried she would not pass the exam. The vet at the partner clinic checked everything and issued the certificate with no extra questions.", "ОМ": "OM", "Ольга М.": "Olga M.", "Россия → Хошимин, апрель 2026": "Russia → Ho Chi Minh City, April 2026", "Чуть не пропустили срок ревакцинации — в чек-листе вовремя загорелся статус. Успели записаться в клинику за неделю до вылета, не пришлось переносить рейс.": "We nearly missed the revaccination deadline — the checklist status flagged it in time. We got a clinic slot a week before departure and did not have to move the flight.", "РТ": "RT", "Роман Т.": "Roman T.", "Россия → Вьетнам, июнь 2026": "Russia → Vietnam, June 2026", "Уже второй раз летим с котом через Waylen. В этот раз всё прошло ещё быстрее — чек-лист и история прививок сохранились с прошлой поездки.": "This is our second flight with the cat through Waylen. It went even faster this time — the checklist and vaccination history were saved from the last trip.", "АК": "AK", "Анна и Дмитрий К.": "Anna and Dmitry K.", "Россия ↔ Хошимин, август 2026": "Russia ↔ Ho Chi Minh City, August 2026", "Крупная порода — заранее знали, что полетит в багажном отсеке, и переживали за перевозчика. Консьерж уточнил все требования у авиакомпании заранее, на месте вопросов не возникло.": "A large breed — we knew he would fly in the cargo hold and worried about the carrier. The concierge confirmed every requirement with the airline in advance, so there were no questions at the airport.", "ВС": "VS", "Виктория С.": "Victoria S.", "Россия → Хошимин, август 2026": "Russia → Ho Chi Minh City, August 2026", "Возвращались домой с котом после полугода в Хошимине — переживали, что российские требования отличаются от вьетнамских. Менеджер заранее свёл чек-лист под обе стороны, на границе вопросов не было.": "We were returning home with the cat after half a year in Ho Chi Minh City and worried that Russian requirements differ from Vietnamese ones. The manager merged the checklist for both sides in advance and there were no questions at the border.", "НК": "NK", "Наталья К.": "Natalia K.", "Хошимин → Россия, март 2026": "Ho Chi Minh City → Russia, March 2026", "Жили в Дананге, собаку решили увозить домой. Клиника-партнёр помогла с документами прямо там, не пришлось ехать в Хошимин ради одной справки.": "We lived in Da Nang and decided to take our dog home. The partner clinic helped with the documents right there, so we did not have to go to Ho Chi Minh City for a single certificate.", "ПС": "PS", "Павел С.": "Pavel S.", "Дананг → Россия, май 2026": "Da Nang → Russia, May 2026", "Летели не в Хошимин, а в Нячанг — переживали, будет ли вообще актуальная информация под этот аэропорт. Чек-лист и требования подтвердили именно под наш рейс, без общих шаблонов.": "We flew to Nha Trang, not Ho Chi Minh City, and worried whether there would be current information for that airport at all. The checklist and requirements were confirmed for our exact flight, with no generic templates.", "ЮА": "YA", "Юлия А.": "Yulia A.", "Россия → Нячанг, июнь 2026": "Russia → Nha Trang, June 2026", "Улетали домой с острова Фукуок — расстояние до клиники в Хошимине смущало. Всё решили заранее по телефону с консьержем, приехали туда только один раз, за день до вылета.": "We were flying home from Phu Quoc and the distance to the clinic in Ho Chi Minh City bothered us. We settled everything in advance by phone with the concierge and only went there once, the day before departure.", "ГТ": "GT", "Геннадий Т.": "Gennady T.", "Фукуок → Россия, июль 2026": "Phu Quoc → Russia, July 2026", "Готовы обсудить свой случай?": "Ready to discuss your case?", "Расскажите о питомце и датах — подскажем, с чего начать.": "Tell us about your pet and your dates — we will suggest where to start.", "Тариф": "Plan", "разовая оплата": "one-time payment", "Быстрая точка входа для тех, кто готов собрать документы сам, но хочет для начала свериться с экспертом и не упустить ничего важного.": "A quick entry point for those who are ready to collect the documents themselves but want to check with an expert first and miss nothing important.", "Что входит": "What is included", "Четыре вещи, которые вы получаете": "Four things you get", "Разбор чек-листа": "Checklist review", "Проходим по каждому пункту — вакцинация, чип, дегельминтизация, справка о здоровье — применительно к вашему питомцу и датам вылета.": "We go through every item — vaccination, microchip, deworming, health certificate — for your pet and your travel dates.", "Ответы на вопросы": "Answers to your questions", "По срокам, требованиям конкретной авиакомпании, порядку действий — всё, что обычно ищут по форумам.": "About deadlines, a specific airline's requirements, the order of steps — everything people usually look up on forums.", "Рекомендация клиники": "Clinic recommendation", "Подскажем, куда обратиться в России и во Вьетнаме — с учётом того, что вы уже сделали, а что ещё предстоит.": "We will tell you where to go in Russia and in Vietnam, based on what you have already done and what is still ahead.", "План действий": "Action plan", "С чего начать в первую очередь, что можно отложить на потом — письменно, чтобы не держать в голове.": "What to start with first and what can wait — in writing, so you do not have to keep it all in your head.", "Как проходит": "How it works", "Четыре шага от заявки до плана": "Four steps from request to plan", "Оставляете заявку": "You send a request", "Указываете даты и данные о питомце — вид, породу, возраст, вес.": "You give your dates and your pet's details — species, breed, age, weight.", "Менеджер выходит на связь": "A manager contacts you", "В Telegram, в течение дня.": "On Telegram, within a day.", "Разбираем случай": "We go through your case", "20–30 минут переписки или звонка по вашему чек-листу.": "20–30 minutes of messaging or a call based on your checklist.", "Получаете план": "You get a plan", "Персональный список действий в письменном виде — можно вернуться к нему в любой момент.": "A personal action list in writing — you can return to it at any time.", "Кому подходит": "Who it is for", "Честно о том, для кого этот тариф": "An honest look at who this plan suits", "Подойдёт, если:": "A good fit if:", "у вас стандартный случай — обычная порода, вес позволяет ехать в салоне, до вылета больше месяца, и вы готовы сами ездить в клинику и следить за сроками.": "your case is standard — an ordinary breed, a weight that allows travel in the cabin, more than a month before departure, and you are ready to visit the clinic and watch the deadlines yourself.", "Менеджер не записывает вас в клинику самостоятельно": "The manager does not book the clinic for you", "Документы не проверяются постфактум перед вылетом": "Documents are not re-checked before departure", "Жильё и трансфер не входят — для этого есть тариф «Сложный кейс»": "Accommodation and transfer are not included — the “Complex case” plan covers them", "Готовы начать с консультации?": "Ready to start with a consultation?", "Расскажите о питомце и датах — разберём ваш случай в течение дня.": "Tell us about your pet and your dates — we will go through your case within a day.", "Для ситуаций, где на кону многое: редкая порода, поджимающие сроки, или просто нет времени вникать во все детали самостоятельно.": "For situations where a lot is at stake: a rare breed, tight deadlines, or simply no time to dig into every detail yourself.", "Всё из «Консультации», плюс сопровождение": "Everything in “Consultation”, plus hands-on support", "Запись в клинику": "Clinic booking", "Сами согласовываем даты и время в клинике-партнёре — не нужно созваниваться и договариваться самостоятельно.": "We agree on the dates and times with the partner clinic ourselves — no calls or arrangements on your side.", "Проверка документов": "Document checks", "Менеджер лично сверяет каждую справку перед вылетом — не в последний момент, а по мере готовности.": "The manager personally checks every certificate before departure — not at the last moment, but as each one is ready.", "Подбор жилья": "Accommodation search", "С учётом того, что вы летите с животным — не все отели и апартаменты принимают питомцев.": "With your animal in mind — not every hotel or apartment accepts pets.", "Трансфер": "Transfer", "Организуем встречу и доставку в аэропорту — на месте вас уже будут ждать.": "We arrange pick-up and delivery at the airport — someone will be waiting for you.", "От консультации до финальной сверки": "From consultation to the final check", "Первичная консультация": "Initial consultation", "Та же, что в базовом тарифе — разбираем случай целиком.": "The same as in the basic plan — we go through your whole case.", "Согласование клиники": "Clinic coordination", "Мы сами подбираем даты и записываем вас, ничего не нужно уточнять самим.": "We choose the dates and book you in — there is nothing for you to confirm yourself.", "Проверка по мере готовности": "Checks as documents are ready", "Каждый документ сверяется сразу после получения, а не в последнюю неделю.": "Each document is checked right after you receive it, not in the last week.", "Финальная проверка": "Final check", "За 48–72 часа до вылета — сверяем весь пакет документов ещё раз целиком.": "48–72 hours before departure we review the entire document package once more.", "Жильё и трансфер": "Accommodation and transfer", "Помогаем на месте — от подбора апартаментов до встречи в аэропорту.": "We help on site — from finding an apartment to meeting you at the airport.", "редкая или крупная порода, есть особенности здоровья, сроки поджимают, или просто хочется делегировать организацию целиком и не держать в голове десятки мелочей.": "a rare or large breed, health particularities, tight deadlines, or you simply want to hand over the whole organization and not keep dozens of details in your head.", "Готовы передать организацию нам?": "Ready to hand the organization over to us?", "Расскажите о питомце и датах — возьмём сложный случай на себя.": "Tell us about your pet and your dates — we will take the complex case on.", "итоговая цена зависит от числа питомцев": "final price depends on the number of pets", "Групповой переезд, приют, заводчик — когда одновременно летит несколько животных, и координация становится отдельной задачей.": "A group move, a shelter, a breeder — when several animals fly at once and coordination becomes a task of its own.", "Всё из «Сложного кейса» — на каждого питомца": "Everything in “Complex case” — for every pet", "Параллельные чек-листы": "Parallel checklists", "Отдельный список на каждое животное — статусы не путаются между собой.": "A separate list for every animal — statuses never get mixed up.", "Личный консьерж": "Personal concierge", "Один человек ведёт всю группу от заявки до посадки — единая точка контакта.": "One person runs the whole group from request to boarding — a single point of contact.", "Групповая логистика": "Group logistics", "Согласование клиники, авиакомпании и переноски под каждого питомца отдельно.": "Clinic, airline and carrier arrangements for each pet separately.", "Финальная сверка": "Final review", "За 48–72 часа проверяем весь пакет документов по каждому животному разом.": "48–72 hours before departure we check the full document package for every animal at once.", "Координация группы шаг за шагом": "Group coordination, step by step", "Собираем данные по каждому": "We collect data for each pet", "Порода, возраст, вес, состояние документов — отдельно на каждое животное.": "Breed, age, weight, document status — separately for every animal.", "Общий график по клинике": "A shared clinic schedule", "Составляем расписание — кто и когда едет на осмотр, без накладок.": "We build the schedule — who goes to the exam and when, with no overlaps.", "Отдельный чек-лист на каждого": "A separate checklist for each", "Статусы ведутся параллельно и не путаются между питомцами.": "Statuses are tracked in parallel and never mixed up between pets.", "Координация с авиакомпанией": "Airline coordination", "Согласуем количество мест в салоне и багажном отсеке заранее.": "We agree on the number of cabin and cargo spots in advance.", "Финальная сверка группы": "Final group review", "За 48–72 часа до вылета проверяем документы по всем животным одновременно.": "48–72 hours before departure we check the documents for all animals at the same time.", "вы заводчик, приют или семья, переезжающая с несколькими животными сразу. Итоговая стоимость зависит от количества питомцев и сложности каждого случая — точную цифру согласовываем на первой консультации, «от 34 000 ₽» — стартовая цена для групп от 5 питомцев.": "you are a breeder, a shelter or a family moving with several animals at once. The final price depends on the number of pets and the complexity of each case — we agree on the exact figure at the first consultation; “from 34,000 ₽” is the starting price for groups of 5+ pets.", "Летите группой?": "Flying as a group?", "Расскажите, сколько питомцев и когда вылет — посчитаем стоимость под вашу группу.": "Tell us how many pets and when you fly — we will calculate the price for your group.", "Документы": "Documents", "Политика конфиденциальности": "Privacy policy", "Как мы обрабатываем персональные данные, которые вы оставляете в форме заявки на этом сайте.": "How we process the personal data you leave in the request form on this site.", "1. Оператор данных.": "1. Data controller.", "Индивидуальный предприниматель Феоктистов Филипп (сайт waylen.travel) является оператором персональных данных, обрабатываемых через форму заявки на этой странице.": "Individual entrepreneur Filipp Feoktistov (site waylen.travel) is the controller of the personal data processed through the request form on this page.", "2. Какие данные собираем.": "2. What data we collect.", "Имя, Telegram-контакт, вид питомца и комментарий к заявке — то, что вы сами указываете в форме. Дополнительно — технические данные (IP-адрес) для защиты от автоматических и спам-заявок.": "Your name, Telegram contact, type of pet and a comment on the request — what you enter in the form yourself. In addition, technical data (IP address) to protect against automated and spam requests.", "3. Как используем данные.": "3. How we use the data.", "Только для того, чтобы связаться с вами по вашей заявке, подобрать тариф и организовать сопровождение поездки с животным. Данные не передаются третьим лицам, кроме случаев, когда это необходимо для самой поездки (например, клиника-партнёр при записи на приём) и только с вашего ведома.": "Only to contact you about your request, choose a plan and organize support for your trip with an animal. Data is not passed to third parties except where the trip itself requires it (for example, a partner clinic when booking an appointment) and only with your knowledge.", "4. Хранение и защита.": "4. Storage and protection.", "Данные хранятся в защищённой базе данных (Supabase) с ограниченным доступом. Форма на сайте не может читать или изменять чужие заявки — только создавать новую от вашего имени.": "Data is stored in a protected database (Supabase) with restricted access. The form on the site cannot read or change other people's requests — it can only create a new one on your behalf.", "5. Срок хранения.": "5. Retention period.", "Данные хранятся до завершения работы по вашей заявке и в течение разумного срока после — для истории обращений, если вы обратитесь повторно.": "Data is kept until work on your request is complete and for a reasonable period afterwards — for your contact history if you come back.", "6. Права пользователя.": "6. Your rights.", "Вы вправе запросить удаление или уточнение своих данных, написав нам в Telegram": "You may request deletion or correction of your data by writing to us on Telegram", "Остались вопросы по данным?": "Questions about your data?", "Напишите нам напрямую — ответим в течение дня.": "Write to us directly — we reply within a day.", "Написать нам": "Message us", "Ответственность сторон": "Liability of the parties", "Честно о том, за что отвечаем мы, а что зависит не от нас — чтобы не было неожиданностей.": "An honest look at what we are responsible for and what is outside our control — so there are no surprises.", "1. Роль сервиса.": "1. Role of the service.", "Waylen Travel (ИП Феоктистов Филипп) выступает консультантом и координатором: готовит персональный чек-лист документов, помогает записаться в клинику-партнёр, проверяет комплект документов перед вылетом и на всех этапах на связи с клиентом.": "Waylen Travel (IE Filipp Feoktistov) acts as a consultant and coordinator: it prepares a personal document checklist, helps book a partner clinic, checks the document set before departure and stays in touch with the client at every stage.", "2. Кто принимает финальное решение.": "2. Who makes the final decision.", "Решение о допуске животного к перевозке и пересечению границы всегда остаётся за погранично-ветеринарными службами и авиакомпанией — не за сервисом. Мы отвечаем за подготовку и сопровождение процесса, но не можем гарантировать решение третьей стороны.": "The decision to admit an animal for transport and border crossing always rests with the border veterinary services and the airline — not with the service. We are responsible for preparing and supporting the process, but cannot guarantee a third party's decision.", "3. Ответственность клиента.": "3. Client's responsibility.", "Клиент отвечает за достоверность сведений о питомце (порода, вес, состояние здоровья, даты процедур), которые передаёт сервису. Ошибки в предоставленных клиентом данных не являются ошибкой сервиса.": "The client is responsible for the accuracy of the pet information (breed, weight, health, procedure dates) given to the service. Errors in data supplied by the client are not an error of the service.", "4. Финальная проверка.": "4. Final check.", "За 48–72 часа до вылета сервис проводит точечную проверку — требования могут измениться и после неё по причинам, находящимся вне нашего контроля (решения регулирующих органов, авиакомпании).": "48–72 hours before departure the service runs a spot check — requirements may still change after it for reasons outside our control (decisions of regulators or the airline).", "5. Ответственность сервиса при ошибке.": "5. Service liability in case of an error.", "Если ошибка допущена по вине сервиса, мы полностью возвращаем стоимость услуги и компенсируем прямые расходы на срочное переоформление документов — суммарно не более $150 сверх стоимости оплаченной услуги.": "If the error is the service's fault, we refund the full cost of the service and cover direct costs of urgently reissuing documents — no more than $150 in total above the price of the paid service.", "6. Контакты по спорным ситуациям.": "6. Contacts for disputes.", "Любые вопросы — в Telegram": "Any questions — on Telegram", ", отвечаем в течение дня.": ", we reply within a day.", "Есть вопрос по условиям?": "A question about the terms?", "Расскажите о своей ситуации — разберём до того, как вы оплатите тариф.": "Tell us about your situation — we will sort it out before you pay for a plan.", "Те, с кем вы пройдёте маршрут Россия ↔ Вьетнам": "The people who will take you along the Russia ↔ Vietnam route", "Клиники, перевозчики, жильё и трансфер: мы собираем вокруг вашего питомца людей, которые знают требования маршрута, и берём координацию на себя.": "Clinics, carriers, accommodation and transfer: we gather around your pet the people who know the route's requirements, and we take the coordination on ourselves.", "Кто в маршруте": "Who is on the route", "Четыре звена, которые мы связываем в один процесс": "Four links we join into one process", "Ветеринарные клиники": "Veterinary clinics", "Партнёрские клиники в России и во Вьетнаме: вакцинация от бешенства, чипирование, справка о здоровье и оформление экспортных документов. Записываем вас сами, когда это входит в тариф.": "Partner clinics in Russia and in Vietnam: rabies vaccination, microchipping, health certificate and export paperwork. We book you in ourselves when it is part of your plan.", "Россия": "Russia", "Вьетнам": "Vietnam", "Авиакомпании маршрута": "Airlines on the route", "Заранее уточняем у авиакомпании требования к переноске, весу и документам, чтобы на регистрации не было сюрпризов. Окончательное решение о перевозке всегда принимает авиакомпания.": "We check the airline's carrier, weight and document requirements in advance so there are no surprises at check-in. The airline always makes the final decision on carriage.", "Аэрофлот": "Aeroflot", "Икар": "Ikar", "Жильё, где рады питомцам": "Accommodation that welcomes pets", "Подбираем апартаменты и отели с учётом животного: не все места принимают питомцев, и мы проверяем это до бронирования. Входит в тариф «Сложный кейс».": "We pick apartments and hotels with your animal in mind: not every place accepts pets, and we verify this before booking. Included in the “Complex case” plan.", "Проверка условий": "Terms verified", "Встреча в аэропорту и доставка до жилья на транспорте, который берёт животных. Вы прилетаете, и вас уже ждут.": "Pick-up at the airport and delivery to your accommodation in a vehicle that takes animals. You land and someone is already waiting.", "Встреча в аэропорту": "Airport pick-up", "Перевозка с питомцем": "Travel with a pet", "Названия авиакомпаний приведены для информации о маршруте. Waylen Travel не является их представителем и не гарантирует решение третьей стороны.": "Airline names are given for information about the route. Waylen Travel is not their representative and does not guarantee a third party's decision.", "Сотрудничество": "Cooperation", "Хотите стать партнёром Waylen Travel?": "Want to become a Waylen Travel partner?", "Мы открыты к сотрудничеству с теми, кто работает с путешествиями с животными на маршруте Россия ↔ Вьетнам.": "We are open to working with anyone involved in traveling with animals on the Russia ↔ Vietnam route.", "Клиники и ветеринары": "Clinics and vets", "Вакцинация, чипирование, экспортные документы для вывоза животных.": "Vaccination, microchipping and export documents for taking animals abroad.", "Жильё": "Accommodation", "Отели и апартаменты, которые принимают гостей с животными.": "Hotels and apartments that accept guests with animals.", "Перевозчики": "Carriers", "Трансфер и перевозка питомцев в аэропорт и обратно.": "Transfer and transport of pets to the airport and back.", "Агентства и организации": "Agencies and organizations", "Релокационные компании, заводчики, приюты и корпоративные клиенты.": "Relocation companies, breeders, shelters and corporate clients.", "Расскажите, чем можете быть полезны": "Tell us how you can help", "Напишите нам в Telegram: кратко о себе и об услуге, и мы свяжемся с вами в течение дня.": "Message us on Telegram with a short note about you and your service, and we will get back to you within a day.", "Написать в Telegram": "Message on Telegram", "Путешествия с животными Россия ↔ Вьетнам — чек-лист документов, клиника-партнёр и консьерж под ключ.": "Traveling with animals Russia ↔ Vietnam — document checklist, partner clinic and a turnkey concierge.", "Тарифы": "Plans", "Консультация — 7 500 ₽": "Consultation — 7,500 ₽", "Сложный кейс — 21 000 ₽": "Complex case — 21,000 ₽", "От 5 питомцев — от 34 000 ₽": "5+ pets — from 34,000 ₽", "Компания": "Company", "Контакты": "Contacts", "© 2026 Waylen Travel. ИП Феоктистов Филипп. Все права защищены.": "© 2026 Waylen Travel. IE Filipp Feoktistov. All rights reserved.", "Введите имя (минимум 2 символа).": "Enter your name (at least 2 characters).", "Укажите Telegram.": "Enter your Telegram.", "Telegram похож на неверный — только буквы, цифры, «_», 5–32 символа.": "That Telegram handle looks wrong — letters, digits and “_” only, 5–32 characters.", "Отправляем…": "Sending…", "Telegram похож на неверный.": "That Telegram handle looks wrong.", "Заявка уже отправлена только что — подождите минуту перед повторной попыткой.": "A request was just sent — please wait a minute before trying again." };
+    var lang = 'ru';
+    try {
+        lang = localStorage.getItem('waylen_lang') === 'en' ? 'en' : 'ru';
+    }
+    catch (e) { }
+    function t(ru) { return (lang === 'en' && EN[ru]) ? EN[ru] : ru; }
+    var SKIP_ID = { leadPetLabel: 1, leadError: 1 };
+    var origText = new WeakMap();
+    var ATTRS = ['placeholder', 'aria-label', 'alt', 'title'];
+    function walk(root, fn) {
+        var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+            acceptNode: function (n) {
+                var p = n.parentNode;
+                if (!p || p.nodeName === 'SCRIPT' || p.nodeName === 'STYLE' || p.nodeName === 'NOSCRIPT')
+                    return NodeFilter.FILTER_REJECT;
+                if (p.id && SKIP_ID[p.id])
+                    return NodeFilter.FILTER_REJECT;
+                if (p.closest && p.closest('.split-h'))
+                    return NodeFilter.FILTER_REJECT;
+                return /\S/.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+            }
+        });
+        var n, list = [];
+        while ((n = w.nextNode()))
+            list.push(n);
+        list.forEach(fn);
+    }
+    var SPLIT_SEL = '.pl-hero-text h1, .section-head h2, .lead-copy-h2, .page-hero h1';
+    document.querySelectorAll(SPLIT_SEL).forEach(function (h) { h.classList.add('split-h'); h.dataset.ru = h.textContent.trim(); });
+    function splitHeading(h, text) {
+        h.setAttribute('aria-label', text);
+        h.textContent = '';
+        text.split(/\s+/).forEach(function (word, i, arr) {
+            var w = document.createElement('span');
+            w.className = 'w';
+            w.setAttribute('aria-hidden', 'true');
+            var wi = document.createElement('span');
+            wi.className = 'wi';
+            wi.textContent = word;
+            wi.style.setProperty('--i', i);
+            w.appendChild(wi);
+            h.appendChild(w);
+            if (i < arr.length - 1)
+                h.appendChild(document.createTextNode(' '));
+        });
+    }
+    function applyLang() {
+        document.documentElement.lang = lang;
+        document.querySelectorAll('.split-h').forEach(function (h) { var ru = h.dataset.ru; splitHeading(h, lang === 'en' && EN[ru] ? EN[ru] : ru); });
+        walk(document.body, function (node) {
+            if (!origText.has(node))
+                origText.set(node, node.nodeValue);
+            var orig = origText.get(node);
+            if (lang === 'en') {
+                var key = orig.trim();
+                if (EN[key]) {
+                    node.nodeValue = orig.replace(key, EN[key]);
+                }
+            }
+            else {
+                node.nodeValue = orig;
+            }
+        });
+        document.querySelectorAll('[placeholder],[aria-label],[alt],[title]').forEach(function (el) {
+            ATTRS.forEach(function (a) {
+                if (!el.hasAttribute(a))
+                    return;
+                var k = 'data-ru-' + a;
+                if (!el.hasAttribute(k))
+                    el.setAttribute(k, el.getAttribute(a));
+                var ru = el.getAttribute(k);
+                el.setAttribute(a, lang === 'en' && EN[ru] ? EN[ru] : ru);
+            });
+        });
+        document.title = t('Waylen Travel — путешествие с животными во Вьетнам');
+        var petBtn = document.getElementById('leadPetBtn');
+        var petLabel = document.getElementById('leadPetLabel');
+        if (petBtn && petLabel) {
+            petLabel.textContent = t(petBtn.dataset.value);
+        }
+        var err = document.getElementById('leadError');
+        if (err && err.dataset.ru) {
+            err.textContent = t(err.dataset.ru);
+        }
+        document.querySelectorAll('.lang-switch').forEach(function (sw) { sw.dataset.active = lang; });
+        document.querySelectorAll('.lang-switch button').forEach(function (b) {
+            b.classList.toggle('is-active', b.dataset.lang === lang);
+        });
+    }
+    function setLang(l) {
+        if (l === lang)
+            return;
+        lang = l;
+        try {
+            localStorage.setItem('waylen_lang', l);
+        }
+        catch (e) { }
+        applyLang();
+    }
+    document.querySelectorAll('.lang-switch button').forEach(function (b) {
+        b.addEventListener('click', function () { setLang(b.dataset.lang); });
     });
-    var n, list = [];
-    while((n = w.nextNode())) list.push(n);
-    list.forEach(fn);
-  }
-
-  var SPLIT_SEL = '.pl-hero-text h1, .section-head h2, .lead-copy-h2, .page-hero h1';
-  document.querySelectorAll(SPLIT_SEL).forEach(function(h){ h.classList.add('split-h'); h.dataset.ru = h.textContent.trim(); });
-  function splitHeading(h, text){
-    h.setAttribute('aria-label', text);
-    h.textContent = '';
-    text.split(/\s+/).forEach(function(word, i, arr){
-      var w = document.createElement('span'); w.className = 'w'; w.setAttribute('aria-hidden','true');
-      var wi = document.createElement('span'); wi.className = 'wi'; wi.textContent = word; wi.style.setProperty('--i', i);
-      w.appendChild(wi); h.appendChild(w);
-      if(i < arr.length - 1) h.appendChild(document.createTextNode(' '));
+    var PAGES = ['home', 'team', 'partners', 'tariff-basic', 'tariff-standard', 'tariff-premium', 'legal-privacy', 'legal-liability'];
+    var mobileMenu = document.getElementById('mobileMenu');
+    var burger = document.getElementById('burgerBtn');
+    function closeMenu() {
+        if (mobileMenu)
+            mobileMenu.classList.remove('open');
+        if (burger) {
+            burger.classList.remove('is-open');
+            burger.setAttribute('aria-expanded', 'false');
+        }
+    }
+    function showPage(name, keepScroll) {
+        if (PAGES.indexOf(name) < 0)
+            name = 'home';
+        document.querySelectorAll('.page').forEach(function (p) {
+            p.style.display = (p.dataset.page === name) ? '' : 'none';
+        });
+        if (!keepScroll)
+            window.scrollTo(0, 0);
+        try {
+            if (window.ym && name !== 'home')
+                ym(113549896, 'hit', location.pathname + '#' + name);
+        }
+        catch (e) { }
+        var activePage = document.querySelector('.page[data-page="' + name + '"]');
+        if (activePage) {
+            var rv = activePage.querySelectorAll('.reveal');
+            rv.forEach(function (el) { el.classList.remove('is-visible'); });
+            void activePage.offsetWidth;
+            setTimeout(function () { rv.forEach(function (el) { el.classList.add('is-visible'); }); }, 40);
+            activePage.classList.remove('page-enter');
+            void activePage.offsetWidth;
+            activePage.classList.add('page-enter');
+        }
+        document.querySelectorAll('[data-nav]').forEach(function (b) {
+            b.classList.toggle('is-current', b.dataset.nav === name);
+        });
+        closeMenu();
+        if (typeof fabUpdate === 'function')
+            setTimeout(fabUpdate, 60);
+        try {
+            history.replaceState(null, '', name === 'home' ? location.pathname + location.search : '#' + name);
+        }
+        catch (e) { }
+    }
+    function goToForm() {
+        showPage('home', true);
+        setTimeout(function () {
+            var f = document.getElementById('lead-form');
+            if (f) {
+                f.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 30);
+    }
+    document.querySelectorAll('.js-goto-form, .js-goto-form-from-team, .js-goto-form-basic, .js-goto-form-standard, .js-goto-form-premium').forEach(function (b) {
+        b.addEventListener('click', goToForm);
     });
-  }
-
-  function applyLang(){
-    document.documentElement.lang = lang;
-    document.querySelectorAll('.split-h').forEach(function(h){ var ru = h.dataset.ru; splitHeading(h, lang === 'en' && EN[ru] ? EN[ru] : ru); });
-    walk(document.body, function(node){
-      if(!origText.has(node)) origText.set(node, node.nodeValue);
-      var orig = origText.get(node);
-      if(lang === 'en'){
-        var key = orig.trim();
-        if(EN[key]){ node.nodeValue = orig.replace(key, EN[key]); }
-      } else {
-        node.nodeValue = orig;
-      }
+    document.querySelectorAll('.js-goto-tg').forEach(function (b) {
+        b.addEventListener('click', function () { window.open('https://t.me/waylen_travel', '_blank', 'noopener'); });
     });
-    document.querySelectorAll('[placeholder],[aria-label],[alt],[title]').forEach(function(el){
-      ATTRS.forEach(function(a){
-        if(!el.hasAttribute(a)) return;
-        var k = 'data-ru-' + a;
-        if(!el.hasAttribute(k)) el.setAttribute(k, el.getAttribute(a));
-        var ru = el.getAttribute(k);
-        el.setAttribute(a, lang === 'en' && EN[ru] ? EN[ru] : ru);
-      });
+    var howBtn = document.getElementById('howItWorksBtn');
+    if (howBtn) {
+        howBtn.addEventListener('click', function () { var el = document.getElementById('how'); if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } });
+    }
+    var logoBtn = document.getElementById('logoHomeBtn');
+    if (logoBtn) {
+        logoBtn.addEventListener('click', function () { showPage('home'); });
+    }
+    document.querySelectorAll('[data-nav]').forEach(function (b) {
+        b.addEventListener('click', function (e) { e.preventDefault(); showPage(b.dataset.nav); });
     });
-    document.title = t('Waylen Travel — путешествие с животными во Вьетнам');
+    document.querySelectorAll('.js-back-home').forEach(function (b) { b.addEventListener('click', function () { showPage('home'); }); });
+    document.querySelectorAll('.js-open-tariff').forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); showPage('tariff-' + b.dataset.tariff); }); });
+    document.querySelectorAll('.pl-price-tier').forEach(function (tile) {
+        var btn = tile.querySelector('.js-open-tariff');
+        if (!btn)
+            return;
+        tile.addEventListener('click', function (e) { if (e.target.closest('button'))
+            return; showPage('tariff-' + btn.dataset.tariff); });
+    });
+    document.querySelectorAll('.js-open-tariff-link').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); showPage('tariff-' + a.dataset.tariff); }); });
+    document.querySelectorAll('.js-open-legal').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); showPage('legal-' + a.dataset.legal); }); });
+    if (burger && mobileMenu) {
+        burger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = !mobileMenu.classList.contains('open');
+            mobileMenu.classList.toggle('open', open);
+            burger.classList.toggle('is-open', open);
+            burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.addEventListener('click', function (e) { if (!mobileMenu.contains(e.target))
+            closeMenu(); });
+    }
+    var hdr = document.querySelector('header');
+    function onScroll() { if (hdr)
+        hdr.classList.toggle('is-scrolled', window.scrollY > 8); }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
     var petBtn = document.getElementById('leadPetBtn');
+    var petPopover = document.getElementById('leadPetPopover');
     var petLabel = document.getElementById('leadPetLabel');
-    if(petBtn && petLabel){ petLabel.textContent = t(petBtn.dataset.value); }
-    var err = document.getElementById('leadError');
-    if(err && err.dataset.ru){ err.textContent = t(err.dataset.ru); }
-    document.querySelectorAll('.lang-switch').forEach(function(sw){ sw.dataset.active = lang; });
-    document.querySelectorAll('.lang-switch button').forEach(function(b){
-      b.classList.toggle('is-active', b.dataset.lang === lang);
-    });
-  }
-
-  function setLang(l){
-    if(l === lang) return;
-    lang = l;
-    try { localStorage.setItem('waylen_lang', l); } catch(e){}
+    if (petBtn && petPopover) {
+        petBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var willOpen = !petPopover.classList.contains('open');
+            petPopover.classList.toggle('open', willOpen);
+            petBtn.classList.toggle('is-open', willOpen);
+        });
+        petPopover.querySelectorAll('.pet-select-option').forEach(function (opt) {
+            opt.addEventListener('click', function () {
+                var val = opt.dataset.value;
+                petBtn.dataset.value = val;
+                petLabel.textContent = t(val);
+                petPopover.querySelectorAll('.pet-select-option').forEach(function (o) { o.classList.toggle('is-active', o === opt); });
+                petPopover.classList.remove('open');
+                petBtn.classList.remove('is-open');
+            });
+        });
+        document.addEventListener('click', function (e) {
+            if (!petPopover.contains(e.target) && e.target !== petBtn) {
+                petPopover.classList.remove('open');
+                petBtn.classList.remove('is-open');
+            }
+        });
+    }
+    var submitBtn = document.getElementById('leadSubmitBtn');
+    var form = document.getElementById('leadForm');
+    var leadError = document.getElementById('leadError');
+    var GENERIC_ERR = 'Не получилось отправить. Попробуйте ещё раз или напишите нам в Telegram.';
+    function showError(ru) {
+        if (!leadError)
+            return;
+        leadError.dataset.ru = ru;
+        leadError.textContent = t(ru);
+        leadError.style.display = 'block';
+    }
+    function isValidTelegramClient(v) { return /^@?[a-zA-Z0-9_]{5,32}$/.test(v.trim()); }
+    var CC_RAW = 'RU7 US1 CA1 KZ7 UA380 BY375 GE995 AM374 AZ994 UZ998 KG996 TJ992 TM993 MD373 LV371 LT370 EE372 VN84 TH66 ID62 MY60 SG65 PH63 KH855 LA856 MM95 CN86 JP81 KR82 KP850 HK852 MO853 TW886 IN91 PK92 BD880 LK94 NP977 BT975 MV960 AF93 IR98 IQ964 TR90 IL972 AE971 SA966 QA974 KW965 BH973 OM968 JO962 LB961 SY963 YE967 PS970 CY357 GR30 BG359 RO40 HU36 PL48 CZ420 SK421 SI386 HR385 RS381 ME382 BA387 MK389 AL355 XK383 DE49 FR33 GB44 IT39 ES34 PT351 NL31 BE32 LU352 CH41 AT43 LI423 IE353 IS354 DK45 NO47 SE46 FI358 MT356 MC377 SM378 VA379 AD376 GI350 FO298 GL299 JE44 GG44 IM44 EG20 MA212 DZ213 TN216 LY218 SD249 SS211 ET251 ER291 DJ253 SO252 KE254 UG256 TZ255 RW250 BI257 CD243 CG242 CM237 GA241 GQ240 CF236 TD235 NG234 GH233 CI225 SN221 ML223 BF226 NE227 TG228 BJ229 GM220 GN224 GW245 SL232 LR231 CV238 ST239 MR222 AO244 ZM260 ZW263 MZ258 MW265 BW267 NA264 ZA27 LS266 SZ268 MG261 MU230 SC248 KM269 RE262 YT262 EH212 SH290 MX52 BR55 AR54 CL56 CO57 PE51 VE58 EC593 BO591 PY595 UY598 GY592 SR597 GT502 BZ501 SV503 HN504 NI505 CR506 PA507 CU53 HT509 DO1809 PR1787 JM1876 BS1242 BB1246 TT1868 AG1268 AI1264 BM1441 VG1284 VI1340 KY1345 DM1767 GD1473 KN1869 LC1758 VC1784 TC1649 MS1664 GU1671 AS1684 MP1670 SX1721 CW599 AW297 AU61 NZ64 PG675 FJ679 WS685 TO676 VU678 SB677 KI686 NR674 PW680 MH692 FM691 TV688 NU683 CK682 TK690 WF681 PF689 NC687 TL670 BN673 IO246 CX61 CC61 FK500 PM508 BL590 MF590';
+    var CC = CC_RAW.split(' ').map(function (x) { return { iso: x.slice(0, 2), dial: x.slice(2) }; });
+    var ccCur = CC[0];
+    var ccBtn = document.getElementById('ccBtn'), ccPop = document.getElementById('ccPop'), ccList = document.getElementById('ccList'), ccSearch = document.getElementById('ccSearch');
+    var phoneIn = document.getElementById('leadPhone');
+    function ccName(iso) {
+        try {
+            return new Intl.DisplayNames([lang === 'en' ? 'en' : 'ru'], { type: 'region' }).of(iso) || iso;
+        }
+        catch (e) {
+            return iso;
+        }
+    }
+    function flagUrl(iso) { return '/flags/' + iso.toLowerCase() + '.png'; }
+    function natLen(c) { return (c.dial === '7' || c.dial === '1') ? 10 : Math.min(12, 15 - c.dial.length); }
+    function fmtNat(c, d) {
+        d = d.slice(0, natLen(c));
+        if (c.dial === '7') {
+            var o = '';
+            if (d.length)
+                o = '(' + d.slice(0, 3);
+            if (d.length >= 4)
+                o += ') ' + d.slice(3, 6);
+            if (d.length > 6)
+                o += '-' + d.slice(6, 8);
+            if (d.length > 8)
+                o += '-' + d.slice(8, 10);
+            return o;
+        }
+        if (c.dial === '1') {
+            var q = '';
+            if (d.length)
+                q = '(' + d.slice(0, 3);
+            if (d.length >= 4)
+                q += ') ' + d.slice(3, 6);
+            if (d.length > 6)
+                q += '-' + d.slice(6, 10);
+            return q;
+        }
+        return (d.match(/.{1,3}/g) || []).join(' ');
+    }
+    function ccSet(c) {
+        ccCur = c;
+        var fi = document.getElementById('ccIso');
+        fi.src = flagUrl(c.iso);
+        fi.alt = c.iso;
+        document.getElementById('ccDial').textContent = '+' + c.dial;
+        phoneIn.setAttribute('placeholder', (c.dial === '7') ? '900 000-00-00' : (c.dial === '1' ? '(201) 555-0123' : '000 000 000'));
+        phoneIn.value = fmtNat(c, phoneIn.value.replace(/\D/g, ''));
+    }
+    function ccDetect(digits) {
+        var best = null;
+        CC.forEach(function (c) { if (digits.indexOf(c.dial) === 0 && (!best || c.dial.length > best.dial.length))
+            best = c; });
+        return best;
+    }
+    function ccRender(q) {
+        q = (q || '').toLowerCase().trim();
+        var html = '';
+        CC.forEach(function (c) {
+            var n = ccName(c.iso);
+            if (q && n.toLowerCase().indexOf(q) < 0 && ('+' + c.dial).indexOf(q) < 0 && c.iso.toLowerCase() !== q)
+                return;
+            html += '<button type="button" class="cc-opt' + (c === ccCur ? ' is-active' : '') + '" data-iso="' + c.iso + '" data-dial="' + c.dial + '"><img class="cc-flag" loading="lazy" src="' + flagUrl(c.iso) + '" width="22" height="16" alt=""><span class="cc-nm">' + n + '</span><span class="cc-d">+' + c.dial + '</span></button>';
+        });
+        ccList.innerHTML = html || '<div class="cc-empty">' + t('Ничего не найдено') + '</div>';
+    }
+    function ccOpen(o) {
+        ccPop.classList.toggle('open', o);
+        ccBtn.setAttribute('aria-expanded', o ? 'true' : 'false');
+        if (o) {
+            ccSearch.value = '';
+            ccRender('');
+            var a = ccList.querySelector('.is-active');
+            if (a)
+                ccList.scrollTop = a.offsetTop - 60;
+            if (window.innerWidth > 700)
+                ccSearch.focus();
+        }
+    }
+    if (ccBtn && phoneIn) {
+        ccBtn.addEventListener('click', function (e) { e.stopPropagation(); ccOpen(!ccPop.classList.contains('open')); });
+        ccSearch.addEventListener('input', function () { ccRender(ccSearch.value); });
+        ccPop.addEventListener('click', function (e) { e.stopPropagation(); });
+        ccList.addEventListener('click', function (e) {
+            var b = e.target.closest('.cc-opt');
+            if (!b)
+                return;
+            var c = CC.filter(function (x) { return x.iso === b.dataset.iso; })[0];
+            ccSet(c);
+            ccOpen(false);
+            phoneIn.focus();
+        });
+        document.addEventListener('click', function () { ccOpen(false); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape')
+            ccOpen(false); });
+        phoneIn.addEventListener('input', function (e) {
+            var raw = phoneIn.value, d = raw.replace(/\D/g, '');
+            if (raw.trim().charAt(0) === '+') {
+                var c = d ? ccDetect(d) : null;
+                if (!c) {
+                    phoneIn.value = '+' + d.slice(0, 4);
+                    return;
+                }
+                if (c.dial !== ccCur.dial)
+                    ccSet(c);
+                d = d.slice(c.dial.length);
+            }
+            else if (ccCur.dial === '7') {
+                if (d.charAt(0) === '8')
+                    d = d.slice(1);
+                else if (d.length === 11 && d.charAt(0) === '7')
+                    d = d.slice(1);
+            }
+            else if (ccCur.dial === '1' && d.length === 11 && d.charAt(0) === '1')
+                d = d.slice(1);
+            phoneIn.value = fmtNat(ccCur, d);
+        });
+        ccSet(CC[0]);
+    }
+    function getPhone() {
+        var d = phoneIn.value.replace(/\D/g, '');
+        return d ? '+' + ccCur.dial + ' ' + phoneIn.value.trim() : '';
+    }
+    function isValidPhoneClient() {
+        var d = phoneIn.value.replace(/\D/g, '');
+        if (ccCur.dial === '7' || ccCur.dial === '1')
+            return d.length === 10;
+        return d.length >= 6 && (d.length + ccCur.dial.length) >= 10 && (d.length + ccCur.dial.length) <= 15;
+    }
+    if (submitBtn && form) {
+        submitBtn.addEventListener('click', function () {
+            var nameInput = document.getElementById('leadName');
+            var telegramInput = document.getElementById('leadTelegram');
+            var name = nameInput.value.trim();
+            var phoneInput = document.getElementById('leadPhone');
+            var phone = getPhone();
+            var telegram = telegramInput.value.trim();
+            var pet = petBtn ? petBtn.dataset.value : '';
+            var message = document.getElementById('leadMessage').value.trim();
+            if (leadSource) {
+                message = (message ? message + '\n' : '') + '[Источник: ' + leadSource + ']';
+            }
+            [nameInput, phoneInput, telegramInput].forEach(function (el) { el.parentNode.classList.remove('has-error'); });
+            if (leadError) {
+                leadError.style.display = 'none';
+                delete leadError.dataset.ru;
+            }
+            function fieldError(el, ru) {
+                el.parentNode.classList.remove('has-error');
+                void el.offsetWidth;
+                el.parentNode.classList.add('has-error');
+                el.focus();
+                showError(ru);
+            }
+            if (name.length < 2) {
+                fieldError(nameInput, 'Введите имя (минимум 2 символа).');
+                return;
+            }
+            if (!phoneInput.value.replace(/\D/g, '')) {
+                fieldError(phoneInput, 'Укажите номер телефона.');
+                return;
+            }
+            if (!isValidPhoneClient()) {
+                fieldError(phoneInput, 'Проверьте номер телефона для выбранной страны.');
+                return;
+            }
+            if (telegram && !isValidTelegramClient(telegram)) {
+                fieldError(telegramInput, 'Telegram похож на неверный — только буквы, цифры, «_», 5–32 символа.');
+                return;
+            }
+            submitBtn.setAttribute('disabled', 'disabled');
+            var originalText = submitBtn.textContent;
+            submitBtn.textContent = t('Отправляем…');
+            var errorMessages = {
+                invalid_name: 'Введите имя (минимум 2 символа).',
+                contact_required: 'Укажите номер телефона.',
+                invalid_phone: 'Проверьте номер телефона для выбранной страны.',
+                invalid_telegram: 'Telegram похож на неверный.',
+                rate_limited: 'Заявка уже отправлена только что — подождите минуту перед повторной попыткой.'
+            };
+            fetch('https://bgzpnklwdhqzmrifwnkj.supabase.co/functions/v1/submit-lead', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnenBua2x3ZGhxem1yaWZ3bmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NTEzNDksImV4cCI6MjEwMzUyNzM0OX0.xD7zcgIZTZXCgJmvf-DQ6j89Ce2TMETVQEu1ea8e5z0'
+                },
+                body: JSON.stringify({ name: name, contact_phone: phone, contact_telegram: telegram, pet: pet, message: message, company: (document.getElementById('leadCompany') || {}).value || '' })
+            })
+                .then(function (resp) { return resp.json().then(function (data) { return { ok: resp.ok, data: data }; }); })
+                .then(function (result) {
+                if (!result.ok || !result.data || result.data.ok !== true) {
+                    var code = result.data && result.data.error;
+                    throw new Error(errorMessages[code] || GENERIC_ERR);
+                }
+                form.classList.add('submitted');
+                try {
+                    if (window.ym)
+                        ym(113549896, 'reachGoal', 'lead_sent');
+                }
+                catch (e) { }
+                if (!(result.data && result.data.notified === true)) {
+                    fetch('/api/notify-telegram', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: name, contact_phone: phone, contact_telegram: telegram, pet: pet, message: message })
+                    }).catch(function () { });
+                }
+            })
+                .catch(function (err) { showError((err && err.message) || GENERIC_ERR); })
+                .finally(function () {
+                submitBtn.removeAttribute('disabled');
+                submitBtn.textContent = originalText;
+            });
+        });
+    }
+    if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    io.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.01, rootMargin: '0px 0px 80px 0px' });
+        document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+    }
+    else {
+        document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('is-visible'); });
+    }
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var parEls = document.querySelectorAll('.pl-hero-inner, .page-hero .container, .lead-wrap, .pet-clinic-card');
+    var stepEls = document.querySelectorAll('.info-steps');
+    var ticking = false;
+    function frame() {
+        ticking = false;
+        var vh = window.innerHeight;
+        if (!reduce) {
+            parEls.forEach(function (el) {
+                var r = el.getBoundingClientRect();
+                if (r.bottom < -100 || r.top > vh + 100 || !r.height)
+                    return;
+                el.style.setProperty('--py', ((r.top + r.height / 2 - vh / 2) * 0.07).toFixed(1));
+            });
+        }
+        stepEls.forEach(function (el) {
+            var r = el.getBoundingClientRect();
+            if (!r.height)
+                return;
+            var prog = Math.max(0, Math.min(1, (vh * 0.65 - r.top) / r.height));
+            el.style.setProperty('--prog', reduce ? 1 : prog.toFixed(3));
+        });
+    }
+    function req() { if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(frame);
+    } }
+    window.addEventListener('scroll', req, { passive: true });
+    window.addEventListener('resize', req);
+    req();
+    var rvTrack = document.getElementById('rvTrack');
+    if (rvTrack) {
+        var rvStep = function () { var c = rvTrack.querySelector('.review-card'); return c ? c.getBoundingClientRect().width + 16 : 320; };
+        var rvMove = function (dir) {
+            var max = rvTrack.scrollWidth - rvTrack.clientWidth;
+            if (dir > 0 && rvTrack.scrollLeft >= max - 4) {
+                rvTrack.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+            else if (dir < 0 && rvTrack.scrollLeft <= 4) {
+                rvTrack.scrollTo({ left: max, behavior: 'smooth' });
+            }
+            else {
+                rvTrack.scrollBy({ left: dir * rvStep(), behavior: 'smooth' });
+            }
+        };
+        document.getElementById('rvPrev').addEventListener('click', function () { rvMove(-1); });
+        document.getElementById('rvNext').addEventListener('click', function () { rvMove(1); });
+        var rvPaused = false, rvTimer = null;
+        ['mouseenter', 'touchstart', 'focusin'].forEach(function (ev) { rvTrack.addEventListener(ev, function () { rvPaused = true; }, { passive: true }); });
+        ['mouseleave', 'focusout'].forEach(function (ev) { rvTrack.addEventListener(ev, function () { rvPaused = false; }); });
+        rvTrack.addEventListener('touchend', function () { setTimeout(function () { rvPaused = false; }, 6000); }, { passive: true });
+        if (!reduce) {
+            rvTimer = setInterval(function () {
+                var homeVisible = rvTrack.offsetParent !== null;
+                var r = rvTrack.getBoundingClientRect();
+                if (!rvPaused && homeVisible && r.bottom > 0 && r.top < window.innerHeight && !document.hidden) {
+                    rvMove(1);
+                }
+            }, 4500);
+        }
+    }
+    var fabWrap = document.getElementById('fabWrap');
+    var fabForm = document.getElementById('fabForm');
+    var formEl = document.getElementById('lead-form');
+    var formInView = false;
+    function fabUpdate() {
+        if (!fabWrap)
+            return;
+        var onHome = document.querySelector('.page[data-page="home"]').style.display !== 'none';
+        fabWrap.classList.toggle('is-on', window.scrollY > 520);
+        if (fabForm)
+            fabForm.classList.toggle('is-off', onHome && formInView);
+    }
+    if (formEl && 'IntersectionObserver' in window) {
+        new IntersectionObserver(function (e) { formInView = e[0].isIntersecting; fabUpdate(); }, { threshold: 0.15 }).observe(formEl);
+    }
+    window.addEventListener('scroll', fabUpdate, { passive: true });
+    fabUpdate();
+    var leadSource = '';
+    try {
+        var qs = new URLSearchParams(location.search);
+        var src = (qs.get('partner') || qs.get('utm_source') || qs.get('ref') || '').replace(/[^\w.\-]/g, '').slice(0, 40);
+        try {
+            localStorage.removeItem('waylen_src');
+        }
+        catch (e) { }
+        if (src) {
+            sessionStorage.setItem('waylen_src', src);
+        }
+        leadSource = sessionStorage.getItem('waylen_src') || '';
+    }
+    catch (e) { }
     applyLang();
-  }
-  document.querySelectorAll('.lang-switch button').forEach(function(b){
-    b.addEventListener('click', function(){ setLang(b.dataset.lang); });
-  });
-
-  
-  var PAGES = ['home','team','partners','tariff-basic','tariff-standard','tariff-premium','legal-privacy','legal-liability'];
-  var mobileMenu = document.getElementById('mobileMenu');
-  var burger = document.getElementById('burgerBtn');
-  function closeMenu(){
-    if(mobileMenu) mobileMenu.classList.remove('open');
-    if(burger){ burger.classList.remove('is-open'); burger.setAttribute('aria-expanded','false'); }
-  }
-
-  function showPage(name, keepScroll){
-    if(PAGES.indexOf(name) < 0) name = 'home';
-    document.querySelectorAll('.page').forEach(function(p){
-      p.style.display = (p.dataset.page === name) ? '' : 'none';
-    });
-    if(!keepScroll) window.scrollTo(0, 0);
-    try{ if(window.ym && name !== 'home') ym(113549896, 'hit', location.pathname + '#' + name); }catch(e){}
-    var activePage = document.querySelector('.page[data-page="' + name + '"]');
-    if(activePage){
-      var rv = activePage.querySelectorAll('.reveal');
-      rv.forEach(function(el){ el.classList.remove('is-visible'); });
-      void activePage.offsetWidth;
-      setTimeout(function(){ rv.forEach(function(el){ el.classList.add('is-visible'); }); }, 40);
-      activePage.classList.remove('page-enter');
-      void activePage.offsetWidth;
-      activePage.classList.add('page-enter');
+    var h = (location.hash || '').replace('#', '');
+    if (h && h !== 'home' && PAGES.indexOf(h) > -1) {
+        showPage(h);
     }
-    document.querySelectorAll('[data-nav]').forEach(function(b){
-      b.classList.toggle('is-current', b.dataset.nav === name);
-    });
-    closeMenu();
-    if(typeof fabUpdate === 'function') setTimeout(fabUpdate, 60);
-    try { history.replaceState(null, '', name === 'home' ? location.pathname + location.search : '#' + name); } catch(e){}
-  }
-
-  function goToForm(){
-    showPage('home', true);
-    setTimeout(function(){
-      var f = document.getElementById('lead-form');
-      if(f){ f.scrollIntoView({behavior:'smooth', block:'start'}); }
-    }, 30);
-  }
-
-  document.querySelectorAll('.js-goto-form, .js-goto-form-from-team, .js-goto-form-basic, .js-goto-form-standard, .js-goto-form-premium').forEach(function(b){
-    b.addEventListener('click', goToForm);
-  });
-  document.querySelectorAll('.js-goto-tg').forEach(function(b){
-    b.addEventListener('click', function(){ window.open('https://t.me/waylen_travel', '_blank', 'noopener'); });
-  });
-  var howBtn = document.getElementById('howItWorksBtn');
-  if(howBtn){ howBtn.addEventListener('click', function(){ var el = document.getElementById('how'); if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); } }); }
-  var logoBtn = document.getElementById('logoHomeBtn');
-  if(logoBtn){ logoBtn.addEventListener('click', function(){ showPage('home'); }); }
-  document.querySelectorAll('[data-nav]').forEach(function(b){
-    b.addEventListener('click', function(e){ e.preventDefault(); showPage(b.dataset.nav); });
-  });
-  document.querySelectorAll('.js-back-home').forEach(function(b){ b.addEventListener('click', function(){ showPage('home'); }); });
-  document.querySelectorAll('.js-open-tariff').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); showPage('tariff-' + b.dataset.tariff); }); });
-  document.querySelectorAll('.pl-price-tier').forEach(function(tile){
-    var btn = tile.querySelector('.js-open-tariff');
-    if(!btn) return;
-    tile.addEventListener('click', function(e){ if(e.target.closest('button')) return; showPage('tariff-' + btn.dataset.tariff); });
-  });
-  document.querySelectorAll('.js-open-tariff-link').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); showPage('tariff-' + a.dataset.tariff); }); });
-  document.querySelectorAll('.js-open-legal').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); showPage('legal-' + a.dataset.legal); }); });
-
-  if(burger && mobileMenu){
-    burger.addEventListener('click', function(e){
-      e.stopPropagation();
-      var open = !mobileMenu.classList.contains('open');
-      mobileMenu.classList.toggle('open', open);
-      burger.classList.toggle('is-open', open);
-      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-    document.addEventListener('click', function(e){ if(!mobileMenu.contains(e.target)) closeMenu(); });
-  }
-
-  var hdr = document.querySelector('header');
-  function onScroll(){ if(hdr) hdr.classList.toggle('is-scrolled', window.scrollY > 8); }
-  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
-
-  
-  var petBtn = document.getElementById('leadPetBtn');
-  var petPopover = document.getElementById('leadPetPopover');
-  var petLabel = document.getElementById('leadPetLabel');
-  if(petBtn && petPopover){
-    petBtn.addEventListener('click', function(e){
-      e.stopPropagation();
-      var willOpen = !petPopover.classList.contains('open');
-      petPopover.classList.toggle('open', willOpen);
-      petBtn.classList.toggle('is-open', willOpen);
-    });
-    petPopover.querySelectorAll('.pet-select-option').forEach(function(opt){
-      opt.addEventListener('click', function(){
-        var val = opt.dataset.value;
-        petBtn.dataset.value = val;
-        petLabel.textContent = t(val);
-        petPopover.querySelectorAll('.pet-select-option').forEach(function(o){ o.classList.toggle('is-active', o === opt); });
-        petPopover.classList.remove('open');
-        petBtn.classList.remove('is-open');
-      });
-    });
-    document.addEventListener('click', function(e){
-      if(!petPopover.contains(e.target) && e.target !== petBtn){
-        petPopover.classList.remove('open');
-        petBtn.classList.remove('is-open');
-      }
-    });
-  }
-
-  
-  var submitBtn = document.getElementById('leadSubmitBtn');
-  var form = document.getElementById('leadForm');
-  var leadError = document.getElementById('leadError');
-  var GENERIC_ERR = 'Не получилось отправить. Попробуйте ещё раз или напишите нам в Telegram.';
-
-  function showError(ru){
-    if(!leadError) return;
-    leadError.dataset.ru = ru;
-    leadError.textContent = t(ru);
-    leadError.style.display = 'block';
-  }
-  function isValidTelegramClient(v){ return /^@?[a-zA-Z0-9_]{5,32}$/.test(v.trim()); }
-  var CC_RAW = 'RU7 US1 CA1 KZ7 UA380 BY375 GE995 AM374 AZ994 UZ998 KG996 TJ992 TM993 MD373 LV371 LT370 EE372 VN84 TH66 ID62 MY60 SG65 PH63 KH855 LA856 MM95 CN86 JP81 KR82 KP850 HK852 MO853 TW886 IN91 PK92 BD880 LK94 NP977 BT975 MV960 AF93 IR98 IQ964 TR90 IL972 AE971 SA966 QA974 KW965 BH973 OM968 JO962 LB961 SY963 YE967 PS970 CY357 GR30 BG359 RO40 HU36 PL48 CZ420 SK421 SI386 HR385 RS381 ME382 BA387 MK389 AL355 XK383 DE49 FR33 GB44 IT39 ES34 PT351 NL31 BE32 LU352 CH41 AT43 LI423 IE353 IS354 DK45 NO47 SE46 FI358 MT356 MC377 SM378 VA379 AD376 GI350 FO298 GL299 JE44 GG44 IM44 EG20 MA212 DZ213 TN216 LY218 SD249 SS211 ET251 ER291 DJ253 SO252 KE254 UG256 TZ255 RW250 BI257 CD243 CG242 CM237 GA241 GQ240 CF236 TD235 NG234 GH233 CI225 SN221 ML223 BF226 NE227 TG228 BJ229 GM220 GN224 GW245 SL232 LR231 CV238 ST239 MR222 AO244 ZM260 ZW263 MZ258 MW265 BW267 NA264 ZA27 LS266 SZ268 MG261 MU230 SC248 KM269 RE262 YT262 EH212 SH290 MX52 BR55 AR54 CL56 CO57 PE51 VE58 EC593 BO591 PY595 UY598 GY592 SR597 GT502 BZ501 SV503 HN504 NI505 CR506 PA507 CU53 HT509 DO1809 PR1787 JM1876 BS1242 BB1246 TT1868 AG1268 AI1264 BM1441 VG1284 VI1340 KY1345 DM1767 GD1473 KN1869 LC1758 VC1784 TC1649 MS1664 GU1671 AS1684 MP1670 SX1721 CW599 AW297 AU61 NZ64 PG675 FJ679 WS685 TO676 VU678 SB677 KI686 NR674 PW680 MH692 FM691 TV688 NU683 CK682 TK690 WF681 PF689 NC687 TL670 BN673 IO246 CX61 CC61 FK500 PM508 BL590 MF590';
-  var CC = CC_RAW.split(' ').map(function(x){ return {iso:x.slice(0,2), dial:x.slice(2)}; });
-  var ccCur = CC[0];
-  var ccBtn = document.getElementById('ccBtn'), ccPop = document.getElementById('ccPop'), ccList = document.getElementById('ccList'), ccSearch = document.getElementById('ccSearch');
-  var phoneIn = document.getElementById('leadPhone');
-  function ccName(iso){
-    try{ return new Intl.DisplayNames([lang === 'en' ? 'en' : 'ru'], {type:'region'}).of(iso) || iso; }catch(e){ return iso; }
-  }
-  function flagUrl(iso){ return '/flags/' + iso.toLowerCase() + '.png'; }
-  function natLen(c){ return (c.dial === '7' || c.dial === '1') ? 10 : Math.min(12, 15 - c.dial.length); }
-  function fmtNat(c, d){
-    d = d.slice(0, natLen(c));
-    if(c.dial === '7'){
-      var o = ''; if(d.length) o = '(' + d.slice(0,3); if(d.length >= 4) o += ') ' + d.slice(3,6);
-      if(d.length > 6) o += '-' + d.slice(6,8); if(d.length > 8) o += '-' + d.slice(8,10); return o;
+    if (h === 'lead-form') {
+        setTimeout(goToForm, 350);
     }
-    if(c.dial === '1'){
-      var q = ''; if(d.length) q = '(' + d.slice(0,3); if(d.length >= 4) q += ') ' + d.slice(3,6);
-      if(d.length > 6) q += '-' + d.slice(6,10); return q;
-    }
-    return (d.match(/.{1,3}/g) || []).join(' ');
-  }
-  function ccSet(c){
-    ccCur = c;
-    var fi = document.getElementById('ccIso'); fi.src = flagUrl(c.iso); fi.alt = c.iso;
-    document.getElementById('ccDial').textContent = '+' + c.dial;
-    phoneIn.setAttribute('placeholder', (c.dial === '7') ? '900 000-00-00' : (c.dial === '1' ? '(201) 555-0123' : '000 000 000'));
-    phoneIn.value = fmtNat(c, phoneIn.value.replace(/\D/g, ''));
-  }
-  function ccDetect(digits){
-    var best = null;
-    CC.forEach(function(c){ if(digits.indexOf(c.dial) === 0 && (!best || c.dial.length > best.dial.length)) best = c; });
-    return best;
-  }
-  function ccRender(q){
-    q = (q || '').toLowerCase().trim();
-    var html = '';
-    CC.forEach(function(c){
-      var n = ccName(c.iso);
-      if(q && n.toLowerCase().indexOf(q) < 0 && ('+' + c.dial).indexOf(q) < 0 && c.iso.toLowerCase() !== q) return;
-      html += '<button type="button" class="cc-opt' + (c === ccCur ? ' is-active' : '') + '" data-iso="' + c.iso + '" data-dial="' + c.dial + '"><img class="cc-flag" loading="lazy" src="' + flagUrl(c.iso) + '" width="22" height="16" alt=""><span class="cc-nm">' + n + '</span><span class="cc-d">+' + c.dial + '</span></button>';
-    });
-    ccList.innerHTML = html || '<div class="cc-empty">' + t('Ничего не найдено') + '</div>';
-  }
-  function ccOpen(o){
-    ccPop.classList.toggle('open', o); ccBtn.setAttribute('aria-expanded', o ? 'true' : 'false');
-    if(o){ ccSearch.value = ''; ccRender(''); var a = ccList.querySelector('.is-active'); if(a) ccList.scrollTop = a.offsetTop - 60; if(window.innerWidth > 700) ccSearch.focus(); }
-  }
-  if(ccBtn && phoneIn){
-    ccBtn.addEventListener('click', function(e){ e.stopPropagation(); ccOpen(!ccPop.classList.contains('open')); });
-    ccSearch.addEventListener('input', function(){ ccRender(ccSearch.value); });
-    ccPop.addEventListener('click', function(e){ e.stopPropagation(); });
-    ccList.addEventListener('click', function(e){
-      var b = e.target.closest('.cc-opt'); if(!b) return;
-      var c = CC.filter(function(x){ return x.iso === b.dataset.iso; })[0];
-      ccSet(c); ccOpen(false); phoneIn.focus();
-    });
-    document.addEventListener('click', function(){ ccOpen(false); });
-    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') ccOpen(false); });
-    phoneIn.addEventListener('input', function(e){
-      var raw = phoneIn.value, d = raw.replace(/\D/g, '');
-      if(raw.trim().charAt(0) === '+'){
-        var c = d ? ccDetect(d) : null;
-        if(!c){ phoneIn.value = '+' + d.slice(0, 4); return; }
-        if(c.dial !== ccCur.dial) ccSet(c);
-        d = d.slice(c.dial.length);
-      } else if(ccCur.dial === '7'){
-        if(d.charAt(0) === '8') d = d.slice(1);
-        else if(d.length === 11 && d.charAt(0) === '7') d = d.slice(1);
-      } else if(ccCur.dial === '1' && d.length === 11 && d.charAt(0) === '1') d = d.slice(1);
-      phoneIn.value = fmtNat(ccCur, d);
-    });
-    ccSet(CC[0]);
-  }
-  function getPhone(){
-    var d = phoneIn.value.replace(/\D/g, '');
-    return d ? '+' + ccCur.dial + ' ' + phoneIn.value.trim() : '';
-  }
-  function isValidPhoneClient(){
-    var d = phoneIn.value.replace(/\D/g, '');
-    if(ccCur.dial === '7' || ccCur.dial === '1') return d.length === 10;
-    return d.length >= 6 && (d.length + ccCur.dial.length) >= 10 && (d.length + ccCur.dial.length) <= 15;
-  }
-
-  if(submitBtn && form){
-    submitBtn.addEventListener('click', function(){
-      var nameInput = document.getElementById('leadName');
-      var telegramInput = document.getElementById('leadTelegram');
-      var name = nameInput.value.trim();
-      var phoneInput = document.getElementById('leadPhone');
-      var phone = getPhone();
-      var telegram = telegramInput.value.trim();
-      var pet = petBtn ? petBtn.dataset.value : '';
-      var message = document.getElementById('leadMessage').value.trim();
-      if(leadSource){ message = (message ? message + '\n' : '') + '[Источник: ' + leadSource + ']'; }
-
-      [nameInput, phoneInput, telegramInput].forEach(function(el){ el.parentNode.classList.remove('has-error'); });
-      if(leadError){ leadError.style.display = 'none'; delete leadError.dataset.ru; }
-
-      function fieldError(el, ru){
-        el.parentNode.classList.remove('has-error'); void el.offsetWidth; el.parentNode.classList.add('has-error');
-        el.focus();
-        showError(ru);
-      }
-      if(name.length < 2){ fieldError(nameInput, 'Введите имя (минимум 2 символа).'); return; }
-      if(!phoneInput.value.replace(/\D/g,'')){ fieldError(phoneInput, 'Укажите номер телефона.'); return; }
-      if(!isValidPhoneClient()){ fieldError(phoneInput, 'Проверьте номер телефона для выбранной страны.'); return; }
-      if(telegram && !isValidTelegramClient(telegram)){ fieldError(telegramInput, 'Telegram похож на неверный — только буквы, цифры, «_», 5–32 символа.'); return; }
-
-      submitBtn.setAttribute('disabled', 'disabled');
-      var originalText = submitBtn.textContent;
-      submitBtn.textContent = t('Отправляем…');
-
-      var errorMessages = {
-        invalid_name: 'Введите имя (минимум 2 символа).',
-        contact_required: 'Укажите номер телефона.',
-        invalid_phone: 'Проверьте номер телефона для выбранной страны.',
-        invalid_telegram: 'Telegram похож на неверный.',
-        rate_limited: 'Заявка уже отправлена только что — подождите минуту перед повторной попыткой.'
-      };
-
-      fetch('https://bgzpnklwdhqzmrifwnkj.supabase.co/functions/v1/submit-lead', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnenBua2x3ZGhxem1yaWZ3bmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NTEzNDksImV4cCI6MjEwMzUyNzM0OX0.xD7zcgIZTZXCgJmvf-DQ6j89Ce2TMETVQEu1ea8e5z0'
-        },
-        body: JSON.stringify({ name: name, contact_phone: phone, contact_telegram: telegram, pet: pet, message: message, company: (document.getElementById('leadCompany') || {}).value || '' })
-      })
-      .then(function(resp){ return resp.json().then(function(data){ return { ok: resp.ok, data: data }; }); })
-      .then(function(result){
-        if(!result.ok || !result.data || result.data.ok !== true){
-          var code = result.data && result.data.error;
-          throw new Error(errorMessages[code] || GENERIC_ERR);
-        }
-        form.classList.add('submitted');
-        try{ if(window.ym) ym(113549896, 'reachGoal', 'lead_sent'); }catch(e){}
-        if(!(result.data && result.data.notified === true)){
-          fetch('/api/notify-telegram', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, contact_phone: phone, contact_telegram: telegram, pet: pet, message: message })
-          }).catch(function(){});
-        }
-      })
-      .catch(function(err){ showError((err && err.message) || GENERIC_ERR); })
-      .finally(function(){
-        submitBtn.removeAttribute('disabled');
-        submitBtn.textContent = originalText;
-      });
-    });
-  }
-
-  
-  if('IntersectionObserver' in window){
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if(entry.isIntersecting){ entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
-      });
-    }, { threshold: 0.01, rootMargin: '0px 0px 80px 0px' });
-    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
-  } else {
-    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('is-visible'); });
-  }
-
-  
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var parEls = document.querySelectorAll('.pl-hero-inner, .page-hero .container, .lead-wrap, .pet-clinic-card');
-  var stepEls = document.querySelectorAll('.info-steps');
-  var ticking = false;
-  function frame(){
-    ticking = false;
-    var vh = window.innerHeight;
-    if(!reduce){
-      parEls.forEach(function(el){
-        var r = el.getBoundingClientRect();
-        if(r.bottom < -100 || r.top > vh + 100 || !r.height) return;
-        el.style.setProperty('--py', ((r.top + r.height/2 - vh/2) * 0.07).toFixed(1));
-      });
-    }
-    stepEls.forEach(function(el){
-      var r = el.getBoundingClientRect();
-      if(!r.height) return;
-      var prog = Math.max(0, Math.min(1, (vh * 0.65 - r.top) / r.height));
-      el.style.setProperty('--prog', reduce ? 1 : prog.toFixed(3));
-    });
-  }
-  function req(){ if(!ticking){ ticking = true; requestAnimationFrame(frame); } }
-  window.addEventListener('scroll', req, {passive:true});
-  window.addEventListener('resize', req);
-  req();
-
-  
-  var rvTrack = document.getElementById('rvTrack');
-  if(rvTrack){
-    var rvStep = function(){ var c = rvTrack.querySelector('.review-card'); return c ? c.getBoundingClientRect().width + 16 : 320; };
-    var rvMove = function(dir){
-      var max = rvTrack.scrollWidth - rvTrack.clientWidth;
-      if(dir > 0 && rvTrack.scrollLeft >= max - 4){ rvTrack.scrollTo({left:0, behavior:'smooth'}); }
-      else if(dir < 0 && rvTrack.scrollLeft <= 4){ rvTrack.scrollTo({left:max, behavior:'smooth'}); }
-      else { rvTrack.scrollBy({left: dir * rvStep(), behavior:'smooth'}); }
-    };
-    document.getElementById('rvPrev').addEventListener('click', function(){ rvMove(-1); });
-    document.getElementById('rvNext').addEventListener('click', function(){ rvMove(1); });
-    var rvPaused = false, rvTimer = null;
-    ['mouseenter','touchstart','focusin'].forEach(function(ev){ rvTrack.addEventListener(ev, function(){ rvPaused = true; }, {passive:true}); });
-    ['mouseleave','focusout'].forEach(function(ev){ rvTrack.addEventListener(ev, function(){ rvPaused = false; }); });
-    rvTrack.addEventListener('touchend', function(){ setTimeout(function(){ rvPaused = false; }, 6000); }, {passive:true});
-    if(!reduce){
-      rvTimer = setInterval(function(){
-        var homeVisible = rvTrack.offsetParent !== null;
-        var r = rvTrack.getBoundingClientRect();
-        if(!rvPaused && homeVisible && r.bottom > 0 && r.top < window.innerHeight && !document.hidden){ rvMove(1); }
-      }, 4500);
-    }
-  }
-
-  
-  var fabWrap = document.getElementById('fabWrap');
-  var fabForm = document.getElementById('fabForm');
-  var formEl = document.getElementById('lead-form');
-  var formInView = false;
-  function fabUpdate(){
-    if(!fabWrap) return;
-    var onHome = document.querySelector('.page[data-page="home"]').style.display !== 'none';
-    fabWrap.classList.toggle('is-on', window.scrollY > 520);
-    if(fabForm) fabForm.classList.toggle('is-off', onHome && formInView);
-  }
-  if(formEl && 'IntersectionObserver' in window){
-    new IntersectionObserver(function(e){ formInView = e[0].isIntersecting; fabUpdate(); }, {threshold:0.15}).observe(formEl);
-  }
-  window.addEventListener('scroll', fabUpdate, {passive:true});
-  fabUpdate();
-
-  
-  var leadSource = '';
-  try {
-    var qs = new URLSearchParams(location.search);
-    var src = (qs.get('partner') || qs.get('utm_source') || qs.get('ref') || '').replace(/[^\w.\-]/g, '').slice(0, 40);
-    try{ localStorage.removeItem('waylen_src'); }catch(e){}
-    if(src){ sessionStorage.setItem('waylen_src', src); }
-    leadSource = sessionStorage.getItem('waylen_src') || '';
-  } catch(e){}
-
-  
-  applyLang();
-  var h = (location.hash || '').replace('#','');
-  if(h && h !== 'home' && PAGES.indexOf(h) > -1){ showPage(h); }
-  if(h === 'lead-form'){ setTimeout(goToForm, 350); }
 })();
-
 </script>
 </body>
 </html>

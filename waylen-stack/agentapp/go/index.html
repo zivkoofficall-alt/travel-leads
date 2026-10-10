@@ -5,10 +5,20 @@
 <p id="m">Открываем панель…</p>
 <a id="b" href="https://t.me/agentwaylenbot?startapp=panel" style="display:none">Открыть панель</a>
 <script>
-/* переходник: кнопка меню бота не умеет запускать главное приложение напрямую, а у него в BotFather стоит режим Fullscreen */
 var LINK = 'https://t.me/agentwaylenbot?startapp=panel', done = false;
-function go(){ if (done) return; done = true; var W = window.Telegram && window.Telegram.WebApp; try{ if (W && W.openTelegramLink){ W.openTelegramLink(LINK); setTimeout(function(){ try{ W.close(); }catch(e){} }, 600); return; } }catch(e){} location.href = LINK; }
-setTimeout(function(){ document.getElementById('b').style.display = 'inline-block'; document.getElementById('m').textContent = 'Если панель не открылась сама:'; }, 2500);
+function go() { if (done)
+    return; done = true; var W = window.Telegram && window.Telegram.WebApp; try {
+    if (W && W.openTelegramLink) {
+        W.openTelegramLink(LINK);
+        setTimeout(function () { try {
+            W.close();
+        }
+        catch (e) { } }, 600);
+        return;
+    }
+}
+catch (e) { } location.href = LINK; }
+setTimeout(function () { document.getElementById('b').style.display = 'inline-block'; document.getElementById('m').textContent = 'Если панель не открылась сама:'; }, 2500);
 </script>
 <script src="https://telegram.org/js/telegram-web-app.js" onload="go()" onerror="go()"></script>
 </body></html>
