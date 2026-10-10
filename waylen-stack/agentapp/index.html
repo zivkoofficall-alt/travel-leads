@@ -79,6 +79,21 @@
   .seg2{display:inline-flex;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;margin:6px 0 10px;}
   .seg2 button{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;color:var(--muted);}
   .seg2 button.on{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12);}
+  .risk{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(255,184,77,.12);border:1px solid rgba(255,184,77,.35);font-size:13px;line-height:1.4;color:var(--text);white-space:normal;}
+  .risk b{color:#E0962A;}
+  .tsum{margin:0 0 12px;padding:12px 14px;border-radius:16px;background:var(--card-2);border:1px solid var(--line);font-size:14px;line-height:1.45;}
+  .tsum b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:4px;}
+  .tsum .link{font-size:13px;margin:6px 0 0;padding:0;}
+  .tplr{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 8px;}
+  .tplr button{flex-shrink:0;font-size:12.5px;font-weight:700;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card-2);color:var(--text);}
+  .ptags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+  .ptags span{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(var(--acc-rgb),.12);color:var(--acc);}
+  .tag.hot{background:rgba(255,138,128,.16);color:var(--danger);}
+  .goals .g{margin:0 0 12px;}
+  .goals .g:last-child{margin:0;}
+  .goals .g .gl{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-bottom:6px;}
+  .goals .g .gl span{color:var(--muted);font-variant-numeric:tabular-nums;}
+  .rep-t{white-space:pre-wrap;font-size:13px;line-height:1.5;background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0;}
   .fnl{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 10px;}
   .fnl button{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 8px 9px;text-align:left;position:relative;overflow:hidden;min-width:0;}
   .fnl button b{display:block;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;}
@@ -1825,7 +1840,7 @@
         var dt = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
         dt = dt.charAt(0).toUpperCase() + dt.slice(1);
         var h = '<div class="today"><div class="dt">' + esc(dt) + '</div><h1 class="pt">' + hello + ', Филипп</h1>' +
-            '<button class="agline" data-act="go" data-tab="agent" data-arg=""><i class="ldot' + (st.enabled ? '' : ' off') + (liveStep() ? ' live' : '') + '"></i><span><b>' + (st.enabled ? 'Агент работает' : 'Агент выключен') + '</b> · ' + (st.send_mode === 'auto' ? 'отправляет сам' : 'через утверждение') + (st.enabled && quietNow() ? ' · тихие часы' : '') + (liveStep() ? '<br><span class="livel">Сейчас: ' + esc(liveStep()) + '</span>' : '') + '</span>' + ic('chev') + '</button></div>';
+            '<button class="agline" data-act="go" data-tab="agent" data-arg=""><i class="ldot' + (st.enabled ? '' : ' off') + (liveStep() ? ' live' : '') + '"></i><span><b>' + (pausedTill() ? 'Агент на паузе' : st.enabled ? 'Агент работает' : 'Агент выключен') + '</b> · ' + (st.send_mode === 'auto' ? 'отправляет сам' : 'через утверждение') + (st.enabled && quietNow() ? ' · тихие часы' : '') + (liveStep() ? '<br><span class="livel">Сейчас: ' + esc(liveStep()) + '</span>' : '') + '</span>' + ic('chev') + '</button></div>';
         h += '<div class="st3">' +
             '<button class="' + (drafts ? 'hot' : '') + '" data-act="go" data-tab="mail" data-arg="draft"><span class="v num">' + drafts + '</span><span class="l">ждут утверждения</span></button>' +
             '<button data-act="go" data-tab="mail" data-arg="unread"><span class="v num">' + unread + '</span><span class="l">новых писем</span></button>' +
@@ -1845,6 +1860,19 @@
                 '<div>' + show.map(qRow).join('') + '</div>' +
                 (items.length > 3 ? '<button class="gm" data-act="qgrp" data-id="' + g.pr + '">' + (open ? 'Свернуть' : 'Показать ещё ' + (items.length - 3)) + '</button>' : (g.more && items.length ? '<button class="gm" data-act="go" data-tab="' + g.more.tab + '" data-arg="' + g.more.arg + '">Открыть раздел</button>' : '')) + '</div>';
         });
+        var gl = (D.settings || {}).goals;
+        if (gl && Object.keys(gl).length) {
+            var mon = function (x) { var d = new Date(x), n = new Date(); return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth(); };
+            var fact = {
+                agreed: D.partners.filter(function (p) { return p.status === 'agreed' && mon(p.status_changed_at || p.created_at); }).length,
+                replied: D.partners.filter(function (p) { return (p.status === 'replied' || p.status === 'agreed') && mon(p.status_changed_at || p.created_at); }).length,
+                found: D.partners.filter(function (p) { return mon(p.created_at); }).length,
+                sent: D.emails.filter(function (e) { return e.folder === 'sent' && mon(e.sent_at || e.created_at); }).length
+            };
+            var GN = { agreed: 'Договорились', replied: 'Ответили', found: 'Найдено партнёров', sent: 'Отправлено писем' };
+            var dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), dleft = dim - now.getDate();
+            h += '<div class="qh"><h3>Цели месяца</h3><button data-act="go" data-tab="settings" data-arg="">Изменить</button></div><div class="card goals">' + ['agreed', 'replied', 'found', 'sent'].filter(function (k) { return gl[k]; }).map(function (k) { var pct = Math.min(100, Math.round(fact[k] / gl[k] * 100)); return '<div class="g"><div class="gl">' + GN[k] + '<span>' + fact[k] + ' из ' + gl[k] + '</span></div><div class="meter" style="margin:0"><span style="width:' + pct + '%"></span></div></div>'; }).join('') + '<p class="hint" style="margin:10px 0 0">До конца месяца ' + dleft + ' ' + (dleft % 10 === 1 && dleft % 100 !== 11 ? 'день' : dleft % 10 >= 2 && dleft % 10 <= 4 && (dleft % 100 < 10 || dleft % 100 >= 20) ? 'дня' : 'дней') + '.</p></div>';
+        }
         h += '<div class="qh"><h3>Показатели</h3><button data-act="go" data-tab="agent" data-arg="an">Аналитика</button></div>';
         h += '<div class="tiles">' +
             kpi('Ответили', rate + '%', sc.replied + ' из ' + sc.contacted + ' написанных', 'lime', 'agent', 'an') +
@@ -1979,12 +2007,15 @@
             if (!q)
                 return true;
             return t.list.some(function (e) { return ((e.subject || '') + ' ' + (e.body || '') + ' ' + (e.from_addr || '') + ' ' + (e.to_addr || '') + ' ' + nameOf(e)).toLowerCase().indexOf(q) > -1; });
-        }).sort(function (a, b) { return String(tm(b.last)).localeCompare(String(tm(a.last))); });
+        }).sort(function (a, b) {
+            var ha = a.unread && a.list.some(function (x) { return x.folder === 'inbox' && !x.is_read && x.priority === 'high'; }) ? 1 : 0, hb = b.unread && b.list.some(function (x) { return x.folder === 'inbox' && !x.is_read && x.priority === 'high'; }) ? 1 : 0;
+            return hb - ha || String(tm(b.last)).localeCompare(String(tm(a.last)));
+        });
     }
     function threadRow(t) {
         var e = t.lastReal || t.last, me = e.direction === 'out', p = pById(t.list[0].partner_id);
         var txt = e.summary_ru || (e.body_ru || e.body || '').replace(/\s+/g, ' ');
-        var tags = (t.drafts ? '<span class="tag agent">черновик</span>' : '') + (p ? ' <span class="st ' + p.status + '">' + PST[p.status] + '</span>' : '');
+        var tags = (t.unread && t.list.some(function (x) { return x.folder === 'inbox' && !x.is_read && x.priority === 'high'; }) ? '<span class="tag hot">срочно</span> ' : '') + (t.drafts ? '<span class="tag agent">черновик</span>' : '') + (p ? ' <span class="st ' + p.status + '">' + PST[p.status] + '</span>' : '');
         return '<button class="it' + (t.unread ? ' unread' : '') + '" data-act="thread-open" data-id="' + esc(t.k) + '"><div class="av' + (t.unread ? ' in' : '') + '">' + initial(nameOf(e)) + '</div><div class="mid"><div class="l1"><span>' + (t.unread ? '<i class="dot"></i>' : '') + esc(nameOf(e)) + (t.list.length > 1 ? '<span class="tcnt">' + t.list.length + '</span>' : '') + '</span><span class="tm">' + ago(tm(t.last)) + '</span></div>' +
             '<div class="l2">' + esc(e.subject || '(без темы)') + (e.lang && e.lang !== 'ru' ? '<span class="lang">' + esc(e.lang.toUpperCase()) + (e.body_ru ? ' · перевод' : '') + '</span>' : '') + (tags ? ' ' + tags : '') + '</div>' +
             '<div class="l3' + (e.summary_ru ? ' sm' : '') + '">' + (me ? '<b>Вы:</b> ' : '') + esc(txt) + '</div></div></button>';
@@ -1998,10 +2029,22 @@
             var lab = me ? (dr ? (x.status === 'approved' ? 'В очереди' : 'Черновик' + (x.author === 'agent' ? ' агента' : '')) : 'Вы' + (x.author === 'agent' ? ' · агент' : '')) : esc(nameOf(x));
             return '<div class="bub' + (me ? ' me' : '') + (dr ? ' draft' : '') + '"><div class="bm"><span>' + lab + '</span><span>' + esc(dtime(tm(x))) + '</span></div>' +
                 (x.subject ? '<div class="bs">' + esc(x.subject) + (x.body_ru ? ' · переведено с ' + esc((x.lang || '').toUpperCase()) : '') + '</div>' : '') +
-                '<div class="bt">' + esc(t || '(пусто)') + '</div><div class="bx">' +
+                '<div class="bt">' + esc(t || '(пусто)') + '</div>' + (dr && x.status !== 'approved' && x.risk_note ? '<div class="risk"><b>Проверьте:</b> ' + esc(x.risk_note) + '</div>' : '') + '<div class="bx">' +
                 (dr && x.status !== 'approved' ? '<button class="ok" data-act="approve" data-id="' + esc(x.id) + '">Утвердить</button><button data-act="edit-draft" data-id="' + esc(x.id) + '">Изменить</button>' : '') +
                 '<button data-act="mail-open" data-id="' + esc(x.id) + '">Полностью</button></div></div>';
         }).join('') + '</div>';
+    }
+    function quickTpls() {
+        var base = [{ title: 'Пришлите условия', body: 'Спасибо за ответ! Пришлите, пожалуйста, ваши условия и цены для наших клиентов — мы подготовим предложение со своей стороны.' }, { title: 'Созвон', body: 'Спасибо! Удобно ли вам созвониться на 15 минут на этой неделе? Предложите, пожалуйста, время, которое вам подходит.' }, { title: 'Спасибо, вернёмся', body: 'Спасибо за информацию! Обсудим внутри и вернёмся к вам с ответом в ближайшие дни.' }];
+        return (D.templates || []).filter(function (t) { return t.body; }).slice(0, 6).concat(base);
+    }
+    function tsumLoad(pid, to) {
+        fetch(BASE + '/functions/v1/agent-chat', { method: 'POST', headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'tsum', partner_id: pid || null, to: to }) }).then(function (x) { return x.json(); }).then(function (r) {
+            var el = $('#tsum_t'), box = $('#tsum');
+            if (!el) return;
+            if (r && r.ok) { el.textContent = r.summary; var p = pid ? pById(pid) : null; if (p) { p.thread_summary = r.summary; p.thread_summary_at = new Date().toISOString(); } if (box) { var n = box.querySelector('.sub'); if (n) n.remove(); } }
+            else if (box) box.remove();
+        }).catch(function () { var box = $('#tsum'); if (box && !(pid && (pById(pid) || {}).thread_summary)) box.remove(); });
     }
     function openThread(k) {
         var L = threadMsgs(k);
@@ -2027,7 +2070,18 @@
         S.th = { k: k, to: addr, acc: acc || (D.accounts[0] && D.accounts[0].id) || '', subj: subj ? (/^re:/i.test(subj) ? subj : 'Re: ' + subj) : '', pid: p ? p.id : '' };
         var head = '<div class="thhead">' + (p ? '<button class="link" style="margin:0;padding:0;font-size:14px" data-act="p-open" data-id="' + esc(p.id) + '">' + esc(p.name) + '</button><span class="st ' + p.status + '">' + PST[p.status] + '</span>' : '') + '<span>' + esc(addr) + '</span><span>Писем: ' + L.length + '</span></div>';
         var b = bubsHtml(L);
-        var comp = addr ? '<div class="composer"><textarea id="th_body" placeholder="Ответ ' + esc(name) + '…"></textarea><div class="acts"><button class="pill" data-act="th-send">Отправить</button><button class="pill ghost" data-act="th-ai" id="thAi">' + ic('bolt') + 'Черновик агента</button></div></div>' : '';
+        var lastIn = L.filter(function (x) { return x.direction === 'in'; }).pop(), tl = lastIn && lastIn.lang && lastIn.lang !== 'ru' ? lastIn.lang : '';
+        S.th.lang = tl;
+        var tpls = quickTpls();
+        var comp = addr ? '<div class="composer">' + (tpls.length ? '<div class="tplr">' + tpls.map(function (t, i) { return '<button type="button" data-act="tpl-ins" data-id="' + i + '">' + esc(t.title) + '</button>'; }).join('') + '</div>' : '') + '<textarea id="th_body" placeholder="Ответ ' + esc(name) + '…"></textarea><div class="acts"><button class="pill" data-act="th-send">Отправить</button><button class="pill ghost" data-act="th-ai" id="thAi">' + ic('bolt') + 'Черновик агента</button>' + (tl ? '<button class="pill ghost" data-act="th-tr" id="thTr">На ' + esc(tl.toUpperCase()) + '</button>' : '') + '</div></div>' : '';
+        var sumH = '';
+        if (L.filter(function (x) { return x.folder !== 'draft'; }).length >= 2) {
+            var lastT = tm(L[L.length - 1]), fresh = p && p.thread_summary && p.thread_summary_at && new Date(p.thread_summary_at).getTime() >= new Date(lastT).getTime() - 6e4;
+            sumH = '<div class="tsum" id="tsum"><b>О чём договорились</b><span id="tsum_t">' + (p && p.thread_summary ? esc(p.thread_summary) : 'Готовлю сводку…') + '</span>' + (p && p.thread_summary && !fresh ? '<span class="sub" style="display:block;font-size:12px;margin-top:4px">Были новые письма — обновляю…</span>' : '') + '</div>';
+            if (!fresh)
+                setTimeout(function () { tsumLoad(p ? p.id : '', addr); }, 50);
+        }
+        head = head + sumH;
         openSheet(name, head + b + comp);
         setTimeout(function () { var sp = document.querySelector('#sheet .sp'); if (sp) sp.scrollTop = sp.scrollHeight; }, 60);
     }
@@ -2219,6 +2273,7 @@
             (me ? '<b>Автор:</b> ' + (e.author === 'agent' ? 'агент' : 'вы') + '<br>' : '') + fullDate(tm(e)) + '</div>';
         var body = (e.summary_ru ? '<div class="sumbox"><b>Кратко</b>' + esc(e.summary_ru) + '</div>' : '') +
             (e.body_ru ? '<div class="seg2"><button class="on" data-act="mail-lang" data-id="ru">Перевод</button><button data-act="mail-lang" data-id="orig">Оригинал' + (e.lang ? ' · ' + esc(e.lang.toUpperCase()) : '') + '</button></div><div class="body-t" id="bt-ru">' + esc(e.body_ru) + '</div><div class="body-t hidden" id="bt-orig">' + esc(e.body || '') + '</div>' : '<div class="body-t">' + esc(e.body || '(пусто)') + '</div>') +
+            (e.folder === 'draft' && e.status !== 'approved' && e.risk_note ? '<div class="risk"><b>Проверьте перед отправкой:</b> ' + esc(e.risk_note) + '</div>' : '') +
             (me && e.orig_body && e.orig_body !== e.body ? '<p class="cardt" style="margin-top:14px">Ваши правки к тексту агента</p><div class="diffb">' + wdiff(e.orig_body, e.body) + '</div>' : '') +
             (e.folder === 'draft' && e.status === 'approved' ? '<p class="sub">Письмо в очереди: уйдёт при следующем запуске агента.</p>' : '') + (e.folder === 'draft' && e.author === 'agent' && e.status !== 'approved' ? '<p class="sub">Черновик написал агент. Проверьте и утвердите или измените.</p>' : '');
         openSheet(e.subject || '(без темы)', head + body + '<div class="acts">' + acts + '</div><div class="acts sec">' + sec + '</div>' +
@@ -2253,6 +2308,8 @@
             return;
         }
         var a = aById(acc), pm = partnerByMail(to);
+        if (!id && status === 'approved')
+            body = withSig(body);
         var row = { account_id: acc || null, partner_id: pid || (pm ? pm.id : null), direction: 'out', status: status, folder: 'draft', subject: sub, body: body, from_addr: a ? a.address : null, to_addr: to, is_read: true };
         if (!id)
             row.author = 'owner';
@@ -2298,7 +2355,9 @@
                 return false;
             if (S.pstar && !p.starred)
                 return false;
-            return !q || ((p.name || '') + ' ' + (p.email || '') + ' ' + (p.country || '') + ' ' + (p.countries || '') + ' ' + (p.website || '') + ' ' + (p.notes || '') + ' ' + (p.terms || '') + ' ' + (p.contact_person || '')).toLowerCase().indexOf(q) > -1;
+            if (S.ptag && (p.tags || []).indexOf(S.ptag) < 0)
+                return false;
+            return !q || ((p.name || '') + ' ' + (p.email || '') + ' ' + (p.country || '') + ' ' + (p.countries || '') + ' ' + (p.website || '') + ' ' + (p.notes || '') + ' ' + (p.terms || '') + ' ' + (p.contact_person || '') + ' ' + (p.tags || []).join(' ')).toLowerCase().indexOf(q) > -1;
         });
         if (S.psort === 'name')
             L.sort(function (a, b) { return String(a.name).localeCompare(String(b.name), 'ru'); });
@@ -2318,7 +2377,12 @@
             '<button class="chip' + (work ? ' on' : '') + '" data-act="pst" data-id="work">Ждём ответа <span class="n">' + cnt('contacted') + '</span></button>' +
             '<button class="chip' + (S.pstar ? ' on' : '') + '" data-act="pstar">' + starI(S.pstar) + 'Избранные <span class="n">' + D.partners.filter(function (p) { return p.starred; }).length + '</span></button>' +
             ['declined', 'paused'].map(function (k) { var n = cnt(k); return n || S.pst === k ? '<button class="chip' + (S.pst === k ? ' on' : '') + '" data-act="pst" data-id="' + k + '">' + PST[k] + ' <span class="n">' + n + '</span></button>' : ''; }).join('') + '</div>';
-        h += '<div class="search">' + ic('search') + '<input id="pq" type="search" placeholder="Название, страна, почта" value="' + esc(S.pq) + '" autocomplete="off"></div>';
+        var tc = {};
+        D.partners.forEach(function (p) { (p.tags || []).forEach(function (t) { tc[t] = (tc[t] || 0) + 1; }); });
+        var tk = Object.keys(tc).sort(function (a, b) { return tc[b] - tc[a]; }).slice(0, 10);
+        if (tk.length)
+            h += '<div class="chips" style="margin-top:-6px">' + tk.map(function (t) { return '<button class="chip' + (S.ptag === t ? ' on' : '') + '" data-act="ptag" data-id="' + esc(t) + '">#' + esc(t) + ' <span class="n">' + tc[t] + '</span></button>'; }).join('') + '</div>';
+        h += '<div class="search">' + ic('search') + '<input id="pq" type="search" placeholder="Название, страна, почта, тег" value="' + esc(S.pq) + '" autocomplete="off"></div>';
         h += '<div class="row2 keep" style="margin-bottom:14px"><select id="pkind" aria-label="Тип"><option value="all">Все типы</option>' + Object.keys(KIND).map(function (k) { return '<option value="' + k + '"' + (S.pkind === k ? ' selected' : '') + '>' + (KINDP[k] || KIND[k]) + '</option>'; }).join('') + '</select>' +
             '<select id="psort" aria-label="Сортировка">' + [['new', 'Новые'], ['fit', 'По оценке'], ['name', 'По названию'], ['prio', 'По важности'], ['next', 'По дате']].map(function (o) { return '<option value="' + o[0] + '"' + (S.psort === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
         if (!L.length)
@@ -2334,6 +2398,8 @@
             var over = p.next_action_at && new Date(p.next_action_at) < today0, lc = lastContact(p.id);
             var na = (p.next_action || p.next_action_at) ? '<div class="l3' + (over ? ' bad' : '') + '">→ ' + esc(p.next_action || 'Действие') + (p.next_action_at ? ' · ' + esc(dshort(p.next_action_at)) : '') + '</div>' : '';
             var why = p.fit_note ? '<div class="why">' + esc(RLAB[ratingOf(p)]) + ': ' + esc(p.fit_note) + '</div>' : '';
+            var money = p.clients_sent || p.revenue_usd ? '<div class="l3">Клиентов ' + (p.clients_sent || 0) + ' · ' + usd(p.revenue_usd || 0) + '</div>' : '';
+            why += money + (p.tags && p.tags.length ? '<div class="ptags">' + p.tags.slice(0, 4).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</div>' : '');
             return '<button class="it" data-act="' + (S.pSel ? 'p-sel-toggle' : 'p-open') + '" data-id="' + esc(p.id) + '">' + (S.pSel ? '<span class="cb' + (S.psel[p.id] ? ' on' : '') + '">' + ic('check') + '</span>' : '') + avRing(p) + '<div class="mid"><div class="l1"><span>' + (p.starred ? '<span class="star">' + starI(true) + '</span>' : '') + esc(p.name) + (p.priority === 'high' ? ' <span class="tag">важно</span>' : '') + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + (lc ? ' · контакт ' + esc(ago(new Date(lc).toISOString())) + ' назад' : '') + '</div>' + why + na + '</div></button>';
         }).join('') + '</div>' + pp.html;
     }
@@ -2348,7 +2414,7 @@
         var TL = id ? threadMsgs(id) : [];
         if (id) {
             var lc = lastContact(id), em = D.emails.filter(function (e) { return e.partner_id === id && e.folder !== 'draft'; }).length;
-            h += '<div class="phead">' + avRing(p) + '<div class="pm"><b>' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + '</b>' + esc(RLAB[ratingOf(p)]) + (p.priority === 'high' ? ' · важный' : '') + ' · писем: ' + em + (lc ? ' · контакт ' + esc(ago(new Date(lc).toISOString())) + ' назад' : '') + '</div></div>';
+            h += '<div class="phead">' + avRing(p) + '<div class="pm"><b>' + esc(KIND[p.kind] || '') + (p.country ? ' · ' + esc(p.country) : '') + '</b>' + esc(RLAB[ratingOf(p)]) + (p.priority === 'high' ? ' · важный' : '') + ' · писем: ' + em + (lc ? ' · контакт ' + esc(ago(new Date(lc).toISOString())) + ' назад' : '') + (p.clients_sent || p.revenue_usd ? '<br><b style="display:inline;font-size:14px">Клиентов: ' + (p.clients_sent || 0) + ' · заработали ' + usd(p.revenue_usd || 0) + '</b>' : '') + '</div></div>';
             h += '<div class="cbtns">' + (p.email ? '<button class="pri" data-act="' + (TL.length ? 'thread-open' : 'p-write') + '" data-id="' + esc(id) + '">' + ic('mail') + (TL.length ? 'Ответить' : 'Написать') + '</button><button data-act="p-copy" data-id="' + esc(p.email) + '">' + ic('doc') + 'Почта</button>' : '') +
                 (site ? '<a href="' + esc(site) + '" target="_blank" rel="noopener noreferrer">' + ic('globe') + 'Сайт</a>' : '') +
                 '<button data-act="p-task" data-id="' + esc(id) + '">' + ic('check') + 'Задача</button><button data-act="ask-agent" data-pid="' + esc(id) + '">' + ic('chat') + 'Спросить</button></div>';
@@ -2363,6 +2429,8 @@
             '<div class="row2 keep">' + sel('p_prio', 'Важность', PRIO, p.priority || 'normal') +
             '<div class="fld"><label>Избранный</label><button type="button" id="p_star" class="chip' + (p.starred ? ' on' : '') + '" data-on="' + (p.starred ? '1' : '0') + '" data-act="p-startog" style="justify-content:center;padding:14px 16px">' + starI(p.starred) + (p.starred ? 'Да' : 'Нет') + '</button></div></div>' +
             '<div class="row2 keep">' + ins('p_na', 'Следующее действие', p.next_action, 'Позвонить, отправить прайс') + ins('p_nad', 'Когда', p.next_action_at ? dkey(p.next_action_at) : '', '', 'date') + '</div>' +
+            '<div class="row2 keep">' + ins('p_cl', 'Клиентов отправили', p.clients_sent != null ? p.clients_sent : '', '0', 'number') + ins('p_rev', 'Заработали, $', p.revenue_usd != null ? p.revenue_usd : '', '0', 'number') + '</div>' +
+            ins('p_tags', 'Теги через запятую', (p.tags || []).join(', '), 'говорят по-русски, быстро отвечают') +
             '<div class="row2 keep">' + ins('p_email', 'Почта', p.email, '', 'email') + ins('p_site', 'Сайт', p.website, 'clinic.example') + '</div>' +
             '<div class="row2 keep">' + ins('p_person', 'Контактное лицо', p.contact_person) + ins('p_lang', 'Языки общения', p.languages, 'Английский, русский') + '</div>' +
             '<div class="row2 keep">' + ins('p_country', 'Страна партнёра', p.country, 'Таиланд') + ins('p_countries', 'Работает со странами', p.countries, 'Таиланд, Вьетнам, ОАЭ') + '</div>' +
@@ -2446,7 +2514,8 @@
         h += '<div class="agcard"><div class="row1"><div class="stt"><b><i class="ldot' + (st.enabled ? '' : ' off') + (liveStep() ? ' live' : '') + '"></i>' + (liveStep() ? 'Работает прямо сейчас' : st.enabled ? 'Работает' : 'Выключен') + '</b>' + (liveStep() ? '<span class="livel">' + esc(liveStep()) + '…</span>' : '') + '<span>' + (st.send_mode === 'auto' ? 'Отправляет сам' : 'Письма через утверждение') + (st.enabled && quietNow() ? ' · тихие часы' : '') + '</span>' +
             (lr || ls ? '<span>' + (lr ? 'Почта ' + ago(lr.created_at) + ' назад' : '') + (lr && ls ? ' · ' : '') + (ls ? 'поиск ' + ago(ls.created_at) + ' назад' : '') + '</span>' : '') + '</div>' +
             '<button class="tg' + (st.enabled ? ' on' : '') + '" data-act="toggle-agent" aria-label="Включить или выключить агента" aria-pressed="' + (st.enabled ? 'true' : 'false') + '"></button></div>' +
-            '<div class="acts" style="margin:0"><button class="pill" data-act="run-now" id="runNow">Запустить сейчас</button><button class="pill ghost" data-act="chat">' + ic('chat') + 'Чат с агентом</button></div></div>';
+            (pausedTill() ? '<div class="risk" style="margin:0 0 12px"><b>На паузе</b> до ' + esc(pausedTill().toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })) + '. Сам не запускается.</div>' : '') +
+            '<div class="acts" style="margin:0"><button class="pill" data-act="run-now" id="runNow">Запустить сейчас</button><button class="pill ghost" data-act="pause">' + (pausedTill() ? 'Снять паузу' : 'Пауза') + '</button><button class="pill ghost" data-act="chat">' + ic('chat') + 'Чат</button></div></div>';
         h += '<div class="hub-g">Работа</div><div class="hub">' +
             row('ms', 'target', 'Задания', act ? 'Активных ' + act + (mdr ? ' · ждут утверждения ' + mdr : '') : 'Поручите агенту, кого искать', mdr || '', mdr ? 'l' : '') +
             row('runs', 'clock', 'История действий', 'Сегодня ' + today + (errs ? ' · ошибок за сутки ' + errs : ''), '') + '</div>';
@@ -2498,6 +2567,9 @@
         }
         return h;
     }
+    function sigOf() { return String((D.settings || {}).signature || '').trim(); }
+    function withSig(body) { var sg = sigOf(); if (!sg || String(body).indexOf(sg.split('\n')[0]) > -1) return body; return String(body).replace(/\s+$/, '') + '\n\n' + sg; }
+    function pausedTill() { var p = (D.settings || {}).paused_until; return p && new Date(p).getTime() > Date.now() ? new Date(p) : null; }
     function liveStep() { var st = D.settings || {}; return st.live_step && st.live_at && Date.now() - new Date(st.live_at).getTime() < 6e5 ? st.live_step : ''; }
     function mStats(m) {
         var ps = D.partners.filter(function (p) { return p.mission_id === m.id; }), ids = {};
@@ -2527,7 +2599,7 @@
     function mCard(m) {
         var st = mStats(m), pct = m.target ? Math.min(100, Math.round(st.found / m.target * 100)) : 0;
         return '<button class="card mcard" data-act="m-open" data-id="' + esc(m.id) + '"><div class="l1" style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><b class="mt1">' + esc(m.title) + '</b><span class="st ' + (m.status === 'active' ? 'contacted' : m.status === 'done' ? 'agreed' : 'paused') + '">' + MST[m.status] + '</span></div>' +
-            '<p class="cardn" style="margin:6px 0 10px">' + esc(KINDP[m.kind] || KIND[m.kind] || '') + (m.region ? ' · ' + esc(m.region) : '') + (m.write_letters ? ' · с письмами' : ' · только поиск') + '</p>' +
+            '<p class="cardn" style="margin:6px 0 10px">' + esc(KINDP[m.kind] || KIND[m.kind] || '') + (m.region ? ' · ' + esc(m.region) : '') + (m.write_letters ? ((m.seq_steps || 1) > 1 ? ' · цепочка из ' + m.seq_steps + ' писем' : ' · с письмами') : ' · только поиск') + (m.budget_usd ? ' · лимит ' + usd(m.budget_usd) : '') + '</p>' +
             '<div class="mring"><span class="rp"><svg viewBox="0 0 58 58"><circle class="bg" cx="29" cy="29" r="25"/>' + (pct ? '<circle class="fg" cx="29" cy="29" r="25" stroke-dasharray="' + (pct / 100 * 157.08).toFixed(1) + ' 157.08"/>' : '') + '</svg><b>' + pct + '%</b></span>' +
             '<div class="mrow"><span><b class="num">' + st.found + '</b> из ' + m.target + ' найдено</span><span><b class="num">' + st.written + '</b> написано</span><span><b class="num">' + st.replied + '</b> ответили</span>' + (st.cost > 0 ? '<span>' + usd(st.cost) + (st.found ? ' · ' + usd(st.cost / st.found) + ' за партнёра' : '') + '</span>' : '') + '</div></div>' +
             (st.drafts ? '<p class="hint" style="margin:8px 0 0;color:var(--acc)">Ждут утверждения: ' + st.drafts + '</p>' : '') + '</button>';
@@ -2562,9 +2634,11 @@
             '<div class="fld"><label>Письма найденным</label><div class="seg" id="m_wl"><button type="button" class="' + (m.write_letters ? 'on' : '') + '" data-act="m-wl" data-id="1">Писать</button><button type="button" class="' + (!m.write_letters ? 'on' : '') + '" data-act="m-wl" data-id="0">Только искать</button></div></div>' +
             '<div class="fld"><label>Кому мы уже писали раньше</label><div class="seg" id="m_rep"><button type="button" class="' + (!m.allow_repeat ? 'on' : '') + '" data-act="m-wl" data-id="0">Пропускать</button><button type="button" class="' + (m.allow_repeat ? 'on' : '') + '" data-act="m-wl" data-id="1">Новое предложение</button></div></div>' +
             '<p class="hint" style="margin-top:-8px">«Пропускать» — агент не пишет тем, с кем уже была переписка. «Новое предложение» — пишет и им, упоминая прошлый контакт.</p>' +
+            '<div class="fld"><label>Цепочка писем</label><div class="seg" id="m_seq">' + [1, 2, 3].map(function (n) { return '<button type="button" class="' + ((m.seq_steps || 1) === n ? 'on' : '') + '" data-act="m-wl" data-id="' + n + '">' + (n === 1 ? 'Одно письмо' : n + ' письма') + '</button>'; }).join('') + '</div><p class="hint">Если партнёр молчит, агент готовит следующее письмо через заданное число дней. Каждое приходит вам на утверждение, в том числе кнопкой в Telegram.</p></div>' +
+            '<div class="row2 keep"><div class="fld"><label for="m_gap">Пауза между письмами, дней</label><input id="m_gap" type="number" inputmode="numeric" min="1" max="30" value="' + esc(m.seq_gap_days || 4) + '"></div><div class="fld"><label for="m_budget">Лимит на задание, $</label><input id="m_budget" type="number" inputmode="decimal" min="0" step="0.5" placeholder="без лимита" value="' + esc(m.budget_usd != null ? m.budget_usd : '') + '"></div></div>' +
             '<div class="row2 keep"><div class="fld"><label for="m_lpd">Писем в день</label><input id="m_lpd" type="number" inputmode="numeric" min="0" max="100" value="' + esc(m.letters_per_day) + '"></div><div class="fld"><label for="m_status">Статус</label><select id="m_status">' + Object.keys(MST).map(function (k) { return '<option value="' + k + '"' + (m.status === k ? ' selected' : '') + '>' + MST[k] + '</option>'; }).join('') + '</select></div></div>' +
             '<div class="fld"><label for="m_brief">Что обязательно сказать в письме</label><textarea id="m_brief" style="min-height:80px" placeholder="Условия: 10% с каждого клиента, оплата по факту. Предложить созвон на 15 минут">' + esc(m.letter_brief || '') + '</textarea></div>' +
-            '<div class="acts sticky"><button class="pill" data-act="m-save" data-id="' + esc(id || '') + '">' + (id ? 'Сохранить' : 'Запустить задание') + '</button>' + (id ? '<button class="pill danger" data-act="m-del" data-id="' + esc(id) + '">Удалить</button>' : '') + '</div>';
+            '<div class="acts sticky"><button class="pill" data-act="m-save" data-id="' + esc(id || '') + '">' + (id ? 'Сохранить' : 'Запустить задание') + '</button>' + (id ? '<button class="pill ghost" data-act="m-report" data-id="' + esc(id) + '">Отчёт</button><button class="pill danger" data-act="m-del" data-id="' + esc(id) + '">Удалить</button>' : '') + '</div>';
         if (st && st.partners.length)
             h += '<div class="qh"><h3>Найдено по заданию <span class="n z">' + st.partners.length + '</span></h3><button data-act="go" data-tab="partners" data-arg="">Все партнёры</button></div><div class="list">' + st.partners.slice(0, 30).map(function (p) { return '<button class="it" data-act="p-open" data-id="' + esc(p.id) + '">' + avRing(p) + '<div class="mid"><div class="l1"><span>' + esc(p.name) + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc(p.country || '') + (p.email ? ' · ' + esc(p.email) : ' · почта не найдена') + '</div></div></button>'; }).join('') + '</div>';
         openSheet(id ? m.title : 'Новое задание', h + '</div>');
@@ -2775,12 +2849,14 @@
             '<div class="row2 keep"><div class="fld"><label>Тихие часы с</label>' + hrs('s_qs', s.quiet_start) + '</div><div class="fld"><label>до</label>' + hrs('s_qe', s.quiet_end) + '</div></div>' +
             '<div class="row2 keep"><div class="fld"><label>Часовой пояс</label><select id="s_tz">' + [['Europe/Moscow', 'Москва'], ['Asia/Bangkok', 'Бангкок'], ['Asia/Dubai', 'Дубай'], ['Europe/Istanbul', 'Стамбул'], ['Asia/Tbilisi', 'Тбилиси'], ['Europe/Belgrade', 'Белград'], ['Europe/Berlin', 'Берлин'], ['Asia/Almaty', 'Алматы']].map(function (z) { return '<option value="' + z[0] + '"' + ((s.timezone || 'Europe/Moscow') === z[0] ? ' selected' : '') + '>' + z[1] + '</option>'; }).join('') + '</select></div>' +
             '<div class="fld"><label>Напоминание, дней (0 — не напоминать)</label><input id="s_fu" type="number" inputmode="numeric" min="0" max="60" value="' + esc(s.followup_days == null ? 4 : s.followup_days) + '"></div></div>' +
+            '<div class="fld"><label>Цели на месяц</label><div class="row2 keep"><input id="s_g_ag" type="number" inputmode="numeric" min="0" placeholder="Договорились" value="' + esc(((s.goals || {}).agreed) || '') + '"><input id="s_g_rp" type="number" inputmode="numeric" min="0" placeholder="Ответили" value="' + esc(((s.goals || {}).replied) || '') + '"></div><div class="row2 keep" style="margin-top:8px"><input id="s_g_fd" type="number" inputmode="numeric" min="0" placeholder="Найти партнёров" value="' + esc(((s.goals || {}).found) || '') + '"><input id="s_g_sn" type="number" inputmode="numeric" min="0" placeholder="Отправить писем" value="' + esc(((s.goals || {}).sent) || '') + '"></div><p class="hint">Договорились · ответили · найти партнёров · отправить писем. Прогресс видно на главной.</p></div>' +
             '<div class="fld"><label>Месячный лимит расходов, $</label><input id="s_bud" type="number" inputmode="decimal" min="0" step="1" value="' + esc(s.monthly_budget_usd) + '"><p class="hint">При достижении лимита агент остановится сам.</p></div>' +
             '</div></div>';
         h += '<div class="qh"><h3>Кого и где искать</h3></div><div class="card"><div class="set">' +
             '<div class="fld"><label>Типы партнёров</label><div class="checks">' + Object.keys(KINDP).map(function (k) { return '<button type="button" class="chip' + (fk.indexOf(k) > -1 ? ' on' : '') + '" data-act="fk" data-id="' + k + '">' + KINDP[k] + '</button>'; }).join('') + '</div></div>' +
             '<div class="fld"><label>Страны (через запятую)</label><input id="s_countries" value="' + esc((s.focus_countries || []).join(', ')) + '" placeholder="Турция, ОАЭ, Грузия, Таиланд"><p class="hint">Пусто — агент сам выберет популярные страны переезда с питомцами.</p></div>' +
             '<div class="fld"><label>О компании для агента</label><textarea id="s_company" placeholder="Что мы делаем, какие страны, что предлагаем партнёрам и что хотим от них">' + esc(s.company_summary || '') + '</textarea><p class="hint">Агент опирается на это и на базу знаний, когда ищет партнёров и пишет письма.</p></div>' +
+            '<div class="fld"><label>Подпись в письмах</label><textarea id="s_sig" style="min-height:80px" placeholder="Филипп, Waylen Travel&#10;waylen.travel · Telegram @...">' + esc(s.signature || '') + '</textarea><p class="hint">Ставится в конце ваших писем и в письмах агента. Пусто — «Команда Waylen Travel».</p></div>' +
             '<div class="fld"><label>Тон писем</label><textarea id="s_tone" style="min-height:70px" placeholder="Вежливо, коротко, на «вы»">' + esc(s.tone || '') + '</textarea></div>' +
             '<div class="fld"><label>Чёрный список адресов и доменов</label><input id="s_block" value="' + esc((s.blocked_domains || []).join(', ')) + '" placeholder="example.com, spam.ru"></div>' +
             '</div></div>';
@@ -3010,6 +3086,25 @@
         'chat-clear': function () { if (!CH.msgs.length)
             return; HAP.hard(); rest('DELETE', 'chat_messages?id=not.is.null').then(function () { CH.msgs = []; chRender(); toast('История очищена'); }).catch(fail); },
         'q-open': function (d) { qSheet(d.id); },
+        'm-report': function (d) {
+            var m = byId(D.missions, d.id);
+            if (!m) return;
+            var st = mStats(m), ps = st.partners.slice().sort(function (a, b) { return ['agreed', 'replied', 'contacted', 'found', 'declined', 'paused'].indexOf(a.status) - ['agreed', 'replied', 'contacted', 'found', 'declined', 'paused'].indexOf(b.status); });
+            var txt = 'Отчёт по заданию «' + m.title + '»\n' + (m.region ? 'Регион: ' + m.region + '\n' : '') + 'Найдено: ' + st.found + ' из ' + m.target + '\nНаписали: ' + st.written + ', отправлено: ' + st.sent + '\nОтветили: ' + st.replied + '\nДоговорились: ' + ps.filter(function (p) { return p.status === 'agreed'; }).length + '\nПотрачено: ' + usd(st.cost) + (st.found ? ' (' + usd(st.cost / st.found) + ' за партнёра)' : '') + '\n\n' + ps.map(function (p) { return '• ' + p.name + ' — ' + PST[p.status] + (p.country ? ', ' + p.country : ''); }).join('\n');
+            openSheet('Отчёт: ' + m.title, '<div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr))">' + kcard('Найдено', st.found + '<span style="font-size:14px;opacity:.6"> / ' + m.target + '</span>', '') + kcard('Ответов', st.replied, 'из ' + st.sent + ' отправленных') + kcard('Расход', usd(st.cost), st.found ? usd(st.cost / st.found) + ' за партнёра' : '') + '</div>' +
+                '<div class="list" style="margin-top:14px">' + (ps.map(function (p) { return '<button class="it" data-act="p-open" data-id="' + esc(p.id) + '">' + avRing(p) + '<div class="mid"><div class="l1"><span>' + esc(p.name) + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc(p.country || '') + (p.email ? ' · ' + esc(p.email) : ' · без почты') + '</div></div></button>'; }).join('') || '<div class="empty">Пока никого не нашли.</div>') + '</div>' +
+                '<div class="acts"><button class="pill" data-act="m-report-copy">Скопировать отчёт</button></div><div class="rep-t hidden" id="rep_t">' + esc(txt) + '</div>');
+        },
+        pause: function () {
+            if (pausedTill()) { rest('PATCH', 'agent_settings?id=eq.1', { paused_until: null }).then(function () { toast('Пауза снята'); return reload(); }).catch(fail); return; }
+            openSheet('Пауза агента', '<p class="lead">Агент не будет сам искать, писать и отправлять. Кнопка «Запустить сейчас» продолжит работать.</p><div class="list">' + [['tm', 'До завтра, 9:00'], ['3', 'На 3 дня'], ['7', 'На неделю']].map(function (o) { return '<button class="it" data-act="pause-go" data-id="' + o[0] + '"><div class="mid"><div class="l1"><span>' + o[1] + '</span></div></div></button>'; }).join('') + '</div>');
+        },
+        'pause-go': function (d) {
+            var t = new Date();
+            if (d.id === 'tm') { t.setDate(t.getDate() + 1); t.setHours(9, 0, 0, 0); } else t = new Date(Date.now() + Number(d.id) * 864e5);
+            rest('PATCH', 'agent_settings?id=eq.1', { paused_until: t.toISOString() }).then(function () { closeSheet(); toast('Агент на паузе'); return reload(); }).catch(fail);
+        },
+        'm-report-copy': function () { var t = ($('#rep_t') || {}).textContent || ''; try { navigator.clipboard.writeText(t).then(function () { toast('Отчёт скопирован'); }, function () { $('#rep_t').classList.remove('hidden'); toast('Выделите текст и скопируйте'); }); } catch (e) { $('#rep_t').classList.remove('hidden'); } },
         'm-new': function () { mSheet(''); }, 'm-open': function (d) { mSheet(d.id); },
         'm-tpl': function (d, el) { var t = MTPL[+d.id]; if (!t) return; Array.prototype.forEach.call(el.parentNode.children, function (b) { b.classList.toggle('on', b === el); }); var reg = $('#m_region'), r = reg && reg.value.trim(); $('#m_title').value = t[2] + (r || 'укажите регион'); $('#m_kind').value = t[1]; $('#m_goal').value = t[3]; $('#m_brief').value = t[4]; if (reg && !r) reg.focus(); },
         'm-wl': function (d, el) { Array.prototype.forEach.call(el.parentNode.children, function (b) { b.classList.toggle('on', b === el); }); el.parentNode.dataset.v = d.id; },
@@ -3020,7 +3115,11 @@
             var rep = ($('#m_rep') || { dataset: {} }).dataset.v;
             if (rep == null)
                 rep = $('#m_rep .on') && $('#m_rep .on').dataset.id;
-            var row = { allow_repeat: rep === '1', title: val('m_title'), goal: val('m_goal'), kind: val('m_kind'), region: val('m_region') || null, target: Math.max(1, parseInt(val('m_target'), 10) || 30), searches_per_day: Math.max(1, Math.min(6, parseInt(val('m_spd'), 10) || 1)), letters_per_day: Math.max(0, parseInt(val('m_lpd'), 10) || 0), write_letters: wl === '1', letter_brief: val('m_brief') || null, status: val('m_status') || 'active', updated_at: new Date().toISOString() };
+            var sq = ($('#m_seq') || { dataset: {} }).dataset.v;
+            if (sq == null)
+                sq = $('#m_seq .on') && $('#m_seq .on').dataset.id;
+            var bud = parseFloat(String(val('m_budget')).replace(',', '.'));
+            var row = { seq_steps: Math.max(1, Math.min(3, parseInt(sq, 10) || 1)), seq_gap_days: Math.max(1, Math.min(30, parseInt(val('m_gap'), 10) || 4)), budget_usd: isFinite(bud) && bud > 0 ? bud : null, allow_repeat: rep === '1', title: val('m_title'), goal: val('m_goal'), kind: val('m_kind'), region: val('m_region') || null, target: Math.max(1, parseInt(val('m_target'), 10) || 30), searches_per_day: Math.max(1, Math.min(6, parseInt(val('m_spd'), 10) || 1)), letters_per_day: Math.max(0, parseInt(val('m_lpd'), 10) || 0), write_letters: wl === '1', letter_brief: val('m_brief') || null, status: val('m_status') || 'active', updated_at: new Date().toISOString() };
             if (!row.title || !row.goal) {
                 toast('Нужны название и описание задания');
                 return;
@@ -3105,7 +3204,27 @@
             if (!t.to || !validMail(t.to)) { toast('Нет адреса получателя'); return; }
             if (isBlocked(t.to)) { toast('Адрес в чёрном списке. Уберите его в настройках', true); return; }
             var a = aById(t.acc);
-            rest('POST', 'emails', { account_id: t.acc || null, partner_id: t.pid || null, direction: 'out', status: 'approved', folder: 'draft', subject: t.subj || 'Waylen Travel', body: body, from_addr: a ? a.address : null, to_addr: t.to, is_read: true, author: 'owner' }).then(function () { return markContacted(t.pid); }).then(function () { closeSheet(); toast('Письмо в очереди, уйдёт в течение 30 минут'); return reload(); }).catch(fail);
+            rest('POST', 'emails', { account_id: t.acc || null, partner_id: t.pid || null, direction: 'out', status: 'approved', folder: 'draft', subject: t.subj || 'Waylen Travel', body: t.translated ? body : withSig(body), from_addr: a ? a.address : null, to_addr: t.to, is_read: true, author: 'owner' }).then(function () { return markContacted(t.pid); }).then(function () { closeSheet(); toast('Письмо в очереди, уйдёт в течение 30 минут'); return reload(); }).catch(fail);
+        },
+        'tpl-ins': function (d) {
+            var t = quickTpls()[+d.id], ta = $('#th_body');
+            if (!t || !ta) return;
+            var p = S.th && S.th.pid ? pById(S.th.pid) : null;
+            ta.value = (ta.value ? ta.value.replace(/\s+$/, '') + '\n\n' : '') + (p ? fill(t.body, p) : t.body);
+            ta.focus();
+        },
+        'th-tr': function (d, el) {
+            var t = S.th || {}, ta = $('#th_body');
+            if (!ta || !ta.value.trim()) { toast('Сначала напишите ответ по-русски'); return; }
+            if (el.dataset.orig) { ta.value = el.dataset.orig; delete el.dataset.orig; el.textContent = 'На ' + String(t.lang || '').toUpperCase(); return; }
+            el.disabled = true; var old = el.textContent; el.textContent = 'Перевожу…';
+            fetch(BASE + '/functions/v1/agent-chat', { method: 'POST', headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'translate', text: withSig(ta.value), lang: t.lang }) }).then(function (x) { return x.json(); }).then(function (r) {
+                el.disabled = false;
+                if (!r || !r.ok) { el.textContent = old; toast((r && r.error) || 'Не получилось перевести', true); return; }
+                el.dataset.orig = ta.value; ta.value = r.text; el.textContent = 'Вернуть русский';
+                t.translated = true;
+                toast('Переведено. Проверьте и отправьте');
+            }).catch(function () { el.disabled = false; el.textContent = old; fail(); });
         },
         'th-ai': function (d, el) {
             var t = S.th || {};
@@ -3192,6 +3311,7 @@
         'c-save': function (d) { saveCompose(d.id, d.p, 'draft'); },
         pst: function (d) { S.pwork = d.id === 'work'; S.pst = S.pwork ? 'all' : d.id; render(); },
         pstar: function () { S.pstar = !S.pstar; render(); },
+        ptag: function (d) { S.ptag = S.ptag === d.id ? '' : d.id; render(); },
         'p-open': function (d) { S.ptab = 'ov'; partnerSheet(d.id); },
         ptab: function (d, el) { S.ptab = d.id; Array.prototype.forEach.call(el.parentNode.children, function (b) { b.classList.toggle('on', b === el); }); Array.prototype.forEach.call(document.querySelectorAll('#sheet [data-pane]'), function (x) { x.classList.toggle('hidden', x.getAttribute('data-pane').split(' ').indexOf(d.id) < 0); }); },
         'th-read': function (d) { var u = threadMsgs(d.id).filter(function (e) { return e.folder === 'inbox' && !e.is_read; }); u.forEach(function (e) { e.is_read = true; }); closeSheet(); render(); renderNav(); rest('PATCH', 'emails?' + inList(u.map(function (e) { return e.id; })), { is_read: true }).catch(fail); },
@@ -3238,7 +3358,7 @@
         'p-startog': function (d, el) { var on = el.dataset.on !== '1'; el.dataset.on = on ? '1' : '0'; el.classList.toggle('on', on); el.innerHTML = starI(on) + (on ? 'Да' : 'Нет'); },
         'p-save': function (d) {
             var se = $('#p_star'), nad = val('p_nad');
-            var row = { name: val('p_name'), kind: val('p_kind'), status: val('p_st'), priority: val('p_prio') || 'normal', starred: !!(se && se.dataset.on === '1'), country: val('p_country') || null, contact_person: val('p_person') || null, email: val('p_email') || null, website: val('p_site') || null, next_action: val('p_na') || null, next_action_at: nad ? new Date(nad + 'T09:00:00').toISOString() : null, notes: val('p_notes') || null, services: val('p_serv') || null, terms: val('p_terms') || null, countries: val('p_countries') || null, languages: val('p_lang') || null, source: val('p_source') || null, source_url: val('p_srcurl') || null, rating: parseInt(($('#p_rate') || { dataset: {} }).dataset.v, 10) || null };
+            var row = { name: val('p_name'), kind: val('p_kind'), status: val('p_st'), priority: val('p_prio') || 'normal', starred: !!(se && se.dataset.on === '1'), country: val('p_country') || null, contact_person: val('p_person') || null, email: val('p_email') || null, website: val('p_site') || null, next_action: val('p_na') || null, next_action_at: nad ? new Date(nad + 'T09:00:00').toISOString() : null, notes: val('p_notes') || null, services: val('p_serv') || null, terms: val('p_terms') || null, countries: val('p_countries') || null, languages: val('p_lang') || null, source: val('p_source') || null, source_url: val('p_srcurl') || null, clients_sent: val('p_cl') === '' ? null : Math.max(0, parseInt(val('p_cl'), 10) || 0), revenue_usd: val('p_rev') === '' ? null : Math.max(0, parseFloat(String(val('p_rev')).replace(',', '.')) || 0), tags: (function (v) { var a = v.split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean); return a.length ? a.filter(function (x, i) { return a.indexOf(x) === i; }).slice(0, 12) : null; })(val('p_tags')), rating: parseInt(($('#p_rate') || { dataset: {} }).dataset.v, 10) || null };
             var prev = d.id ? pById(d.id) : null;
             if (!prev || prev.status !== row.status)
                 row.status_changed_at = new Date().toISOString();
@@ -3307,7 +3427,7 @@
             a.push(d.id); D.settings.focus_kinds = a; el.classList.toggle('on'); },
         'theme': function (d, el) { try { localStorage.setItem('wl_theme', d.id); } catch (e) { } Array.prototype.forEach.call(el.parentNode.children, function (b) { b.classList.toggle('on', b === el); }); var t = window.__applyTheme ? window.__applyTheme() : ''; toast(t === 'light' ? 'Светлая тема' : 'Тёмная тема'); },
         's-save': function () {
-            var row = { send_mode: D.settings.send_mode, daily_email_limit: parseInt(val('s_lim'), 10) || 0, search_runs_per_day: parseInt(val('s_runs'), 10) || 0, quiet_start: parseInt(val('s_qs'), 10) || 0, quiet_end: parseInt(val('s_qe'), 10) || 0, followup_days: (function (v) { v = parseInt(v, 10); return isNaN(v) ? 4 : Math.max(0, Math.min(60, v)); })(val('s_fu')), focus_countries: val('s_countries').split(',').map(function (x) { return x.trim(); }).filter(Boolean), company_summary: val('s_company') || null, timezone: val('s_tz') || 'Europe/Moscow', focus_kinds: D.settings.focus_kinds || [], monthly_budget_usd: Number(val('s_bud')) || 0, blocked_domains: val('s_block').split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean), tone: val('s_tone') || null, updated_at: new Date().toISOString() };
+            var row = { send_mode: D.settings.send_mode, daily_email_limit: parseInt(val('s_lim'), 10) || 0, search_runs_per_day: parseInt(val('s_runs'), 10) || 0, quiet_start: parseInt(val('s_qs'), 10) || 0, quiet_end: parseInt(val('s_qe'), 10) || 0, followup_days: (function (v) { v = parseInt(v, 10); return isNaN(v) ? 4 : Math.max(0, Math.min(60, v)); })(val('s_fu')), focus_countries: val('s_countries').split(',').map(function (x) { return x.trim(); }).filter(Boolean), company_summary: val('s_company') || null, timezone: val('s_tz') || 'Europe/Moscow', focus_kinds: D.settings.focus_kinds || [], monthly_budget_usd: Number(val('s_bud')) || 0, blocked_domains: val('s_block').split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean), tone: val('s_tone') || null, signature: val('s_sig') || null, goals: (function () { var g = {}; [['agreed', 's_g_ag'], ['replied', 's_g_rp'], ['found', 's_g_fd'], ['sent', 's_g_sn']].forEach(function (x) { var v = parseInt(val(x[1]), 10); if (v > 0) g[x[0]] = v; }); return Object.keys(g).length ? g : null; })(), updated_at: new Date().toISOString() };
             rest('PATCH', 'agent_settings?id=eq.1', row).then(function () { toast('Настройки сохранены'); return reload(); }).catch(function () { toast('Не получилось сохранить'); });
         },
         'acc-new': function () { accSheet(''); }, 'acc-open': function (d) { accSheet(d.id); },
