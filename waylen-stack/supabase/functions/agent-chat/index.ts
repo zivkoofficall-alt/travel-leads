@@ -9,9 +9,14 @@ const MODEL = "claude-sonnet-5-5";
 const PRICE = [2, 10]; // $ за млн токенов: вход / выход
 const HISTORY = 16;
 
-const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
+const ORIGINS = ["https://waylen.travel", "https://www.waylen.travel"];
+function cors(req: Request) {
+  const o = req.headers.get("origin") || "";
+  return { "Access-Control-Allow-Origin": ORIGINS.includes(o) ? o : ORIGINS[0], "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Max-Age": "86400", "Vary": "Origin" };
+}
+let REQ: Request | null = null;
 function json(status: number, payload: unknown) {
-  return new Response(JSON.stringify(payload), { status, headers: { "Content-Type": "application/json", ...CORS } });
+  return new Response(JSON.stringify(payload), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...(REQ ? cors(REQ) : {}) } });
 }
 function monthStart(): string { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString(); }
 function dayStart(): string { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString(); }
@@ -24,8 +29,10 @@ function extractActions(text: string): { reply: string; actions: any[] } {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+  REQ = req;
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(req) });
   if (req.method !== "POST") return json(405, { ok: false });
+  console.log("chat request", req.headers.get("origin") || "-");
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
   // только владелец

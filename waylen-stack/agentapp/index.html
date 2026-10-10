@@ -295,7 +295,13 @@
   .tw{overflow:auto;margin-top:10px;max-height:240px;}
   .tw table{border-collapse:collapse;width:100%;font-size:13px;}
   .tw th,.tw td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap;}
-  #tip{position:fixed;z-index:90;pointer-events:none;background:var(--text);color:var(--bg);font-size:13px;font-weight:700;padding:8px 12px;border-radius:12px;max-width:240px;}
+  #tip{position:fixed;z-index:90;pointer-events:none;background:var(--text);color:var(--bg);font-size:13px;font-weight:600;line-height:1.4;padding:10px 13px;border-radius:14px;max-width:min(300px,calc(100vw - 24px));box-shadow:0 12px 30px rgba(0,0,0,.4);animation:tin2 .18s var(--ease) both;}
+  @keyframes tin2{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .hq{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--faint);color:var(--muted);font-size:11px;font-weight:800;line-height:1;margin-left:7px;vertical-align:middle;flex-shrink:0;font-family:var(--font-body);opacity:.85;}
+  .tile.lime .hq{border-color:rgba(13,14,16,.35);color:rgba(13,14,16,.7);}
+  .qh h3 .hq,h3.sec .hq{margin-left:4px;}
+  .hint{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);font-weight:600;line-height:1.4;margin:-4px 0 14px;}
+  .hint .hq{margin:1px 0 0;}
   .up{color:var(--lime);}
   .down{color:var(--danger);}
   .cardt{font-family:var(--font-head);font-weight:800;font-size:17px;margin:0 0 4px;}
@@ -644,6 +650,10 @@ window.__tgInit = function(){
     function guard(){ safe(function(){ W.disableVerticalSwipes(); }); safe(function(){ W.enableClosingConfirmation(); }); safe(function(){ if (W.isVerticalSwipesEnabled === true) W.disableVerticalSwipes(); }); }
     ['safeAreaChanged','contentSafeAreaChanged','fullscreenChanged','viewportChanged'].forEach(function(ev){ safe(function(){ W.onEvent(ev, function(){ ap(); guard(); }); }); });
     safe(function(){ W.onEvent('activated', guard); });
+    window.__tgInfo = {platform:plat, version:W.version, fsErr:null, launch:(function(){ try{ var u = W.initDataUnsafe || {}; if (u.chat_type || u.chat_instance) return 'из чата (кнопка)'; if (u.start_param) return 'прямая ссылка'; return 'главная кнопка / меню'; }catch(e){ return '?'; } })()};
+    safe(function(){ W.onEvent('fullscreenFailed', function(e){ window.__tgInfo.fsErr = (e && e.error) || 'неизвестно'; root.classList.add('tg-fs-failed'); }); });
+    /* некоторые клиенты принимают запрос полного экрана только после жеста пользователя */
+    document.addEventListener('touchend', function once(){ document.removeEventListener('touchend', once); if (!W.isFullscreen) setTimeout(fs, 50); }, {passive:true});
     setTimeout(guard, 600); setTimeout(guard, 2500); setInterval(guard, 15000);
     function fs(){ safe(function(){ if (W.requestFullscreen && !W.isFullscreen){ W.requestFullscreen(); fsAsked = true; } }); }
     fs(); ap();
@@ -946,7 +956,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
         $('#ch-sub').textContent = j && j.cost ? 'ответ стоил $' + j.cost.toFixed(3) : 'спросите о делах или поручите задачу';
         chRender();
       })
-      .catch(function(){ CH.busy = false; CH.msgs.push({role:'assistant', content:'Нет связи. Попробуйте ещё раз.', error:true, created_at:new Date().toISOString()}); $('#ch-sub').textContent = 'спросите о делах или поручите задачу'; HAP.err(); chRender(); });
+      .catch(function(e){ CH.busy = false; CH.msgs.push({role:'assistant', content:'Нет связи с агентом: ' + String(e && e.message || e).slice(0, 160) + '. Попробуйте ещё раз.', error:true, created_at:new Date().toISOString()}); $('#ch-sub').textContent = 'спросите о делах или поручите задачу'; HAP.err(); chRender(); });
   }
   document.addEventListener('submit', function(ev){ if (ev.target.id === 'ch-form'){ ev.preventDefault(); chSend($('#ch-txt').value); } });
   document.addEventListener('input', function(ev){ if (ev.target.id === 'ch-txt'){ ev.target.style.height = 'auto'; ev.target.style.height = Math.min(120, ev.target.scrollHeight) + 'px'; } });
@@ -956,7 +966,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
   function openSheet(title, html){
     var s = $('#sheet');
     s.innerHTML = '<div class="sp" role="dialog" aria-modal="true" tabindex="-1"><div class="sh"><h2>' + esc(title) + '</h2><button class="x" data-act="close" aria-label="Закрыть">' + ic('x') + '</button></div>' + html + '</div>';
-    clearTimeout(closeSheet.t); s.classList.remove('hidden', 'out'); document.body.style.overflow = 'hidden';
+    clearTimeout(closeSheet.t); s.classList.remove('hidden', 'out'); document.body.style.overflow = 'hidden'; applyHelp(s);
     openSheet.prev = document.activeElement;
     setTimeout(function(){ var f = s.querySelector('[autofocus]') || s.querySelector('.sp'); if (f){ f.focus({preventScroll:true}); if (f.tagName === 'TEXTAREA') try{ f.setSelectionRange(0, 0); }catch(e){} } }, 30);
   }
@@ -1071,6 +1081,65 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     tipEl.style.top = Math.max(8, y - tipEl.offsetHeight - 16) + 'px';
   }
   function hideTip(){ if (tipEl) tipEl.classList.add('hidden'); }
+  /* подсказки «?»: что это и как считается */
+  var HELP = {
+    'Требует внимания':'Очередь дел на сегодня: непрочитанные письма, черновики на утверждение, вопросы агента, напоминания партнёрам и ваши задачи. Собирается автоматически.',
+    'Показатели':'Ключевые цифры. Считаются по письмам и партнёрам в базе за выбранный период.',
+    'Ответили':'Доля партнёров, ответивших хотя бы на одно письмо, от всех, кому мы писали. Ответ ищется по адресу собеседника.',
+    'В работе':'Партнёры в переписке: мы им написали или они нам, но договорённости ещё нет.',
+    'Договорились':'Партнёры со статусом «договорились». Статус ставит агент по ответу партнёра или вы вручную в карточке.',
+    'Расходы':'Сумма за месяц по всем действиям агента: токены Claude и веб-поиск. Поиск партнёров ≈ $0.3, письмо ≈ $0.01, перевод письма ≈ $0.0005, ответ в чате ≈ $0.02.',
+    'Письма за 14 дней':'Отправленные и полученные письма по дням, без спама и черновиков.',
+    'Воронка партнёров':'Путь партнёра: найден → написали → ответил → договорились. Видно, на каком шаге теряются партнёры.',
+    'Воронка':'Путь партнёра: найден → написали → ответил → договорились.',
+    'Рынок':'Агент раз в сутки ищет новости и оценивает направления. Одно обновление ≈ $0.3.',
+    'Куда едут с питомцами':'Процент — оценка агента, какая доля поездок с питомцами из России приходится на направление (в сумме 100%). Ниже — общий турпоток россиян за год и его рост по открытым данным.',
+    'Новости туризма':'Свежие новости о правилах ввоза животных, авиакомпаниях и релокации. У каждой есть источник.',
+    'Идеи для роста':'Идеи агента, где искать партнёров и клиентов, на основе новостей.',
+    'Кто подходит нам больше всего':'Оценка пригодности 0–100. Агент ставит её при поиске (услуги, страна, наличие контакта); можно поправить в карточке партнёра.',
+    'Партнёры по оценке':'Сколько партнёров с каждой оценкой 1–5. Оценку ставит агент при поиске, вы можете изменить.',
+    'Неделя к неделе':'Сравнение этой недели с предыдущей.',
+    'По моделям':'Расходы по моделям Claude: Sonnet — поиск, письма и чат; Haiku — переводы и напоминания.',
+    'По странам':'Партнёры по странам.',
+    'По типам':'Партнёры по типам: клиники, перевозчики, блогеры, сообщества.',
+    'По типам действий':'На что уходят деньги: поиск, письма, разбор почты, рынок, чат.',
+    'Расходы за 14 дней':'Траты агента по дням: токены и веб-поиск.',
+    'Расходы по дням':'Траты агента по дням.', 'Расходы по неделям':'Траты агента по неделям.',
+    'Действия агента':'Что агент делает сам в фоне. Включите только нужное — каждое действие стоит денег.',
+    'Ключи':'Ключи хранятся в базе в защищённом виде и в панели не показываются. Claude — мозг агента, AgentMail — его почтовый ящик, Telegram — уведомления и вопросы вам.',
+    'Кого и где искать':'Типы партнёров и страны для ежедневного общего поиска. Для точечных целей используйте Задания.',
+    'Найдено по заданию':'Партнёры, которых агент нашёл по этому заданию.',
+    'Новые партнёры':'Найдены агентом, письмо ещё не отправлено.',
+    'Почтовые ящики':'Ящик агента (AgentMail) — через него агент отправляет и получает письма. Старый ящик — импортированная переписка.',
+    'Выполненные':'Закрытые задачи.',
+    'Отправка писем':'Через утверждение — каждое письмо ждёт вашего «да» в очереди. Авто — агент отправляет сам в пределах дневного лимита.',
+    'Писем в день':'Максимум писем, которые агент отправит за сутки.',
+    'Поисков в день':'Сколько раз в сутки агент ищет партнёров. Каждый поиск ≈ $0.3; обычно хватает одного.',
+    'Месячный лимит расходов, $':'При достижении лимита агент останавливается до начала следующего месяца.',
+    'Напоминание, дней':'Через сколько дней без ответа агент готовит вежливое напоминание партнёру.',
+    'Тихие часы с':'В эти часы агент не отправляет письма и не пишет в Telegram.',
+    'Тон писем':'Как агент пишет письма: деловой, дружелюбный и т.п.',
+    'О компании для агента':'Короткое описание, которое агент видит в каждом запросе. Подробные факты — в разделе Знания.',
+    'Чёрный список адресов и доменов':'Этим адресам и доменам агент никогда не напишет.',
+    'Страны (через запятую)':'Где искать партнёров при общем поиске.',
+    'Типы партнёров':'Кого искать при общем поиске.',
+    'Письма найденным':'Если включено — агент сам пишет первое письмо каждому найденному партнёру с почтой. Черновики ждут утверждения.',
+    'Шаблон':'Заготовка письма. Поля {{имя}}, {{город}}, {{дата}} замените перед отправкой.',
+    'Ящик отправителя':'С какого ящика уйдёт письмо.'
+  };
+  var AGTH = {ms:'Поручения агенту: кого найти, где, сколько и писать ли письма. Поиск идёт по расписанию, черновики писем ждут вашего утверждения.', runs:'Журнал всех действий агента с результатом и стоимостью каждого.', mkt:'Новости, направления и идеи. Обновляется раз в сутки, ≈ $0.3 за обновление.', an:'Воронка, оценки партнёров и динамика по неделям — всё считается по данным панели.', cost:'На что уходят деньги: по дням, моделям и видам работы.', kb:'Факты о компании и условиях. Только отсюда агент берёт цифры и обещания для писем; ответы на его вопросы попадают сюда сами.', tpl:'Заготовки писем для ручной отправки. {{имя}}, {{город}}, {{дата}} замените перед отправкой.'};
+  function hq(text){ return '<button type="button" class="hq" data-tip="' + esc(text) + '" aria-label="Что это">?</button>'; }
+  function applyHelp(root){
+    Array.prototype.forEach.call(root.querySelectorAll('.qh h3, h3.sec, .cardt, .tile .tl, .kpi .kl, label'), function(el){
+      if (el.querySelector('.hq')) return;
+      var tn = null; for (var i = 0; i < el.childNodes.length; i++){ if (el.childNodes[i].nodeType === 3 && el.childNodes[i].textContent.trim()){ tn = el.childNodes[i]; break; } }
+      if (!tn) return;
+      var key = tn.textContent.trim().replace(/[:\s]+$/, '');
+      var txt = HELP[key] || HELP[key.replace(/\d+/g, '14')]; if (!txt) return;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'hq'; b.setAttribute('data-tip', txt); b.setAttribute('aria-label', 'Что это'); b.textContent = '?';
+      if (tn.nextSibling) el.insertBefore(b, tn.nextSibling); else el.appendChild(b);
+    });
+  }
 
   /* ---------- views ---------- */
   function counts(){
@@ -1542,6 +1611,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
   function vAgent(){
     var h = '<div class="head"><div><h1 class="pt">Агент</h1><p class="sub">' + (D.settings.enabled ? 'Работает · следующий запуск в течение 30 минут' : 'Выключен') + '</p></div></div>';
     h += '<div class="chips">' + AGT.map(function(t){ return '<button class="chip' + (S.agTab === t[0] ? ' on' : '') + '" data-act="agtab" data-id="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>';
+    if (AGTH[S.agTab]) h += '<p class="hint"><span class="hq" aria-hidden="true">?</span><span>' + esc(AGTH[S.agTab]) + '</span></p>';
     if (S.agTab === 'runs'){
       var month = D.runs.filter(function(r){ return thisMonth(r.created_at); });
       var errs = D.runs.filter(function(r){ return !r.ok; }).length;
@@ -1821,6 +1891,8 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     var dg = dupGroups().length;
     h += '<div class="qh"><h3>Данные</h3></div><div class="card"><div class="kv"><div>Дубликаты партнёров<small>' + (dg ? 'Найдено групп: ' + dg : 'Повторов не найдено') + '</small></div><button class="pill ghost" data-act="dups">Проверить</button></div>' +
       '<div class="kv"><div>Отвеченные вопросы<small>История ответов агенту</small></div><button class="pill ghost" data-act="q-hist">Открыть</button></div></div>';
+    var ti = window.__tgInfo, W2 = window.Telegram && window.Telegram.WebApp;
+    if (ti) h += '<div class="qh"><h3>Telegram</h3></div><div class="card"><p class="hint" style="margin:0"><span class="hq" aria-hidden="true">?</span><span>Платформа ' + esc(ti.platform || '?') + ', версия ' + esc(ti.version || '?') + '. Запуск: ' + esc(ti.launch) + '. Полный экран: ' + (W2 && W2.isFullscreen ? 'включён' : (ti.fsErr ? 'отклонён (' + esc(ti.fsErr) + ')' : 'не включён')) + '.' + (ti.fsErr === 'UNSUPPORTED' || (!W2 || !W2.isFullscreen) && /чата/.test(ti.launch) ? ' Полный экран не поддерживается при запуске с кнопки в нижней клавиатуре — откройте панель через кнопку меню бота, inline-кнопку или ссылку t.me/бот/приложение.' : '') + '</span></p></div>';
     h += '<div class="acts" style="margin-top:26px"><button class="pill ghost" data-act="logout">' + ic('out') + 'Выйти</button></div>';
     return h;
   }
@@ -1862,7 +1934,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     v.innerHTML = map[S.tab]();
     Array.prototype.forEach.call(v.querySelectorAll('.chips, .quick'), function(c, i){ if (chips[i]) c.scrollLeft = chips[i]; var on = c.querySelector('.on'); if (on && !chips[i]){ var r = on.offsetLeft + on.offsetWidth - c.clientWidth; if (r > 0) c.scrollLeft = r + 12; } });
     if (!anim) sy(y);
-    hideTip(); renderNav();
+    hideTip(); renderNav(); applyHelp(v);
     if (anim){ v.classList.remove('fade', 'l', 'r'); void v.offsetWidth; v.classList.add('fade'); if (render.dir) v.classList.add(render.dir); render.dir = ''; animateNums(v); stagger(v); }
   }
   function scr(){ return window.matchMedia('(max-width:820px)').matches ? document.querySelector('#app>.col') : null; }
@@ -2103,7 +2175,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
   }, {passive:true});
   document.addEventListener('click', function(ev){
     var tp = ev.target.closest && ev.target.closest('[data-tip]');
-    if (tp){ showTip(tp, ev.clientX, ev.clientY); return; } else hideTip();
+    if (tp){ if (tipEl && !tipEl.classList.contains('hidden') && showTip.el === tp){ hideTip(); return; } showTip(tp, ev.clientX, ev.clientY); showTip.el = tp; HAP.soft(); clearTimeout(showTip.t); showTip.t = setTimeout(hideTip, 7000); ev.preventDefault(); ev.stopPropagation(); return; } else hideTip();
     var el = ev.target.closest('[data-act]'); if (!el) return;
     if (el.id === 'sheet') return;
     var f = ACT[el.dataset.act]; if (f){ ev.preventDefault(); if (Date.now() - HAP.last > 500) hapFor(el)(); f(el.dataset, el); }

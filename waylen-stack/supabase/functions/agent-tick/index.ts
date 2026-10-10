@@ -16,8 +16,14 @@ const LOCK_MINUTES = 10;
 type Settings = Record<string, any>;
 type Db = SupabaseClient;
 
+const ORIGINS = ["https://waylen.travel", "https://www.waylen.travel"];
+let REQ: Request | null = null;
+function cors() {
+  const o = REQ?.headers.get("origin") || "";
+  return { "Access-Control-Allow-Origin": ORIGINS.includes(o) ? o : ORIGINS[0], "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-agent-key", "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Max-Age": "86400", "Vary": "Origin" };
+}
 function json(status: number, payload: unknown) {
-  return new Response(JSON.stringify(payload), { status, headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(payload), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...cors() } });
 }
 function localHour(tz: string): number {
   try {
@@ -563,6 +569,8 @@ async function evening(c: Ctx) {
 
 /* ---------- Главный цикл ---------- */
 Deno.serve(async (req) => {
+  REQ = req;
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors() });
   if (req.method !== "POST") return json(405, { ok: false });
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
