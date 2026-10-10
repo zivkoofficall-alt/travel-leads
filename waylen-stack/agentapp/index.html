@@ -2169,6 +2169,17 @@
             '<div class="l2">' + esc(e.subject || '(без темы)') + lang + (tag ? ' ' + tag : '') + '</div>' +
             (e.summary_ru ? '<div class="l3 sm">' + esc(e.summary_ru) + '</div>' : '<div class="l3">' + esc((e.body || '').replace(/\s+/g, ' ')) + '</div>') + '</div></button>';
     }
+    function threadRowSw(t) {
+        if (S.selMode)
+            return threadRow(t);
+        var k = esc(t.k), dr = t.list.filter(function (e) { return e.folder === 'draft' && e.status !== 'approved'; }).sort(function (a, b) { return String(tm(b)).localeCompare(String(tm(a))); })[0];
+        var hasIn = t.list.some(function (e) { return e.folder === 'inbox'; }), pid = t.list[0].partner_id;
+        var left = hasIn && !pid ? '<div class="sw-l"><button class="sw-a spam primary" data-act="th-spam" data-id="' + k + '">' + ic('x') + '<span>Спам</span></button></div>' : '';
+        var right = '<div class="sw-r">' + (dr ? '<button class="sw-a ok primary" data-act="approve" data-id="' + esc(dr.id) + '">' + ic('check') + '<span>Утвердить</span></button>' : '') +
+            (hasIn ? '<button class="sw-a read' + (dr ? '' : ' primary') + '" data-act="' + (t.unread ? 'th-read' : 'th-unread') + '" data-id="' + k + '">' + ic(t.unread ? 'eye' : 'eyeoff') + '<span>' + (t.unread ? 'Прочитано' : 'Не прочит.') + '</span></button>' : '') +
+            '<button class="sw-a task' + (dr || hasIn ? '' : ' primary') + '" data-act="th-task" data-id="' + k + '">' + ic('check') + '<span>Задача</span></button></div>';
+        return '<div class="sw">' + left + right + threadRow(t) + '</div>';
+    }
     function mailRowSw(e) { var rails = swRails(e); return '<div class="sw">' + rails[0] + rails[1] + mailRow(e) + '</div>'; }
     function vMail() {
         var accs = D.accounts, un = function (f, acc) { if (f === 'sent' || f === 'spam')
@@ -2199,7 +2210,7 @@
             if (!TL.length)
                 return h + '<div class="card empty">' + (S.q ? 'Ничего не найдено. Попробуйте другое слово.' : S.unread ? 'Все диалоги прочитаны.' : '<b>Переписки пока нет.</b><br>Напишите партнёру сами или дайте агенту задание — он найдёт партнёров и подготовит письма.<div class="acts" style="justify-content:center"><button class="pill" data-act="compose">' + ic('plus') + 'Написать</button><button class="pill ghost" data-act="go" data-tab="agent" data-arg="ms">Задание агенту</button></div>') + '</div>';
             var tp = more(TL.length, 'threads');
-            return h + '<p class="hint" style="margin:0 0 10px">Каждая строка — переписка с одним партнёром, последние сообщения сверху.</p><div class="list">' + TL.slice(0, tp.n).map(threadRow).join('') + '</div>' + tp.html;
+            return h + '<p class="hint" style="margin:0 0 10px">Каждая строка — переписка с одним партнёром, последние сообщения сверху.</p><div class="list">' + TL.slice(0, tp.n).map(threadRowSw).join('') + '</div>' + tp.html;
         }
         var L = mailList();
         if (S.selMode) {
@@ -3314,6 +3325,9 @@
         ptag: function (d) { S.ptag = S.ptag === d.id ? '' : d.id; render(); },
         'p-open': function (d) { S.ptab = 'ov'; partnerSheet(d.id); },
         ptab: function (d, el) { S.ptab = d.id; Array.prototype.forEach.call(el.parentNode.children, function (b) { b.classList.toggle('on', b === el); }); Array.prototype.forEach.call(document.querySelectorAll('#sheet [data-pane]'), function (x) { x.classList.toggle('hidden', x.getAttribute('data-pane').split(' ').indexOf(d.id) < 0); }); },
+        'th-unread': function (d) { var L = threadMsgs(d.id).filter(function (e) { return e.folder === 'inbox'; }), e = L[L.length - 1]; if (!e) return; e.is_read = false; render(); renderNav(); rest('PATCH', 'emails?id=eq.' + e.id, { is_read: false }).catch(fail); },
+        'th-task': function (d) { var L = threadMsgs(d.id); if (!L.length) return; var p = pById(L[0].partner_id), nm = p ? p.name : nameOf(L[L.length - 1]); rest('POST', 'tasks', { title: 'Ответить: ' + nm, partner_id: p ? p.id : null }).then(function () { toast('Задача создана'); return reload(); }).catch(fail); },
+        'th-spam': function (d) { var ids = threadMsgs(d.id).filter(function (e) { return e.folder === 'inbox'; }).map(function (e) { return e.id; }); if (!ids.length) return; ids.forEach(function (i) { var e = byId(D.emails, i); if (e) e.folder = 'spam'; }); render(); renderNav(); rest('PATCH', 'emails?' + inList(ids), { folder: 'spam' }).then(function () { toast('Перенесено в спам', 'ok', { action: { label: 'Отменить', fn: function () { rest('PATCH', 'emails?' + inList(ids), { folder: 'inbox' }).then(reload).catch(fail); } } }); }).catch(fail); },
         'th-read': function (d) { var u = threadMsgs(d.id).filter(function (e) { return e.folder === 'inbox' && !e.is_read; }); u.forEach(function (e) { e.is_read = true; }); closeSheet(); render(); renderNav(); rest('PATCH', 'emails?' + inList(u.map(function (e) { return e.id; })), { is_read: true }).catch(fail); },
         'p-star1': function (d) { var p = pById(d.id); if (!p) return; p.starred = !p.starred; closeSheet(); render(); rest('PATCH', 'partners?id=eq.' + d.id, { starred: p.starred }).then(function () { toast(p.starred ? 'В избранном' : 'Убрано из избранного'); }).catch(fail); },
         'p-st1': function (d) { openSheet('Новый статус', '<div class="list">' + Object.keys(PST).map(function (k) { return '<button class="it" data-act="p-st1-go" data-id="' + esc(d.id) + '" data-to="' + k + '"><div class="mid"><div class="l1"><span><span class="st ' + k + '">' + PST[k] + '</span></span></div></div></button>'; }).join('') + '</div>'); },
