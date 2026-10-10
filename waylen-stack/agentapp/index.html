@@ -379,9 +379,12 @@
   .qh .n{font-size:12px;font-weight:800;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:var(--lime);color:var(--lime-ink);display:inline-flex;align-items:center;justify-content:center;}
   .qh .n.z{background:var(--card-2);color:var(--muted);}
   .qh button,.qh a{font-size:14px;font-weight:700;color:var(--lime);white-space:nowrap;padding:0;}
-  .qi{display:flex;gap:14px;align-items:center;padding:14px 18px;width:100%;text-align:left;border-top:1px solid var(--line);}
+  .qi{display:flex;gap:10px;align-items:center;padding:8px 12px 8px 18px;width:100%;text-align:left;border-top:1px solid var(--line);}
   .qi:first-child{border-top:none;}
-  button.qi:hover{background:var(--card-2);}
+  .qi .qmain{flex:1;min-width:0;display:flex;gap:14px;align-items:center;padding:6px 0;text-align:left;}
+  .qi .qa{width:40px;height:40px;border-radius:50%;background:var(--lime);color:var(--lime-ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .qi .qa svg{width:18px;height:18px;stroke-width:2.4;}
+  .qi .arr{width:40px;display:flex;justify-content:center;}
   .qi .qk{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--card-2);color:var(--text);}
   .qi .qk.lime{background:var(--lime);color:var(--lime-ink);}
   .qi .qk.blue{background:rgba(59,128,195,.22);color:#8FC0F0;}
@@ -406,6 +409,8 @@
   #view.fade{animation:vin .32s var(--ease) both;}
   @keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   .list .it,.list .qi,.list .stp,.tiles>*{animation:rowin .4s var(--ease) both;}
+  .qi .qmain:active .qk{transform:scale(.92);}
+  .qi .qk{transition:transform .18s var(--ease);}
   @keyframes rowin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
   #sheet{animation:dim .25s ease both;}
   #sheet .sp{animation:up .34s var(--ease) both;}
@@ -446,6 +451,16 @@
   .keyrow .kin{display:flex;gap:8px;}
   .keyrow .kin input{padding:11px 14px;min-width:0;}
   .keyrow .kin .pill{flex-shrink:0;padding:10px 16px;}
+  #ptr{height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:13px;font-weight:700;transition:height .25s var(--ease);}
+  #ptr svg{transition:transform .3s var(--ease);}
+  #ptr.on{color:var(--lime);} #ptr.on svg{transform:rotate(180deg);}
+  #ptr.busy svg{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .it[data-sw]{position:relative;}
+  .it[data-sw]::after{content:attr(data-sw);position:absolute;top:50%;transform:translateY(-50%);font-size:12px;font-weight:800;color:var(--muted);}
+  .it[data-sw="В спам"]::after{left:-110px;color:var(--danger);}
+  .it[data-sw="Прочитано"]::after,.it[data-sw="Не прочитано"]::after{right:-118px;color:var(--lime);}
+  .list{overflow:hidden;}
   /* boot screen */
   #boot{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow:hidden;transition:opacity .45s ease,visibility .45s;padding-top:max(var(--tg-top,0px), calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px)));}
   #boot.out{opacity:0;visibility:hidden;pointer-events:none;}
@@ -606,6 +621,7 @@
     x:'<path d="M6 6l12 12M18 6 6 18"/>',
     check:'<path d="m5 12.5 4.5 4.5L19 7"/>',
     out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+    refresh:'<path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/>',
     ask:'<path d="M12 21a9 9 0 1 0-9-9c0 1.6.4 3.1 1.2 4.4L3 21l4.6-1.2A9 9 0 0 0 12 21z"/><path d="M9.8 9.5a2.3 2.3 0 0 1 4.4.8c0 1.5-2.2 2-2.2 3.2M12 16.5h.01"/>',
     bell:'<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/>',
     chev:'<path d="m9 6 6 6-6 6"/>',
@@ -624,7 +640,7 @@
   var TABS = [['home','Главная','home'],['mail','Почта','mail'],['partners','Партнёры','users'],['agent','Агент','bolt'],['settings','Настройки','gear']];
 
   /* ---------- state ---------- */
-  var sess = null, D = {}, S = {tab:'home', mailAcc:'all', folder:'inbox', q:'', pq:'', pst:'all', pkind:'all', agTab:'runs', runFilter:'all', selMode:false, sel:{}, unread:false, psort:'new', pstar:false, page:{}, days:30, runDays:0};
+  var sess = null, D = {}, S = {tab:(function(){ try{ return localStorage.getItem('wl_tab') || 'home'; }catch(e){ return 'home'; } })(), mailAcc:'all', folder:'inbox', q:'', pq:'', pst:'all', pkind:'all', agTab:'runs', runFilter:'all', selMode:false, sel:{}, unread:false, psort:'new', pstar:false, page:{}, days:30, runDays:0};
   function saveSession(s){ try{ localStorage.setItem(STORE, JSON.stringify(s)); }catch(e){} }
   function loadSession(){ try{ return JSON.parse(localStorage.getItem(STORE) || 'null'); }catch(e){ return null; } }
   function clearSession(){ try{ localStorage.removeItem(STORE); }catch(e){} }
@@ -695,7 +711,9 @@
 
   /* ---------- utils ---------- */
   var HAP = (function(){ function H(){ var W = window.Telegram && window.Telegram.WebApp; return W && W.HapticFeedback; } return {
-    tap: function(){ try{ var h = H(); if (h) h.impactOccurred('light'); }catch(e){} },
+    tap: function(){ try{ var h = H(); if (h) h.impactOccurred('medium'); }catch(e){} },
+    soft: function(){ try{ var h = H(); if (h) h.impactOccurred('light'); }catch(e){} },
+    hard: function(){ try{ var h = H(); if (h) h.impactOccurred('rigid'); }catch(e){} },
     sel: function(){ try{ var h = H(); if (h) h.selectionChanged(); }catch(e){} },
     ok: function(){ try{ var h = H(); if (h) h.notificationOccurred('success'); }catch(e){} },
     err: function(){ try{ var h = H(); if (h) h.notificationOccurred('error'); }catch(e){} } }; })();
@@ -920,14 +938,15 @@
   function queue(){
     var out = [], today0 = new Date(); today0.setHours(0, 0, 0, 0); var eod = new Date(); eod.setHours(23, 59, 59, 999);
     D.questions.filter(function(x){ return x.status === 'open'; }).forEach(function(q){ var p = pById(q.partner_id); out.push({pr:0, k:'blue', i:'ask', t:q.question, s:'Вопрос агента' + (p ? ' · ' + p.name : ''), at:q.created_at, act:'q-open', id:q.id}); });
-    D.emails.filter(function(e){ return e.folder === 'draft' && e.status !== 'approved'; }).forEach(function(e){ out.push({pr:1, k:'lime', i:'mail', t:'Утвердить: ' + (e.subject || '(без темы)'), s:'Черновик' + (e.author === 'agent' ? ' агента' : '') + ' · кому ' + who(e), at:e.created_at, act:'mail-open', id:e.id}); });
+    D.emails.filter(function(e){ return e.folder === 'draft' && e.status !== 'approved'; }).forEach(function(e){ out.push({pr:1, k:'lime', i:'mail', t:'Утвердить: ' + (e.subject || '(без темы)'), s:'Черновик' + (e.author === 'agent' ? ' агента' : '') + ' · кому ' + who(e), at:e.created_at, act:'mail-open', id:e.id, quick:{act:'approve', icon:'check', label:'Утвердить и отправить'}}); });
     D.emails.filter(function(e){ return e.folder === 'inbox' && !e.is_read && !sysAddr(e.from_addr); }).forEach(function(e){ out.push({pr:2, k:'', i:'mail', dot:true, t:who(e), s:e.summary_ru || e.subject || '(без темы)', at:e.created_at, act:'mail-open', id:e.id}); });
     followups().forEach(function(x){ out.push({pr:3, k:'warn', i:'bell', t:x.p.name, s:x.why, at:x.p.next_action_at || null, act:'p-open', id:x.p.id}); });
-    D.tasks.filter(function(t){ return !t.done && (!t.due_at || new Date(t.due_at) <= eod); }).forEach(function(t){ var over = t.due_at && new Date(t.due_at) < today0, p = pById(t.partner_id); out.push({pr:4, k:over ? 'bad' : '', i:'check', t:t.title, s:(t.due_at ? (over ? 'Просрочено · ' + dshort(t.due_at) : 'Сегодня') : 'Задача') + (p ? ' · ' + p.name : ''), at:t.due_at, act:'t-open', id:t.id}); });
+    D.tasks.filter(function(t){ return !t.done && (!t.due_at || new Date(t.due_at) <= eod); }).forEach(function(t){ var over = t.due_at && new Date(t.due_at) < today0, p = pById(t.partner_id); out.push({pr:4, k:over ? 'bad' : '', i:'check', t:t.title, s:(t.due_at ? (over ? 'Просрочено · ' + dshort(t.due_at) : 'Сегодня') : 'Задача') + (p ? ' · ' + p.name : ''), at:t.due_at, act:'t-open', id:t.id, quick:{act:'t-done', icon:'check', label:'Выполнено'}}); });
     return out.sort(function(a, b){ return a.pr - b.pr || new Date(b.at || 0) - new Date(a.at || 0); });
   }
   function qRow(x){
-    return '<button class="qi" data-act="' + x.act + '" data-id="' + esc(x.id) + '"><span class="qk ' + x.k + '">' + ic(x.i) + '</span><div class="mid"><div class="l1"><span>' + (x.dot ? '<i class="dot"></i>' : '') + esc(x.t) + '</span>' + (x.at ? '<span class="tm">' + esc(ago(x.at)) + '</span>' : '') + '</div><div class="l3">' + esc(x.s) + '</div></div><span class="arr">' + ic('chev') + '</span></button>';
+    var right = x.quick ? '<button class="qa" data-act="' + x.quick.act + '" data-id="' + esc(x.id) + '" aria-label="' + esc(x.quick.label) + '">' + ic(x.quick.icon) + '</button>' : '<span class="arr">' + ic('chev') + '</span>';
+    return '<div class="qi"><button class="qmain" data-act="' + x.act + '" data-id="' + esc(x.id) + '"><span class="qk ' + x.k + '">' + ic(x.i) + '</span><div class="mid"><div class="l1"><span>' + (x.dot ? '<i class="dot"></i>' : '') + esc(x.t) + '</span>' + (x.at ? '<span class="tm">' + esc(ago(x.at)) + '</span>' : '') + '</div><div class="l3">' + esc(x.s) + '</div></div></button>' + right + '</div>';
   }
   function queueBlock(limit){
     var q = queue(), n = q.length, show = S.queueAll ? q : q.slice(0, limit || 6);
@@ -1122,7 +1141,7 @@
   }
   function openMail(id){
     var e = byId(D.emails, id); if (!e) return;
-    if (e.folder === 'inbox' && !e.is_read){ e.is_read = true; rest('PATCH','emails?id=eq.' + id, {is_read:true}).catch(function(){}); renderNav(); var row = document.querySelector('.it.unread[data-id="' + id + '"]'); if (row){ row.classList.remove('unread'); var dot = row.querySelector('.dot'); if (dot) dot.remove(); var av = row.querySelector('.av'); if (av) av.classList.remove('in'); } var qi = document.querySelector('.qi[data-id="' + id + '"] .dot'); if (qi) qi.remove(); }
+    if (e.folder === 'inbox' && !e.is_read){ e.is_read = true; rest('PATCH','emails?id=eq.' + id, {is_read:true}).catch(function(){}); renderNav(); var row = document.querySelector('.it.unread[data-id="' + id + '"]'); if (row){ row.classList.remove('unread'); var dot = row.querySelector('.dot'); if (dot) dot.remove(); var av = row.querySelector('.av'); if (av) av.classList.remove('in'); } var qi = document.querySelector('.qmain[data-id="' + id + '"] .dot'); if (qi) qi.remove(); }
     var a = aById(e.account_id), p = pById(e.partner_id), me = e.direction === 'out';
     var acts = '', sec = '';
     if (e.folder === 'inbox') acts = '<button class="pill" data-act="reply" data-id="' + id + '">Ответить</button><button class="pill ghost" data-act="mail-unread" data-id="' + id + '">' + ic('eyeoff') + 'Не прочитано</button>';
@@ -1531,6 +1550,25 @@
     openSheet(id ? a.label : 'Новый ящик', '<div class="set"><div class="fld"><label>Название</label><input id="a_label" value="' + esc(a.label || '') + '" placeholder="Партнёры"></div><div class="fld"><label>Адрес</label><input id="a_addr" type="email" value="' + esc(a.address || '') + '" placeholder="partners@waylen.travel"></div><div class="fld"><label>Сервис</label><select id="a_prov">' + [['workspace','Google Workspace'],['gmail','Gmail'],['zoho','Zoho'],['yandex','Яндекс 360'],['other','Другой']].map(function(p){ return '<option value="' + p[0] + '"' + (a.provider === p[0] ? ' selected' : '') + '>' + p[1] + '</option>'; }).join('') + '</select></div><p class="sub">Подключение к почте настроим отдельным шагом, когда будет готов доступ.</p><div class="acts"><button class="pill" data-act="acc-save" data-id="' + esc(id || '') + '">Сохранить</button>' + (id ? '<button class="pill danger" data-act="acc-del" data-id="' + esc(id) + '">Удалить</button>' : '') + '</div></div>');
   }
 
+  /* ---------- свайп по письму: влево — прочитано/непрочитано, вправо — в спам ---------- */
+  (function(){
+    var row = null, x0 = 0, y0 = 0, dx = 0, lock = null;
+    document.addEventListener('touchstart', function(e){ var r = e.target.closest && e.target.closest('.it[data-act="mail-open"]'); row = r || null; if (!row) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; lock = null; row.style.transition = 'none'; }, {passive:true});
+    document.addEventListener('touchmove', function(e){ if (!row) return; var x = e.touches[0].clientX - x0, y = e.touches[0].clientY - y0; if (lock === null){ if (Math.abs(x) < 6 && Math.abs(y) < 6) return; lock = Math.abs(x) > Math.abs(y) ? 'x' : 'y'; } if (lock !== 'x') return; dx = Math.max(-120, Math.min(120, x)); row.style.transform = 'translateX(' + dx + 'px)'; var e2 = byId(D.emails, row.dataset.id); row.style.background = dx > 70 ? 'rgba(255,138,128,.14)' : dx < -70 ? 'rgba(200,242,123,.14)' : ''; row.setAttribute('data-sw', dx > 70 ? 'В спам' : dx < -70 ? (e2 && e2.is_read ? 'Не прочитано' : 'Прочитано') : ''); }, {passive:true});
+    document.addEventListener('touchend', function(){ if (!row) return; var r = row, d = dx; row = null; r.style.transition = 'transform .25s var(--ease), background .25s'; r.style.transform = ''; r.style.background = ''; r.removeAttribute('data-sw'); if (lock !== 'x' || Math.abs(d) < 70) return; var e = byId(D.emails, r.dataset.id); if (!e) return; HAP.tap();
+      if (d < 0){ if (e.folder !== 'inbox') return; rest('PATCH','emails?id=eq.' + e.id, {is_read:!e.is_read}).then(function(){ e.is_read = !e.is_read; render(); }).catch(fail); }
+      else if (e.folder === 'inbox'){ rest('PATCH','emails?id=eq.' + e.id, {folder:'spam'}).then(function(){ toast('В спаме'); return reload(); }).catch(fail); } }, {passive:true});
+  })();
+
+  /* ---------- pull to refresh (телефон) ---------- */
+  (function(){
+    var col = document.querySelector('#app>.col'), y0 = 0, pulling = false, armed = false, ptr = null;
+    function el(){ if (!ptr){ ptr = document.createElement('div'); ptr.id = 'ptr'; ptr.innerHTML = ic('refresh') + '<span>Потяните, чтобы обновить</span>'; col.insertBefore(ptr, col.firstChild); } return ptr; }
+    col.addEventListener('touchstart', function(e){ if (col.scrollTop > 0 || !sess || !$('#sheet').classList.contains('hidden')) return; y0 = e.touches[0].clientY; pulling = true; armed = false; }, {passive:true});
+    col.addEventListener('touchmove', function(e){ if (!pulling) return; var d = e.touches[0].clientY - y0; if (d < 8){ if (ptr) ptr.style.height = '0px'; return; } var h = Math.min(90, d * 0.5); el().style.height = h + 'px'; var ok = h >= 64; if (ok !== armed){ armed = ok; HAP.soft(); ptr.classList.toggle('on', ok); ptr.querySelector('span').textContent = ok ? 'Отпустите' : 'Потяните, чтобы обновить'; } }, {passive:true});
+    col.addEventListener('touchend', function(){ if (!pulling) return; pulling = false; if (!ptr) return; if (armed){ ptr.classList.add('busy'); ptr.querySelector('span').textContent = 'Обновляем…'; ptr.style.height = '64px'; HAP.tap(); loadAll().then(function(){ S.loadedAt = Date.now(); render(); }).catch(function(){ toast('Не удалось обновить', true); }).then(function(){ ptr.classList.remove('busy', 'on'); ptr.style.height = '0px'; }); } else ptr.style.height = '0px'; }, {passive:true});
+  })();
+
   /* ---------- render ---------- */
   function render(anim){
     var v = $('#view');
@@ -1542,7 +1580,7 @@
   function scr(){ return window.matchMedia('(max-width:820px)').matches ? document.querySelector('#app>.col') : null; }
   function gy(){ var e = scr(); return e ? e.scrollTop : window.scrollY; }
   function sy(y){ var e = scr(); if (e) e.scrollTop = y; else window.scrollTo(0, y); }
-  function setTab(t){ var ch = S.tab !== t; S.tab = t; S.selMode = false; S.sel = {}; S.page = {}; S.queueAll = false; render(ch); sy(0); if (ch) HAP.sel(); }
+  function setTab(t){ var ch = S.tab !== t; try{ localStorage.setItem('wl_tab', t); }catch(e){} S.tab = t; S.selMode = false; S.sel = {}; S.page = {}; S.queueAll = false; render(ch); sy(0); if (ch) HAP.sel(); }
 
   /* ---------- actions ---------- */
   function byId(arr, id){ return arr.filter(function(x){ return x.id === id; })[0]; }
@@ -1599,7 +1637,7 @@
       setTab(d.tab);
     },
     compose: function(){ composeSheet({account_id: D.accounts[0] && D.accounts[0].id}); },
-    'toggle-agent': function(){ var v = !D.settings.enabled; if (v && !hasKey('anthropic_api_key')){ toast('Сначала добавьте ключ Claude API в настройках'); setTab('settings'); return; } rest('PATCH','agent_settings?id=eq.1', {enabled:v, updated_at:new Date().toISOString()}).then(function(){ D.settings.enabled = v; render(); toast(v ? 'Агент включён' : 'Агент выключен'); }).catch(fail); },
+    'toggle-agent': function(){ var v = !D.settings.enabled; if (v && !hasKey('anthropic_api_key')){ toast('Сначала добавьте ключ Claude API в настройках'); setTab('settings'); return; } HAP.hard(); rest('PATCH','agent_settings?id=eq.1', {enabled:v, updated_at:new Date().toISOString()}).then(function(){ D.settings.enabled = v; render(); toast(v ? 'Агент включён' : 'Агент выключен'); }).catch(fail); },
     'q-answer': function(d){ var t = val('qa-' + d.id); if (!t){ toast('Напишите ответ'); return; } var q = byId(D.questions, d.id);
       rest('PATCH','questions?id=eq.' + d.id, {answer:t, status:'answered', answered_at:new Date().toISOString()}).then(function(){
         if (d.kb && q) return rest('POST','knowledge', {topic:q.question.slice(0, 120), content:t, updated_at:new Date().toISOString()});
