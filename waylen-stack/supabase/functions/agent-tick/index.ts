@@ -168,6 +168,25 @@ class Ctx {
         }
         catch (_) { }
     }
+    sig(): string { return String(this.s.signature || "").trim() || "Команда Waylen Travel"; }
+    async afterDraft(id: string | null, who: string, subject: string, body: string) {
+        if (!id)
+            return;
+        let risk = "";
+        try {
+            const kb = this.knowledge.map((k) => `• ${k.topic}: ${k.content}`).join("\n").slice(0, 6000);
+            const r = await claude(this.apiKey, { model: HAIKU, system: "Ты проверяешь письма компании Waylen Travel перед отправкой. Отвечай только JSON.", maxTokens: 300, prompt: `База знаний компании (единственный источник цен, условий и обещаний):\n${kb || "(пусто)"}\n\nПисьмо:\nТема: ${subject}\n${body.slice(0, 3000)}\n\nНайди в письме конкретные цены, проценты, сроки, гарантии или обещания, которых НЕТ в базе знаний, а также пропуски в [квадратных скобках]. Если всё в порядке — пустая строка. Верни {"risk":"по-русски, до 160 символов"}` });
+            risk = String(r.json?.risk || "").trim().slice(0, 300);
+            this.spent += r.cost;
+            await this.db.from("agent_runs").insert({ kind: "reply_draft", summary: `Проверка черновика для ${who}${risk ? ": есть замечания" : ": ок"}`.slice(0, 300), details: risk, ok: true, cost_usd: +r.cost.toFixed(5), model: r.model, tokens_in: r.tokensIn, tokens_out: r.tokensOut, mission_id: this.mission });
+            if (risk)
+                await this.db.from("emails").update({ risk_note: risk }).eq("id", id);
+        }
+        catch (_) { }
+        if (this.s.send_mode === "auto" || !this.tgToken || !this.tgChat)
+            return;
+        await tg(this.tgToken, "sendMessage", { chat_id: this.tgChat, disable_web_page_preview: true, text: (`Черновик для ${who}\n«${subject || "(без темы)"}»\n\n${body.slice(0, 2500)}` + (risk ? "\n\nПроверьте: " + risk : "")).slice(0, 3900), reply_markup: { inline_keyboard: [[{ text: "Утвердить", callback_data: "ap:" + id }, { text: "Удалить", callback_data: "dl:" + id }], [{ text: "Открыть панель", url: "https://www.waylen.travel/agentapp" }]] } });
+    }
     async notify(text: string): Promise<number | null> {
         if (!this.tgToken || !this.tgChat)
             return null;
@@ -411,7 +430,7 @@ ${thread || "(нет)"}
 ${(e.body || "").slice(0, 6000)}
 
 Варианты action:
-- "reply": можешь ответить по базе знаний → дай subject и body (готовое письмо, подпись «Команда Waylen Travel»).
+- "reply": можешь ответить по базе знаний → дай subject и body (готовое письмо, подпись «${c.sig()}»).
 - "ask": не хватает фактов (цены, комиссия, условия, сроки и т.п.) → question (один чёткий вопрос владельцу), context (суть письма в 1–2 фразах), draft (черновик ответа с пропусками в [квадратных скобках]).
 - "spam": рассылка, реклама, автоответ, нерелевантно.
 - "ignore": ответа не требует (например «спасибо, получили»).
@@ -443,10 +462,9 @@ ${(e.body || "").slice(0, 6000)}
             }
             if (j.action === "reply" && j.body) {
                 const auto = c.s.send_mode === "auto";
-                await c.db.from("emails").insert({ account_id: e.account_id, partner_id: pid, direction: "out", status: auto ? "approved" : "draft", folder: "draft", is_read: true, author: "agent", subject: j.subject || ("Re: " + (e.subject || "")), body: j.body, from_addr: e.to_addr, to_addr: e.from_addr });
+                const { data: dr } = await c.db.from("emails").insert({ account_id: e.account_id, partner_id: pid, direction: "out", status: auto ? "approved" : "draft", folder: "draft", is_read: true, author: "agent", subject: j.subject || ("Re: " + (e.subject || "")), body: j.body, from_addr: e.to_addr, to_addr: e.from_addr }).select("id").single();
                 await c.run("reply_draft", `Черновик ответа: ${e.from_addr}`, j.body.slice(0, 1500), true, r);
-                if (!auto)
-                    await c.notify(`Готов черновик ответа для ${partner?.name || e.from_addr}: «${j.subject || e.subject}». Утвердите в панели.`);
+                await c.afterDraft(dr?.id || null, partner?.name || e.from_addr, j.subject || ("Re: " + (e.subject || "")), j.body);
             }
             else if (j.action === "ask" && j.question) {
                 await c.ask(j.question, j.context || "", j.draft || null, pid, e.id);
@@ -472,8 +490,10 @@ async function followUps(c: Ctx) {
         return;
     const since = new Date(Date.now() - days * 864e5).toISOString();
     const { data: cands } = await c.db.from("partners").select("*").eq("status", "contacted").eq("is_demo", false).lte("last_contact_at", since).limit(5);
+    const { data: seqMs } = await c.db.from("missions").select("id").gt("seq_steps", 1);
+    const seqSet = new Set((seqMs || []).map((x: any) => x.id));
     for (const p of cands || []) {
-        if (!p.email || p.no_followup)
+        if (!p.email || p.no_followup || (p.mission_id && seqSet.has(p.mission_id)))
             continue;
         const past = pastContact(c, p.email, p.website);
         if (past.some((h) => h.direction === "in"))
@@ -498,14 +518,15 @@ async function followUps(c: Ctx) {
         if (ago < days)
             continue;
         try {
-            const r = await claude(c.apiKey, { model: HAIKU, system: c.companyContext(), prompt: `Напиши короткое вежливое напоминание партнёру ${p.name} (${p.kind}, ${p.country || ""}), который не ответил на наше письмо «${l.subject}», отправленное ${ago} дн. назад. Текст прошлого письма:\n${(l.body || "").slice(0, 1500)}\n\nВерни JSON {"subject":"","body":""}. Без давления, 4–6 предложений, подпись «Команда Waylen Travel».`, maxTokens: 700 });
+            const r = await claude(c.apiKey, { model: HAIKU, system: c.companyContext(), prompt: `Напиши короткое вежливое напоминание партнёру ${p.name} (${p.kind}, ${p.country || ""}), который не ответил на наше письмо «${l.subject}», отправленное ${ago} дн. назад. Текст прошлого письма:\n${(l.body || "").slice(0, 1500)}\n\nВерни JSON {"subject":"","body":""}. Без давления, 4–6 предложений, подпись «${c.sig()}».`, maxTokens: 700 });
             const j = r.json;
             if (!j?.body)
                 continue;
             const acc = connected.find((a) => a.id === l.account_id) || connected[0];
-            await c.db.from("emails").insert({ account_id: acc.id, partner_id: p.id, direction: "out", status: c.s.send_mode === "auto" ? "approved" : "draft", folder: "draft", is_read: true, author: "agent", subject: j.subject || ("Re: " + l.subject), body: j.body, from_addr: acc.address, to_addr: p.email });
+            const { data: dr } = await c.db.from("emails").insert({ account_id: acc.id, partner_id: p.id, direction: "out", status: c.s.send_mode === "auto" ? "approved" : "draft", folder: "draft", is_read: true, author: "agent", subject: j.subject || ("Re: " + l.subject), body: j.body, from_addr: acc.address, to_addr: p.email }).select("id").single();
             await c.db.from("partners").update({ last_contact_at: new Date().toISOString() }).eq("id", p.id);
             await c.run("reply_draft", `Напоминание для ${p.name}`, j.body.slice(0, 800), true, r);
+            await c.afterDraft(dr?.id || null, p.name, j.subject || ("Re: " + l.subject), j.body);
         }
         catch (err) {
             await c.run("reply_draft", `Напоминание для ${p.name}: ошибка`, String(err), false);
@@ -661,6 +682,16 @@ async function missions(c: Ctx) {
     const { data: ms } = await c.db.from("missions").select("*").eq("status", "active").order("created_at");
     for (const m of ms || []) {
         c.mission = m.id;
+        if (Number(m.budget_usd) > 0) {
+            const { data: mr } = await c.db.from("agent_runs").select("cost_usd").eq("mission_id", m.id);
+            const used = (mr || []).reduce((a: number, r: any) => a + Number(r.cost_usd || 0), 0);
+            if (used >= Number(m.budget_usd)) {
+                await c.db.from("missions").update({ status: "paused", updated_at: new Date().toISOString() }).eq("id", m.id);
+                await c.run("partner_search", `Задание «${m.title}»: лимит $${Number(m.budget_usd)} исчерпан, поставлено на паузу`, `Потрачено $${used.toFixed(2)}`, true);
+                await c.notify(`Задание «${m.title}» на паузе: потрачен лимит $${Number(m.budget_usd)} (факт $${used.toFixed(2)}). Поднять лимит можно в карточке задания.`);
+                continue;
+            }
+        }
         const kind = ["clinic", "carrier", "blogger", "community", "other"].includes(m.kind) ? m.kind : "other";
         const { count: foundN } = await c.db.from("partners").select("id", { count: "exact", head: true }).eq("mission_id", m.id);
         const found = foundN || 0;
@@ -721,25 +752,26 @@ ${prev ? "РАНЬШЕ УЖЕ БЫЛА ПЕРЕПИСКА:\n" + prev + "\nЭто
 Кто они: ${p.name} — ${KN[kind]}, ${p.country || m.region || ""}. Их услуги: ${p.services || "-"}. Контакт: ${p.contact_person || "-"}. Почему подходят: ${p.fit_note || "-"}.
 Задание владельца: ${m.goal}
 ${m.letter_brief ? "Что обязательно сказать в письме: " + m.letter_brief + "\n" : ""}Суть предложения: мы направляем к ним своих клиентов с питомцами на оформление документов и ветеринарную подготовку; взамен просим понятные условия для наших клиентов (приоритет, скидка или комиссия — только то, что есть в базе знаний или в задании, ничего не выдумывай).
-Язык письма: ${ru ? "русский" : "английский"}. 5–8 предложений, по делу, без воды. Пиши от «мы» (например «Мы — Waylen Travel…»), никогда «меня зовут». В первом письме не проси реквизиты, лицензии и юрлицо. Один конкретный следующий шаг в конце (например, короткий созвон или ответ с условиями). Подпись «Команда Waylen Travel».
+Язык письма: ${ru ? "русский" : "английский"}. 5–8 предложений, по делу, без воды. Пиши от «мы» (например «Мы — Waylen Travel…»), никогда «меня зовут». В первом письме не проси реквизиты, лицензии и юрлицо. Один конкретный следующий шаг в конце (например, короткий созвон или ответ с условиями). Подпись «${c.sig()}».
 Верни только JSON {"subject":"","body":""}` });
                         const j = r.json;
                         if (!j?.body)
                             throw new Error("пустой ответ");
                         const auto = c.s.send_mode === "auto";
-                        await c.db.from("emails").insert({ account_id: acc.id, partner_id: p.id, mission_id: m.id, direction: "out", status: auto ? "approved" : "draft", folder: "draft", is_read: true, author: "agent", subject: j.subject || ("Сотрудничество с Waylen Travel"), body: j.body, from_addr: acc.address, to_addr: p.email });
+                        const { data: dr } = await c.db.from("emails").insert({ account_id: acc.id, partner_id: p.id, mission_id: m.id, seq_step: 1, direction: "out", status: auto ? "approved" : "draft", folder: "draft", is_read: true, author: "agent", subject: j.subject || ("Сотрудничество с Waylen Travel"), body: j.body, from_addr: acc.address, to_addr: p.email }).select("id").single();
                         c.history.push({ direction: "out", folder: "draft", status: "draft", to_addr: p.email, from_addr: acc.address, subject: j.subject, created_at: new Date().toISOString(), mission_id: m.id });
                         written++;
                         room--;
                         await c.run("reply_draft", `Задание «${m.title}»: письмо для ${p.name}`, j.body.slice(0, 1200), true, r);
+                        await c.afterDraft(dr?.id || null, p.name, j.subject || "Сотрудничество с Waylen Travel", j.body);
                     }
                     catch (err) {
                         await c.run("reply_draft", `Задание «${m.title}»: не удалось написать ${p.name}`, String(err), false);
                     }
                 }
-                if (written && c.s.send_mode !== "auto")
-                    await c.notify(`Задание «${m.title}»: готово писем на утверждение: ${written}. Панель: www.waylen.travel/agentapp`);
             }
+            if (Number(m.seq_steps) > 1 && acc)
+                await sequence(c, m, acc);
         }
         if (found >= Number(m.target || 0)) {
             const { count: pending } = await c.db.from("partners").select("id", { count: "exact", head: true }).eq("mission_id", m.id).eq("status", "found").not("email", "is", null);
@@ -751,6 +783,51 @@ ${m.letter_brief ? "Что обязательно сказать в письме
         c.mission = null;
     }
     c.mission = null;
+}
+async function sequence(c: Ctx, m: any, acc: any) {
+    const steps = Math.min(3, Math.max(1, Number(m.seq_steps) || 1)), gap = Math.max(1, Number(m.seq_gap_days) || 4);
+    const { count: todayN } = await c.db.from("emails").select("id", { count: "exact", head: true }).eq("mission_id", m.id).eq("direction", "out").gte("created_at", dayStart());
+    let room = Math.max(0, Number(m.letters_per_day || 0) - (todayN || 0));
+    if (!room)
+        return;
+    const { data: ps } = await c.db.from("partners").select("*").eq("mission_id", m.id).eq("status", "contacted").limit(40);
+    for (const p of ps || []) {
+        if (!room)
+            break;
+        if (!p.email || p.no_followup)
+            continue;
+        const { data: mine } = await c.db.from("emails").select("folder,status,subject,body,created_at,sent_at,seq_step,direction").eq("partner_id", p.id).neq("status", "failed").order("created_at");
+        const L = mine || [];
+        if (L.some((e: any) => e.direction === "in") || pastContact(c, p.email, p.website).some((h) => h.direction === "in"))
+            continue;
+        if (L.some((e: any) => e.direction === "out" && e.folder === "draft"))
+            continue;
+        const sent = L.filter((e: any) => e.direction === "out" && e.folder === "sent");
+        if (!sent.length || sent.length >= steps)
+            continue;
+        const last = sent[sent.length - 1];
+        if (hoursAgo(last.sent_at || last.created_at) < gap * 24)
+            continue;
+        const n = sent.length + 1, final = n === steps;
+        try {
+            const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), maxTokens: 900, prompt: `Это письмо №${n} из ${steps} в цепочке для партнёра ${p.name} (${p.country || m.region || ""}). Партнёр не ответил.
+Прошлые наши письма:
+${sent.map((e: any) => `— «${e.subject || ""}»: ${String(e.body || "").slice(0, 700)}`).join("\n")}
+Задание владельца: ${m.goal}
+${m.letter_brief ? "Что важно сказать: " + m.letter_brief + "\n" : ""}Напиши короткое письмо (3–5 предложений) на том же языке, что прошлые: не повторяй их, дай один новый аргумент или пользу для партнёра, без давления и упрёков. ${final ? "Это последнее письмо цепочки: вежливо скажи, что больше не будем беспокоить, и оставь дверь открытой." : ""} Подпись «${c.sig()}». Тема — ответ на прошлую тему (Re: …).
+Верни только JSON {"subject":"","body":""}` });
+            const j = r.json;
+            if (!j?.body)
+                throw new Error("пустой ответ");
+            const { data: dr } = await c.db.from("emails").insert({ account_id: acc.id, partner_id: p.id, mission_id: m.id, seq_step: n, direction: "out", status: c.s.send_mode === "auto" ? "approved" : "draft", folder: "draft", is_read: true, author: "agent", subject: j.subject || ("Re: " + (last.subject || "")), body: j.body, from_addr: acc.address, to_addr: p.email }).select("id").single();
+            room--;
+            await c.run("reply_draft", `Задание «${m.title}»: письмо ${n} из ${steps} для ${p.name}`, j.body.slice(0, 1200), true, r);
+            await c.afterDraft(dr?.id || null, p.name + ` (письмо ${n} из ${steps})`, j.subject || "", j.body);
+        }
+        catch (err) {
+            await c.run("reply_draft", `Задание «${m.title}»: не удалось написать письмо ${n} для ${p.name}`, String(err), false);
+        }
+    }
 }
 async function evening(c: Ctx) {
     if (!c.tgToken || !c.tgChat)
@@ -797,6 +874,8 @@ Deno.serve(async (req) => {
     const s: Settings = srow || {};
     if (!s.enabled && !manual)
         return json(200, { ok: true, skipped: "disabled" });
+    if (!manual && s.paused_until && new Date(s.paused_until).getTime() > Date.now())
+        return json(200, { ok: true, skipped: "paused" });
     const lockBefore = new Date(Date.now() - LOCK_MINUTES * 60000).toISOString();
     const { data: lock } = await db.from("agent_settings").update({ running_since: new Date().toISOString() }).eq("id", 1).or(`running_since.is.null,running_since.lt.${lockBefore}`).select("id");
     if (!lock || !lock.length)
