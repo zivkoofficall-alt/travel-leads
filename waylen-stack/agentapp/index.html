@@ -62,6 +62,27 @@
   html[data-theme="light"] #toast{box-shadow:0 14px 40px rgba(11,18,32,.16);}
   html[data-theme="light"] #sheet .sp{box-shadow:0 -10px 40px rgba(11,18,32,.12);}
   *,*::before,*::after{box-sizing:border-box;}
+  .bubs{display:flex;flex-direction:column;gap:10px;margin:14px 0 6px;}
+  .bub{max-width:88%;border-radius:20px;padding:11px 14px;background:var(--card-2);border:1px solid var(--line);align-self:flex-start;}
+  .bub.me{align-self:flex-end;background:rgba(var(--acc-rgb),.12);border-color:rgba(var(--acc-rgb),.25);}
+  .bub.draft{border-style:dashed;}
+  .bub .bm{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;}
+  .bub .bs{font-size:12.5px;color:var(--muted);margin-bottom:4px;}
+  .bub .bt{font-size:14.5px;line-height:1.45;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:9;-webkit-box-orient:vertical;overflow:hidden;}
+  .bub .bx{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  .bub .bx button{font-size:13px;font-weight:800;color:var(--acc);padding:2px 0;}
+  .bub .bx button.ok{background:var(--lime);color:var(--lime-ink);border-radius:999px;padding:6px 12px;}
+  .thhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);}
+  .composer{position:sticky;bottom:-24px;margin:10px -20px -24px;padding:12px 20px 20px;background:var(--card);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px;}
+  .composer textarea{min-height:84px;}
+  .composer .acts{margin:0;}
+  .seg2{display:inline-flex;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;margin:6px 0 10px;}
+  .seg2 button{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;color:var(--muted);}
+  .seg2 button.on{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12);}
+  .diffb{border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:12px 0;font-size:14px;line-height:1.5;white-space:pre-wrap;}
+  .diffb del{background:rgba(255,138,128,.16);color:var(--danger);text-decoration:line-through;}
+  .diffb ins{background:rgba(var(--acc-rgb),.16);text-decoration:none;}
+  .tcnt{font-size:12px;font-weight:800;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-left:6px;color:var(--muted);}
   .hub-g{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:26px 4px 10px;}
   .hub{background:var(--card);border:1px solid var(--line);border-radius:24px;overflow:hidden;}
   .hr{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;text-align:left;border-top:1px solid var(--line);}
@@ -907,14 +928,14 @@
     var PST = { found: 'Найден', contacted: 'Написали', replied: 'Ответили', agreed: 'Договорились', declined: 'Отказ', paused: 'Пауза' };
     var PCOL = { found: '#5B606B', contacted: '#3B80C3', replied: '#8FD0A8', agreed: '#C8F27B', declined: '#C46A63', paused: '#3A3E46' };
     var RK = { mail_check: 'Проверка почты', partner_search: 'Поиск партнёров', send: 'Отправка', reply_draft: 'Черновик ответа', question: 'Вопрос владельцу', market: 'Рынок', budget: 'Лимит расходов', tick: 'Запуск', chat: 'Чат' };
-    var FOLD = { inbox: 'Входящие', sent: 'Исходящие', draft: 'Черновики', spam: 'Спам' };
+    var FOLD = { threads: 'Диалоги', inbox: 'Входящие', sent: 'Исходящие', draft: 'Черновики', spam: 'Спам' };
     var TABS = [['home', 'Главная', 'home'], ['mail', 'Почта', 'mail'], ['partners', 'Партнёры', 'users'], ['agent', 'Агент', 'bolt'], ['settings', 'Настройки', 'gear']];
     var sess = null, D = {}, S = { tab: (function () { try {
             return localStorage.getItem('wl_tab') || 'home';
         }
         catch (e) {
             return 'home';
-        } })(), mailAcc: 'all', folder: 'inbox', q: '', pq: '', pst: 'all', pkind: 'all', agTab: '', runFilter: 'all', selMode: false, sel: {}, unread: false, psort: 'new', pstar: false, page: {}, days: 30, runDays: 0 };
+        } })(), mailAcc: 'all', folder: 'threads', q: '', pq: '', pst: 'all', pkind: 'all', agTab: '', runFilter: 'all', selMode: false, sel: {}, unread: false, psort: 'new', pstar: false, page: {}, days: 30, runDays: 0 };
     function saveSession(s) { try {
         localStorage.setItem(STORE, JSON.stringify(s));
     }
@@ -1816,6 +1837,118 @@
                 '<div class="d">' + esc(r.details || 'Подробностей нет.') + '<div class="meta"><span>' + fullDate(r.created_at) + '</span>' + (r.model ? '<span>' + esc(r.model) + '</span>' : '') + (r.tokens_in ? '<span>' + r.tokens_in + ' → ' + r.tokens_out + ' токенов</span>' : '') + '<span>' + usd(r.cost_usd) + '</span></div></div></div></button>';
         }).join('') + '</div>';
     }
+    function tkey(e) { return e.partner_id || counterpart(e); }
+    function threads() {
+        var q = S.q.toLowerCase(), g = {};
+        D.emails.forEach(function (e) {
+            if (e.folder === 'spam' || e.folder === 'trash' || (e.folder === 'draft' && e.status === 'failed'))
+                return;
+            if (S.mailAcc !== 'all' && e.account_id !== S.mailAcc)
+                return;
+            if (sysAddr(e.direction === 'in' ? e.from_addr : e.to_addr))
+                return;
+            var k = tkey(e);
+            if (!k)
+                return;
+            var t = g[k] || (g[k] = { k: k, list: [], unread: 0, drafts: 0, last: null, lastReal: null });
+            t.list.push(e);
+            if (e.folder === 'inbox' && !e.is_read)
+                t.unread++;
+            if (e.folder === 'draft' && e.status !== 'approved')
+                t.drafts++;
+            if (!t.last || tm(e) > tm(t.last))
+                t.last = e;
+            if (e.folder !== 'draft' && (!t.lastReal || tm(e) > tm(t.lastReal)))
+                t.lastReal = e;
+        });
+        return Object.keys(g).map(function (k) { return g[k]; }).filter(function (t) {
+            if (S.unread && !t.unread)
+                return false;
+            if (!q)
+                return true;
+            return t.list.some(function (e) { return ((e.subject || '') + ' ' + (e.body || '') + ' ' + (e.from_addr || '') + ' ' + (e.to_addr || '') + ' ' + nameOf(e)).toLowerCase().indexOf(q) > -1; });
+        }).sort(function (a, b) { return String(tm(b.last)).localeCompare(String(tm(a.last))); });
+    }
+    function threadRow(t) {
+        var e = t.lastReal || t.last, me = e.direction === 'out', p = pById(t.list[0].partner_id);
+        var txt = e.summary_ru || (e.body_ru || e.body || '').replace(/\s+/g, ' ');
+        var tags = (t.drafts ? '<span class="tag agent">черновик</span>' : '') + (p ? ' <span class="st ' + p.status + '">' + PST[p.status] + '</span>' : '');
+        return '<button class="it' + (t.unread ? ' unread' : '') + '" data-act="thread-open" data-id="' + esc(t.k) + '"><div class="av' + (t.unread ? ' in' : '') + '">' + initial(nameOf(e)) + '</div><div class="mid"><div class="l1"><span>' + (t.unread ? '<i class="dot"></i>' : '') + esc(nameOf(e)) + (t.list.length > 1 ? '<span class="tcnt">' + t.list.length + '</span>' : '') + '</span><span class="tm">' + ago(tm(t.last)) + '</span></div>' +
+            '<div class="l2">' + esc(e.subject || '(без темы)') + (e.lang && e.lang !== 'ru' ? '<span class="lang">' + esc(e.lang.toUpperCase()) + (e.body_ru ? ' · перевод' : '') + '</span>' : '') + (tags ? ' ' + tags : '') + '</div>' +
+            '<div class="l3' + (e.summary_ru ? ' sm' : '') + '">' + (me ? '<b>Вы:</b> ' : '') + esc(txt) + '</div></div></button>';
+    }
+    function threadMsgs(k) {
+        return D.emails.filter(function (e) { return e.folder !== 'spam' && e.folder !== 'trash' && !(e.folder === 'draft' && e.status === 'failed') && tkey(e) === k; }).sort(function (a, b) { return String(tm(a)).localeCompare(String(tm(b))); });
+    }
+    function openThread(k) {
+        var L = threadMsgs(k);
+        if (!L.length)
+            return;
+        var unread = L.filter(function (e) { return e.folder === 'inbox' && !e.is_read; });
+        if (unread.length) {
+            unread.forEach(function (e) { e.is_read = true; });
+            rest('PATCH', 'emails?' + inList(unread.map(function (e) { return e.id; })), { is_read: true }).catch(function () { });
+            renderNav();
+        }
+        var last = L[L.length - 1], p = pById(L[0].partner_id), name = nameOf(last);
+        var addr = '', acc = '', subj = '';
+        for (var i = L.length - 1; i >= 0; i--) {
+            var x = L[i];
+            if (!addr)
+                addr = addrOnly(x.direction === 'in' ? x.from_addr : x.to_addr);
+            if (!acc && x.account_id)
+                acc = x.account_id;
+            if (!subj && x.folder !== 'draft' && x.subject)
+                subj = x.subject;
+        }
+        S.th = { k: k, to: addr, acc: acc || (D.accounts[0] && D.accounts[0].id) || '', subj: subj ? (/^re:/i.test(subj) ? subj : 'Re: ' + subj) : '', pid: p ? p.id : '' };
+        var head = '<div class="thhead">' + (p ? '<button class="link" style="margin:0;padding:0;font-size:14px" data-act="p-open" data-id="' + esc(p.id) + '">' + esc(p.name) + '</button><span class="st ' + p.status + '">' + PST[p.status] + '</span>' : '') + '<span>' + esc(addr) + '</span><span>Писем: ' + L.length + '</span></div>';
+        var b = '<div class="bubs">' + L.map(function (x) {
+            var me = x.direction === 'out', dr = x.folder === 'draft', t = x.body_ru || x.body || '';
+            var lab = me ? (dr ? (x.status === 'approved' ? 'В очереди' : 'Черновик' + (x.author === 'agent' ? ' агента' : '')) : 'Вы' + (x.author === 'agent' ? ' · агент' : '')) : esc(nameOf(x));
+            return '<div class="bub' + (me ? ' me' : '') + (dr ? ' draft' : '') + '"><div class="bm"><span>' + lab + '</span><span>' + esc(dtime(tm(x))) + '</span></div>' +
+                (x.subject ? '<div class="bs">' + esc(x.subject) + (x.body_ru ? ' · переведено с ' + esc((x.lang || '').toUpperCase()) : '') + '</div>' : '') +
+                '<div class="bt">' + esc(t || '(пусто)') + '</div><div class="bx">' +
+                (dr && x.status !== 'approved' ? '<button class="ok" data-act="approve" data-id="' + esc(x.id) + '">Утвердить</button><button data-act="edit-draft" data-id="' + esc(x.id) + '">Изменить</button>' : '') +
+                '<button data-act="mail-open" data-id="' + esc(x.id) + '">Полностью</button></div></div>';
+        }).join('') + '</div>';
+        var comp = addr ? '<div class="composer"><textarea id="th_body" placeholder="Ответ ' + esc(name) + '…"></textarea><div class="acts"><button class="pill" data-act="th-send">Отправить</button><button class="pill ghost" data-act="th-ai" id="thAi">' + ic('bolt') + 'Черновик агента</button></div></div>' : '';
+        openSheet(name, head + b + comp);
+        setTimeout(function () { var sp = document.querySelector('#sheet .sp'); if (sp) sp.scrollTop = sp.scrollHeight; }, 60);
+    }
+    function wdiff(a, b) {
+        var A = String(a || '').split(/(\s+)/), B = String(b || '').split(/(\s+)/);
+        if (A.length * B.length > 400000)
+            return '<ins>' + esc(b) + '</ins>';
+        var n = A.length, m = B.length, T = [];
+        for (var i = 0; i <= n; i++) { T.push(new Uint16Array(m + 1)); }
+        for (i = n - 1; i >= 0; i--)
+            for (var j = m - 1; j >= 0; j--)
+                T[i][j] = A[i] === B[j] ? T[i + 1][j + 1] + 1 : Math.max(T[i + 1][j], T[i][j + 1]);
+        var ops = [], i2 = 0, j2 = 0;
+        while (i2 < n && j2 < m) {
+            if (A[i2] === B[j2]) { ops.push(['=', A[i2]]); i2++; j2++; }
+            else if (T[i2 + 1][j2] >= T[i2][j2 + 1]) { ops.push(['-', A[i2++]]); }
+            else { ops.push(['+', B[j2++]]); }
+        }
+        while (i2 < n) ops.push(['-', A[i2++]]);
+        while (j2 < m) ops.push(['+', B[j2++]]);
+        var out = '', k = 0;
+        while (k < ops.length) {
+            if (ops[k][0] === '=') { out += esc(ops[k][1]); k++; continue; }
+            var del = '', ins = '';
+            while (k < ops.length && (ops[k][0] !== '=' || (/^\s+$/.test(ops[k][1]) && k + 1 < ops.length && ops[k + 1][0] !== '='))) {
+                if (ops[k][0] !== '+') del += ops[k][1];
+                if (ops[k][0] !== '-') ins += ops[k][1];
+                k++;
+            }
+            if (del.trim()) out += '<del>' + esc(del.trim()) + '</del>';
+            if (del.trim() && ins.trim()) out += ' ';
+            if (ins.trim()) out += '<ins>' + esc(ins.trim()) + '</ins>';
+            out += ((ins.trim() ? ins : del).match(/\s*$/) || [''])[0];
+        }
+        return out;
+    }
     function mailList() {
         var q = S.q.toLowerCase();
         return D.emails.filter(function (e) {
@@ -1848,6 +1981,8 @@
             return ['', ''];
         var inbox = e.folder === 'inbox', spam = e.folder === 'spam';
         var left = inbox ? '<div class="sw-l"><button class="sw-a spam primary" data-act="mail-move" data-id="' + esc(e.id) + '" data-to="spam">' + ic('x') + '<span>Спам</span></button></div>' : spam ? '<div class="sw-l"><button class="sw-a ok primary" data-act="mail-move" data-id="' + esc(e.id) + '" data-to="inbox">' + ic('mail') + '<span>Не спам</span></button></div>' : '';
+        if (e.folder === 'draft' && e.status !== 'approved')
+            return ['', '<div class="sw-r"><button class="sw-a ok primary" data-act="approve" data-id="' + esc(e.id) + '">' + ic('check') + '<span>Утвердить</span></button><button class="sw-a task" data-act="edit-draft" data-id="' + esc(e.id) + '">' + ic('doc') + '<span>Изменить</span></button><button class="sw-a del" data-act="mail-del" data-id="' + esc(e.id) + '">' + ic('trash') + '<span>Удалить</span></button></div>'];
         var right = '<div class="sw-r">' + (inbox ? '<button class="sw-a read primary" data-act="mail-toggle" data-id="' + esc(e.id) + '">' + ic(e.is_read ? 'eyeoff' : 'eye') + '<span>' + (e.is_read ? 'Не прочит.' : 'Прочитано') + '</span></button>' : '') + '<button class="sw-a task' + (inbox ? '' : ' primary') + '" data-act="mail-task" data-id="' + esc(e.id) + '">' + ic('check') + '<span>Задача</span></button><button class="sw-a del" data-act="mail-del" data-id="' + esc(e.id) + '">' + ic('trash') + '<span>Удалить</span></button></div>';
         return [left, right];
     }
@@ -1856,7 +1991,7 @@
         var tag = '';
         if (e.folder === 'draft')
             tag = e.status === 'approved' ? '<span class="st queue">в очереди</span>' : (e.author === 'agent' ? '<span class="tag agent">агент</span>' : '');
-        var lang = e.lang && e.lang !== 'ru' ? '<span class="lang">' + esc(e.lang.toUpperCase()) + '</span>' : '';
+        var lang = e.lang && e.lang !== 'ru' ? '<span class="lang">' + esc(e.lang.toUpperCase()) + (e.body_ru ? ' · перевод' : '') + '</span>' : '';
         if (e.direction === 'in' && sysAddr(e.from_addr))
             tag = '<span class="tag">система</span>';
         return '<button class="it' + (unread ? ' unread' : '') + '" data-act="' + (S.selMode ? 'sel-toggle' : 'mail-open') + '" data-id="' + esc(e.id) + '">' +
@@ -1870,9 +2005,9 @@
         var accs = D.accounts, un = function (f, acc) { if (f === 'sent' || f === 'spam')
             return 0; return D.emails.filter(function (e) { return e.folder === f && (f === 'inbox' ? !e.is_read : e.status !== 'approved') && (acc === 'all' || e.account_id === acc); }).length; };
         var unreadN = un('inbox', S.mailAcc);
-        var h = '<div class="head"><div><h1 class="pt">Почта</h1><p class="sub">' + (unreadN ? 'Непрочитанных: ' + unreadN : 'Всё прочитано') + '</p></div><div class="acts" style="margin:0"><button class="pill ghost" data-act="sel-mode">' + (S.selMode ? 'Готово' : 'Выбрать') + '</button><button class="pill dsk" data-act="compose">' + ic('plus') + 'Написать</button></div></div>';
-        h += '<div class="chips">' + ['inbox', 'sent', 'draft', 'spam'].map(function (f) {
-            var n = un(f, S.mailAcc);
+        var h = '<div class="head"><div><h1 class="pt">Почта</h1><p class="sub">' + (unreadN ? 'Непрочитанных: ' + unreadN : 'Всё прочитано') + '</p></div><div class="acts" style="margin:0">' + (S.folder === 'threads' ? '' : '<button class="pill ghost" data-act="sel-mode">' + (S.selMode ? 'Готово' : 'Выбрать') + '</button>') + '<button class="pill dsk" data-act="compose">' + ic('plus') + 'Написать</button></div></div>';
+        h += '<div class="chips">' + ['threads', 'inbox', 'sent', 'draft', 'spam'].map(function (f) {
+            var n = f === 'threads' ? 0 : un(f, S.mailAcc);
             return '<button class="chip' + (S.folder === f ? ' on' : '') + '" data-act="folder" data-id="' + f + '">' + FOLD[f] + (n ? ' <span class="n">' + n + '</span>' : '') + '</button>';
         }).join('') + '</div>';
         if (accs.length > 1)
@@ -1880,7 +2015,7 @@
                 accs.map(function (a) { var u = un('inbox', a.id); return '<button class="chip' + (S.mailAcc === a.id ? ' on' : '') + '" data-act="acc" data-id="' + esc(a.id) + '">' + esc(a.label) + (u ? '<span class="cnt2">' + u + '</span>' : '') + '</button>'; }).join('') + '</div>';
         h += '<div class="search">' + ic('search') + '<input id="mq" type="search" placeholder="Поиск по письмам" value="' + esc(S.q) + '" autocomplete="off"></div>';
         var extra = '';
-        if (S.folder === 'inbox') {
+        if (S.folder === 'inbox' || S.folder === 'threads') {
             extra += '<button class="ls" data-act="unread-only">' + (S.unread ? 'Показать все' : 'Только непрочитанные') + '</button>';
             if (unreadN)
                 extra += '<button class="ls" data-act="read-all">Прочитать все (' + unreadN + ')</button>';
@@ -1890,6 +2025,13 @@
             extra += '<button class="ls" data-act="approve-all">Утвердить все (' + waitN + ')</button>';
         if (extra)
             h += '<div style="display:flex;flex-wrap:wrap">' + extra + '</div>';
+        if (S.folder === 'threads') {
+            var TL = threads();
+            if (!TL.length)
+                return h + '<div class="card empty">' + (S.q ? 'Ничего не найдено.' : S.unread ? 'Непрочитанных диалогов нет.' : 'Переписки пока нет.') + '</div>';
+            var tp = more(TL.length, 'threads');
+            return h + '<p class="hint" style="margin:0 0 10px">Каждая строка — переписка с одним партнёром, последние сообщения сверху.</p><div class="list">' + TL.slice(0, tp.n).map(threadRow).join('') + '</div>' + tp.html;
+        }
         var L = mailList();
         if (S.selMode) {
             var cnt = L.filter(function (e) { return S.sel[e.id]; }).length;
@@ -1961,7 +2103,8 @@
             (p ? '<b>Партнёр:</b> <button class="link" style="margin:0;padding:0;font-size:14px" data-act="p-open" data-id="' + esc(p.id) + '">' + esc(p.name) + '</button> <span class="st ' + p.status + '">' + PST[p.status] + '</span><br>' : '') +
             (me ? '<b>Автор:</b> ' + (e.author === 'agent' ? 'агент' : 'вы') + '<br>' : '') + fullDate(tm(e)) + '</div>';
         var body = (e.summary_ru ? '<div class="sumbox"><b>Кратко</b>' + esc(e.summary_ru) + '</div>' : '') +
-            (e.body_ru ? '<div class="body-t" id="bt-ru">' + esc(e.body_ru) + '</div><div class="body-t hidden" id="bt-orig">' + esc(e.body || '') + '</div><div class="acts" style="margin-top:0"><button class="pill ghost" data-act="mail-orig" id="bt-btn">Показать оригинал' + (e.lang ? ' (' + esc(e.lang.toUpperCase()) + ')' : '') + '</button></div>' : '<div class="body-t">' + esc(e.body || '(пусто)') + '</div>') +
+            (e.body_ru ? '<div class="seg2"><button class="on" data-act="mail-lang" data-id="ru">Перевод</button><button data-act="mail-lang" data-id="orig">Оригинал' + (e.lang ? ' · ' + esc(e.lang.toUpperCase()) : '') + '</button></div><div class="body-t" id="bt-ru">' + esc(e.body_ru) + '</div><div class="body-t hidden" id="bt-orig">' + esc(e.body || '') + '</div>' : '<div class="body-t">' + esc(e.body || '(пусто)') + '</div>') +
+            (me && e.orig_body && e.orig_body !== e.body ? '<p class="cardt" style="margin-top:14px">Ваши правки к тексту агента</p><div class="diffb">' + wdiff(e.orig_body, e.body) + '</div>' : '') +
             (e.folder === 'draft' && e.status === 'approved' ? '<p class="sub">Письмо в очереди: уйдёт при следующем запуске агента.</p>' : '') + (e.folder === 'draft' && e.author === 'agent' && e.status !== 'approved' ? '<p class="sub">Черновик написал агент. Проверьте и утвердите или измените.</p>' : '');
         openSheet(e.subject || '(без темы)', head + body + '<div class="acts">' + acts + '</div><div class="acts sec">' + sec + '</div>' +
             (thread.length ? '<div class="thread"><p class="tm2">Переписка с ' + esc(nameOf(e)) + ' · ' + thread.length + '</p>' + thread.slice(0, 12).map(function (x) { return msgBox(x, e); }).join('') + (thread.length > 12 ? '<p class="sub">Показаны последние 12.</p>' : '') + '</div>' : ''));
@@ -1998,6 +2141,9 @@
         var row = { account_id: acc || null, partner_id: pid || (pm ? pm.id : null), direction: 'out', status: status, folder: 'draft', subject: sub, body: body, from_addr: a ? a.address : null, to_addr: to, is_read: true };
         if (!id)
             row.author = 'owner';
+        var prevE = id ? byId(D.emails, id) : null;
+        if (prevE && prevE.author === 'agent' && !prevE.orig_body && (prevE.body || '') !== body)
+            row.orig_body = prevE.body || '';
         var req = id ? rest('PATCH', 'emails?id=eq.' + id, row) : rest('POST', 'emails', row);
         req.then(function () { return status === 'approved' ? markContacted(row.partner_id) : null; }).then(function () { closeSheet(); toast(status === 'approved' ? 'Письмо в очереди, уйдёт в течение 30 минут' : 'Черновик сохранён'); S.tab = 'mail'; S.folder = 'draft'; return reload(); }).catch(function () { toast('Не получилось сохранить'); });
     }
@@ -2808,6 +2954,28 @@
         acc: function (d) { S.mailAcc = d.id; S.sel = {}; render(); },
         folder: function (d) { S.folder = d.id; S.sel = {}; S.unread = false; render(); },
         'mail-open': function (d) { openMail(d.id); },
+        'thread-open': function (d) { openThread(d.id); },
+        'mail-lang': function (d, el) { Array.prototype.forEach.call(el.parentNode.children, function (b) { b.classList.toggle('on', b === el); }); var r = $('#bt-ru'), o = $('#bt-orig'); if (r && o) { r.classList.toggle('hidden', d.id !== 'ru'); o.classList.toggle('hidden', d.id === 'ru'); } },
+        'th-send': function () {
+            var t = S.th || {}, body = val('th_body');
+            if (!body) { toast('Напишите текст ответа'); return; }
+            if (!t.to || !validMail(t.to)) { toast('Нет адреса получателя'); return; }
+            if (isBlocked(t.to)) { toast('Адрес в чёрном списке. Уберите его в настройках', true); return; }
+            var a = aById(t.acc);
+            rest('POST', 'emails', { account_id: t.acc || null, partner_id: t.pid || null, direction: 'out', status: 'approved', folder: 'draft', subject: t.subj || 'Waylen Travel', body: body, from_addr: a ? a.address : null, to_addr: t.to, is_read: true, author: 'owner' }).then(function () { return markContacted(t.pid); }).then(function () { closeSheet(); toast('Письмо в очереди, уйдёт в течение 30 минут'); return reload(); }).catch(fail);
+        },
+        'th-ai': function (d, el) {
+            var t = S.th || {};
+            if (!t.to) return;
+            el.disabled = true; var old = el.innerHTML; el.textContent = 'Агент пишет…';
+            fetch(BASE + '/functions/v1/agent-chat', { method: 'POST', headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'draft', to: t.to, partner_id: t.pid || null }) }).then(function (x) { return x.json(); }).then(function (r) {
+                el.disabled = false; el.innerHTML = old;
+                if (!r || !r.ok) { toast((r && r.error) || 'Агент не смог написать ответ', true); return; }
+                var ta = $('#th_body'); if (ta) { ta.value = r.body || ''; ta.focus(); }
+                if (r.subject) t.subj = r.subject;
+                toast('Черновик готов. Проверьте и отправьте');
+            }).catch(function () { el.disabled = false; el.innerHTML = old; fail(); });
+        },
         'mail-orig': function (d, el) { var r = $('#bt-ru'), o = $('#bt-orig'); if (!r || !o)
             return; var show = o.classList.contains('hidden'); o.classList.toggle('hidden', !show); r.classList.toggle('hidden', show); el.textContent = show ? 'Показать перевод' : 'Показать оригинал'; },
         reply: function (d) { var e = byId(D.emails, d.id); closeSheet(); composeSheet({ account_id: e.account_id, partner_id: e.partner_id, to_addr: e.folder === 'sent' ? e.to_addr : e.from_addr, subject: /^re:/i.test(e.subject || '') || e.folder === 'sent' ? (e.subject || '') : 'Re: ' + (e.subject || ''), body: e.folder === 'inbox' ? quote(e) : '' }); },
