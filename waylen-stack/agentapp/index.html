@@ -461,6 +461,10 @@
   .it[data-sw="В спам"]::after{left:-110px;color:var(--danger);}
   .it[data-sw="Прочитано"]::after,.it[data-sw="Не прочитано"]::after{right:-118px;color:var(--lime);}
   .list{overflow:hidden;}
+  .mcard{display:block;width:100%;text-align:left;}
+  .mcard .mt1{font-family:var(--font-head);font-weight:800;font-size:17px;line-height:1.3;}
+  .mrow{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--muted);font-weight:600;}
+  .mrow b{color:var(--text);font-size:15px;}
   /* boot screen */
   #boot{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow:hidden;transition:opacity .45s ease,visibility .45s;padding-top:max(var(--tg-top,0px), calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px)));}
   #boot.out{opacity:0;visibility:hidden;pointer-events:none;}
@@ -640,7 +644,7 @@
   var TABS = [['home','Главная','home'],['mail','Почта','mail'],['partners','Партнёры','users'],['agent','Агент','bolt'],['settings','Настройки','gear']];
 
   /* ---------- state ---------- */
-  var sess = null, D = {}, S = {tab:(function(){ try{ return localStorage.getItem('wl_tab') || 'home'; }catch(e){ return 'home'; } })(), mailAcc:'all', folder:'inbox', q:'', pq:'', pst:'all', pkind:'all', agTab:'runs', runFilter:'all', selMode:false, sel:{}, unread:false, psort:'new', pstar:false, page:{}, days:30, runDays:0};
+  var sess = null, D = {}, S = {tab:(function(){ try{ return localStorage.getItem('wl_tab') || 'home'; }catch(e){ return 'home'; } })(), mailAcc:'all', folder:'inbox', q:'', pq:'', pst:'all', pkind:'all', agTab:'ms', runFilter:'all', selMode:false, sel:{}, unread:false, psort:'new', pstar:false, page:{}, days:30, runDays:0};
   function saveSession(s){ try{ localStorage.setItem(STORE, JSON.stringify(s)); }catch(e){} }
   function loadSession(){ try{ return JSON.parse(localStorage.getItem(STORE) || 'null'); }catch(e){ return null; } }
   function clearSession(){ try{ localStorage.removeItem(STORE); }catch(e){} }
@@ -685,10 +689,11 @@
       rest('GET','agent_settings?select=*&id=eq.1'),
       rest('GET','agent_secrets_meta?select=*'),
       rest('GET','tasks?select=*&order=created_at.desc'),
-      rest('GET','insights?select=*&order=created_at.desc&limit=300')
+      rest('GET','insights?select=*&order=created_at.desc&limit=300'),
+      rest('GET','missions?select=*&order=created_at.desc')
     ]).then(function(a){
       D.partners = a[0] || []; D.emails = a[1] || []; D.questions = a[2] || []; D.runs = a[3] || [];
-      D.knowledge = a[4] || []; D.templates = a[5] || []; D.accounts = a[6] || []; D.settings = (a[7] || [])[0] || {}; D.secrets = a[8] || []; D.tasks = a[9] || []; D.insights = a[10] || [];
+      D.knowledge = a[4] || []; D.templates = a[5] || []; D.accounts = a[6] || []; D.settings = (a[7] || [])[0] || {}; D.secrets = a[8] || []; D.tasks = a[9] || []; D.insights = a[10] || []; D.missions = a[11] || [];
     });
   }
   function reload(){ return loadAll().then(function(){ S.loadedAt = Date.now(); render(); }).catch(function(e){ toast('Не удалось обновить данные'); }); }
@@ -1311,7 +1316,7 @@
     return out;
   }
   /* ----- agent ----- */
-  var AGT = [['runs','История'],['mkt','Рынок'],['an','Аналитика'],['cost','Расходы'],['kb','Знания'],['tpl','Шаблоны']];
+  var AGT = [['ms','Задания'],['runs','История'],['mkt','Рынок'],['an','Аналитика'],['cost','Расходы'],['kb','Знания'],['tpl','Шаблоны']];
   function vAgent(){
     var h = '<div class="head"><div><h1 class="pt">Агент</h1><p class="sub">' + (D.settings.enabled ? 'Работает · следующий запуск в течение 30 минут' : 'Выключен') + '</p></div></div>';
     h += '<div class="chips">' + AGT.map(function(t){ return '<button class="chip' + (S.agTab === t[0] ? ' on' : '') + '" data-act="agtab" data-id="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>';
@@ -1326,6 +1331,7 @@
       var rp = more(rs.length, 'runs');
       h += (rs.length ? '<p class="hint" style="margin:0 0 10px">Действий: ' + rs.length + ' · расход ' + usd(sumCost(rs)) + '</p>' : '') + runList(rs.slice(0, rp.n), true) + rp.html;
     }
+    if (S.agTab === 'ms') h += vMissions();
     if (S.agTab === 'mkt') h += vMarket();
     if (S.agTab === 'an') h += vAnalytics();
     if (S.agTab === 'cost') h += vCost();
@@ -1340,6 +1346,57 @@
     return h;
   }
 
+  /* ----- задания агенту ----- */
+  function mStats(m){
+    var ps = D.partners.filter(function(p){ return p.mission_id === m.id; }), ids = {};
+    ps.forEach(function(p){ ids[p.id] = 1; });
+    var written = 0, sent = 0, replied = 0, drafts = 0;
+    ps.forEach(function(p){
+      var out = D.emails.filter(function(e){ return e.partner_id === p.id && e.direction === 'out'; });
+      if (out.length) written++;
+      if (out.some(function(e){ return e.folder === 'sent'; })) sent++;
+      if (out.some(function(e){ return e.folder === 'draft' && e.status !== 'approved'; })) drafts++;
+      if (D.emails.some(function(e){ return e.partner_id === p.id && e.direction === 'in' && e.folder !== 'spam'; }) || p.status === 'replied' || p.status === 'agreed') replied++;
+    });
+    var cost = sumCost(D.runs.filter(function(r){ return (r.summary || '').indexOf('«' + m.title + '»') > -1; }));
+    return {found:ps.length, written:written, sent:sent, replied:replied, drafts:drafts, cost:cost, partners:ps};
+  }
+  var MST = {active:'В работе', paused:'Пауза', done:'Выполнено'};
+  function mCard(m){
+    var st = mStats(m), pct = m.target ? Math.min(100, Math.round(st.found / m.target * 100)) : 0;
+    return '<button class="card mcard" data-act="m-open" data-id="' + esc(m.id) + '"><div class="l1" style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><b class="mt1">' + esc(m.title) + '</b><span class="st ' + (m.status === 'active' ? 'contacted' : m.status === 'done' ? 'agreed' : 'paused') + '">' + MST[m.status] + '</span></div>' +
+      '<p class="cardn" style="margin:6px 0 10px">' + esc(KINDP[m.kind] || KIND[m.kind] || '') + (m.region ? ' · ' + esc(m.region) : '') + (m.write_letters ? ' · с письмами' : ' · только поиск') + '</p>' +
+      '<div class="meter" style="margin:0"><span style="width:' + pct + '%"></span></div>' +
+      '<div class="mrow"><span><b class="num">' + st.found + '</b> из ' + m.target + ' найдено</span><span><b class="num">' + st.written + '</b> написано</span><span><b class="num">' + st.replied + '</b> ответили</span></div>' +
+      (st.drafts ? '<p class="hint" style="margin:8px 0 0;color:var(--lime)">Ждут утверждения: ' + st.drafts + '</p>' : '') + '</button>';
+  }
+  function vMissions(){
+    var act = D.missions.filter(function(m){ return m.status !== 'done'; }), done = D.missions.filter(function(m){ return m.status === 'done'; });
+    var h = '<p class="sub" style="margin:0 0 14px">Поручите агенту конкретную цель: кого найти, где и что предложить. Он будет искать каждый день и готовить письма, а вы только утверждаете.</p><div class="acts" style="margin:0 0 16px"><button class="pill" data-act="m-new">' + ic('plus') + 'Новое задание</button></div>';
+    if (!D.missions.length) h += '<div class="card empty">Заданий пока нет. Например: «Найди ветклиники в Москве и Петербурге, которые оформляют документы на вывоз животных, и предложи им направлять к нам клиентов».</div>';
+    if (act.length) h += '<div class="stack">' + act.map(mCard).join('') + '</div>';
+    if (done.length) h += '<div class="qh"><h3>Выполненные <span class="n z">' + done.length + '</span></h3></div><div class="stack">' + done.map(mCard).join('') + '</div>';
+    return h;
+  }
+  function mSheet(id){
+    var m = id ? byId(D.missions, id) : {kind:'clinic', target:30, write_letters:true, searches_per_day:1, letters_per_day:10, status:'active'};
+    if (!m) return;
+    var st = id ? mStats(m) : null;
+    var sel = function(i, l, obj, cur){ return '<div class="fld"><label for="' + i + '">' + l + '</label><select id="' + i + '">' + Object.keys(obj).map(function(k){ return '<option value="' + k + '"' + (cur === k ? ' selected' : '') + '>' + obj[k] + '</option>'; }).join('') + '</select></div>'; };
+    var h = '<div class="set">';
+    if (st) h += '<div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr))">' + kcard('Найдено', st.found + '<span style="font-size:14px;opacity:.6"> / ' + m.target + '</span>', '') + kcard('Написано', st.written, st.sent + ' отправлено') + kcard('Ответили', st.replied, usd(st.cost) + ' потрачено') + '</div>';
+    h += '<div class="fld"><label for="m_title">Название</label><input id="m_title" value="' + esc(m.title || '') + '" placeholder="Ветклиники России" ' + (id ? '' : 'autofocus') + '></div>' +
+      '<div class="fld"><label for="m_goal">Что сделать</label><textarea id="m_goal" placeholder="Найди ветклиники в России, которые оформляют документы на вывоз животных, и предложи им сотрудничество: мы направляем клиентов, они дают нашим клиентам приоритет и скидку">' + esc(m.goal || '') + '</textarea><p class="hint">Пишите как человеку. Агент использует это и при поиске, и в письмах.</p></div>' +
+      '<div class="row2 keep">' + sel('m_kind', 'Кого искать', {clinic:'Клиники', carrier:'Перевозчики', blogger:'Блогеры', community:'Сообщества', other:'Другое'}, m.kind) + '<div class="fld"><label for="m_region">Где</label><input id="m_region" value="' + esc(m.region || '') + '" placeholder="Россия, Москва"></div></div>' +
+      '<div class="row2 keep"><div class="fld"><label for="m_target">Сколько найти</label><input id="m_target" type="number" inputmode="numeric" min="1" max="500" value="' + esc(m.target) + '"></div><div class="fld"><label for="m_spd">Поисков в день</label><input id="m_spd" type="number" inputmode="numeric" min="1" max="6" value="' + esc(m.searches_per_day) + '"></div></div>' +
+      '<p class="hint" style="margin-top:-8px">Один поиск находит 6–8 организаций и стоит около $0.25. Письмо — около $0.02.</p>' +
+      '<div class="fld"><label>Письма найденным</label><div class="seg" id="m_wl"><button type="button" class="' + (m.write_letters ? 'on' : '') + '" data-act="m-wl" data-id="1">Писать</button><button type="button" class="' + (!m.write_letters ? 'on' : '') + '" data-act="m-wl" data-id="0">Только искать</button></div></div>' +
+      '<div class="row2 keep"><div class="fld"><label for="m_lpd">Писем в день</label><input id="m_lpd" type="number" inputmode="numeric" min="0" max="100" value="' + esc(m.letters_per_day) + '"></div><div class="fld"><label for="m_status">Статус</label><select id="m_status">' + Object.keys(MST).map(function(k){ return '<option value="' + k + '"' + (m.status === k ? ' selected' : '') + '>' + MST[k] + '</option>'; }).join('') + '</select></div></div>' +
+      '<div class="fld"><label for="m_brief">Что обязательно сказать в письме</label><textarea id="m_brief" style="min-height:80px" placeholder="Условия: 10% с каждого клиента, оплата по факту. Предложить созвон на 15 минут">' + esc(m.letter_brief || '') + '</textarea></div>' +
+      '<div class="acts sticky"><button class="pill" data-act="m-save" data-id="' + esc(id || '') + '">' + (id ? 'Сохранить' : 'Запустить задание') + '</button>' + (id ? '<button class="pill danger" data-act="m-del" data-id="' + esc(id) + '">Удалить</button>' : '') + '</div>';
+    if (st && st.partners.length) h += '<div class="qh"><h3>Найдено по заданию <span class="n z">' + st.partners.length + '</span></h3><button data-act="go" data-tab="partners" data-arg="">Все партнёры</button></div><div class="list">' + st.partners.slice(0, 30).map(function(p){ return '<button class="it" data-act="p-open" data-id="' + esc(p.id) + '">' + avRing(p) + '<div class="mid"><div class="l1"><span>' + esc(p.name) + '</span><span class="st ' + p.status + '">' + PST[p.status] + '</span></div><div class="l3">' + esc(p.country || '') + (p.email ? ' · ' + esc(p.email) : ' · почта не найдена') + '</div></div></button>'; }).join('') + '</div>';
+    openSheet(id ? m.title : 'Новое задание', h + '</div>');
+  }
   /* ----- analytics ----- */
   function sysAddr(a){ return /mailer-daemon|no-?reply|postmaster|notification|bounce/i.test(String(a || '')); }
   function ckey(e){ return e.partner_id || counterpart(e); }
@@ -1617,6 +1674,17 @@
     retry: function(){ enter(); },
     refresh: function(){ toast('Обновляем…'); reload(); },
     'q-open': function(d){ qSheet(d.id); },
+    'm-new': function(){ mSheet(''); }, 'm-open': function(d){ mSheet(d.id); },
+    'm-wl': function(d, el){ Array.prototype.forEach.call(el.parentNode.children, function(b){ b.classList.toggle('on', b === el); }); el.parentNode.dataset.v = d.id; },
+    'm-save': function(d){
+      var wl = ($('#m_wl') || {dataset:{}}).dataset.v; if (wl == null) wl = $('#m_wl .on') && $('#m_wl .on').dataset.id;
+      var row = {title:val('m_title'), goal:val('m_goal'), kind:val('m_kind'), region:val('m_region') || null, target:Math.max(1, parseInt(val('m_target'), 10) || 30), searches_per_day:Math.max(1, Math.min(6, parseInt(val('m_spd'), 10) || 1)), letters_per_day:Math.max(0, parseInt(val('m_lpd'), 10) || 0), write_letters: wl === '1', letter_brief:val('m_brief') || null, status:val('m_status') || 'active', updated_at:new Date().toISOString()};
+      if (!row.title || !row.goal){ toast('Нужны название и описание задания'); return; }
+      if (!hasKey('anthropic_api_key')){ toast('Сначала добавьте ключ Claude API в настройках', true); return; }
+      (d.id ? rest('PATCH','missions?id=eq.' + d.id, row) : rest('POST','missions', row)).then(function(){ closeSheet(); toast(d.id ? 'Задание сохранено' : 'Задание запущено: агент начнёт при следующем запуске'); S.tab = 'agent'; S.agTab = 'ms'; return reload(); }).catch(fail);
+    },
+    'm-del': function(d){ confirmSheet('Удалить задание?', 'Найденные партнёры и письма останутся, но перестанут быть привязаны к заданию.', 'm-del-go', 'Удалить'); $('#sheet .sp').dataset.id = d.id; },
+    'm-del-go': function(){ var id = $('#sheet .sp').dataset.id; rest('DELETE','missions?id=eq.' + id).then(function(){ closeSheet(); toast('Задание удалено'); return reload(); }).catch(fail); },
     't-open': function(d){ tSheet(d.id); },
     't-new': function(){ tSheet(''); },
     'queue-all': function(){ S.queueAll = !S.queueAll; var y = gy(); render(); sy(y); },
@@ -1727,7 +1795,7 @@
     },
     'p-del': function(d){ var n = D.emails.filter(function(e){ return e.partner_id === d.id; }).length; confirmSheet('Удалить партнёра?', 'Карточка будет удалена. ' + (n ? 'Письма (' + n + ') останутся в почте, но отвяжутся от партнёра.' : 'Писем с ним нет.'), 'p-del-go', 'Удалить'); $('#sheet .sp').dataset.id = d.id; },
     'p-del-go': function(){ var id = $('#sheet .sp').dataset.id; rest('DELETE','partners?id=eq.' + id).then(function(){ closeSheet(); toast('Партнёр удалён'); return reload(); }).catch(fail); },
-    'p-write': function(d){ var p = pById(d.id); closeSheet(); composeSheet({account_id: D.accounts[0] && D.accounts[0].id, partner_id:p.id, to_addr:p.email}); },
+    'p-write': function(d){ var p = pById(d.id), t = D.templates[0]; closeSheet(); composeSheet({account_id: D.accounts[0] && D.accounts[0].id, partner_id:p.id, to_addr:p.email, subject: t ? fill(t.subject || '', p) : '', body: t ? fill(t.body, p) : ''}); },
     'p-task': function(d){ var p = pById(d.id); rest('POST','tasks', {title:'Связаться: ' + p.name, partner_id:p.id}).then(function(){ closeSheet(); toast('Задача создана'); return reload(); }).catch(fail); },
     'p-block': function(d){ var p = pById(d.id); rest('PATCH','partners?id=eq.' + d.id, {status:'declined', status_changed_at:new Date().toISOString()}).catch(function(){}); blockAddr(p.email); },
     dups: function(){

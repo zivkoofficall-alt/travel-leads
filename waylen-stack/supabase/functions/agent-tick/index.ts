@@ -365,6 +365,25 @@ async function followUps(c: Ctx) {
   }
 }
 
+const KN: Record<string, string> = { clinic: "ветеринарные клиники, которые оформляют документы для вывоза животных (чипирование, прививки, международные ветпаспорта, справки)", carrier: "компании и сервисы по перевозке домашних животных (pet relocation, pet cargo, курьеры-сопровождающие)", blogger: "блогеры и авторы каналов о переезде, релокации и путешествиях с питомцами (Telegram, YouTube, Instagram)", community: "сообщества и чаты релокантов и владельцев животных, форумы, группы в Telegram и Facebook", other: "организации, полезные для перевозки питомцев (отели для животных, грумеры, зоомагазины, юристы по релокации)" };
+const SEARCH_JSON = `[{"name":"","kind":"","country":"","website":"","email":"","contact_person":"","services":"","languages":"","countries":"","rating":3,"fit_note":"","source_url":""}]`;
+// сохраняет найденных партнёров, отсеивая дубли и чёрный список; возвращает список имён
+async function savePartners(c: Ctx, arr: any[], kind: string, country: string, extra: Record<string, unknown>): Promise<string[]> {
+  const names: string[] = [];
+  for (const x of arr || []) {
+    if (!x?.name) continue;
+    const em = String(x.email || "").toLowerCase(), dm = domainOf(x.email) || domainOf(x.website), nm = norm(x.name);
+    if ((c.s.blocked_domains || []).includes(dm)) continue;
+    const dup = c.partners.some((p) => (em && p.email && p.email.toLowerCase() === em) || (nm && norm(p.name) === nm) || (dm && !FREE.has(dm) && (domainOf(p.email) === dm || domainOf(p.website) === dm)));
+    if (dup) continue;
+    const rating = Math.min(5, Math.max(1, Math.round(Number(x.rating) || 3)));
+    const row = { name: String(x.name).slice(0, 200), kind, country: x.country || country || null, website: x.website || null, email: /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em) ? em : null, contact_person: x.contact_person || null, services: x.services || null, languages: x.languages || null, countries: x.countries || null, rating, fit_score: rating * 20, fit_note: x.fit_note || null, source: "Поиск агента", source_url: x.source_url || x.website || null, status: "found", priority: rating >= 4 ? "high" : "normal", status_changed_at: new Date().toISOString(), ...extra };
+    const { data: ins, error } = await c.db.from("partners").insert(row).select("id,name,email,website").single();
+    if (!error && ins) { c.partners.push(ins); names.push(`${row.name} (${rating}/5)`); }
+  }
+  return names;
+}
+
 /* ---------- Поиск партнёров ---------- */
 async function partnerSearch(c: Ctx) {
   const perDay = Number(c.s.search_runs_per_day || 0); if (!perDay) return;
@@ -384,7 +403,6 @@ async function partnerSearch(c: Ctx) {
   const kind = kinds[n % kinds.length];
   const countries: string[] = (c.s.focus_countries || []).filter(Boolean);
   const country = countries.length ? countries[Math.floor(n / kinds.length) % countries.length] : "";
-  const KN: Record<string, string> = { clinic: "ветеринарные клиники, которые оформляют документы для вывоза животных (чипирование, прививки, международные ветпаспорта, справки)", carrier: "компании и сервисы по перевозке домашних животных (pet relocation, pet cargo, курьеры-сопровождающие)", blogger: "блогеры и авторы каналов о переезде, релокации и путешествиях с питомцами (Telegram, YouTube, Instagram)", community: "сообщества и чаты релокантов и владельцев животных, форумы, группы в Telegram и Facebook" };
   const known = c.partners.map((p) => (p.website || p.email || p.name)).filter(Boolean).slice(0, 300).join("; ");
   const blocked = (c.s.blocked_domains || []).join(", ");
   const prompt = `Найди через веб-поиск 6–8 новых потенциальных партнёров: ${KN[kind]}${country ? ` в стране: ${country}` : " в странах, куда чаще всего переезжают с питомцами из СНГ (Турция, ОАЭ, Грузия, Сербия, Таиланд, Испания, Германия, Черногория, Казахстан)"}.
@@ -394,18 +412,7 @@ async function partnerSearch(c: Ctx) {
   try {
     const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), prompt, webSearch: 8, maxTokens: 8000 });
     const arr: any[] = Array.isArray(r.json) ? r.json : (r.json?.partners || []);
-    let added = 0; const names: string[] = [];
-    for (const x of arr) {
-      if (!x?.name) continue;
-      const em = String(x.email || "").toLowerCase(), dm = domainOf(x.email) || domainOf(x.website), nm = norm(x.name);
-      if ((c.s.blocked_domains || []).includes(dm)) continue;
-      const dup = c.partners.some((p) => (em && p.email && p.email.toLowerCase() === em) || (nm && norm(p.name) === nm) || (dm && !FREE.has(dm) && (domainOf(p.email) === dm || domainOf(p.website) === dm)));
-      if (dup) continue;
-      const rating = Math.min(5, Math.max(1, Math.round(Number(x.rating) || 3)));
-      const row = { name: String(x.name).slice(0, 200), kind, country: x.country || country || null, website: x.website || null, email: /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em) ? em : null, contact_person: x.contact_person || null, services: x.services || null, languages: x.languages || null, countries: x.countries || null, rating, fit_score: rating * 20, fit_note: x.fit_note || null, source: "Поиск агента", source_url: x.source_url || x.website || null, status: "found", priority: rating >= 4 ? "high" : "normal", status_changed_at: new Date().toISOString() };
-      const { data: ins, error } = await c.db.from("partners").insert(row).select("id,name,email,website").single();
-      if (!error && ins) { c.partners.push(ins); added++; names.push(`${row.name} (${rating}/5)`); }
-    }
+    const names = await savePartners(c, arr, kind, country, {}); const added = names.length;
     await c.run("partner_search", `Поиск партнёров (${kind}${country ? ", " + country : ""}): найдено новых ${added}`, names.join("\n") || r.text.slice(0, 800), true, r);
     if (added) await c.notify(`Нашёл новых партнёров: ${added}\n` + names.slice(0, 6).join("\n") + "\n\nПосмотреть: waylen.travel/agentapp");
   } catch (err) { await c.run("partner_search", `Поиск партнёров (${kind}): ошибка`, String(err), false); }
@@ -454,6 +461,90 @@ async function digest(c: Ctx) {
   const { data: runs } = await c.db.from("agent_runs").select("cost_usd").gte("created_at", monthStart());
   const cost = (runs || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0);
   await c.notify(`Доброе утро! Сводка Waylen Travel\n\nНовых писем: ${inbox}\nЧерновиков на утверждение: ${drafts}\nВопросов ко мне: ${open}\nПартнёров найдено за сутки: ${found}\nРасход за месяц: $${cost.toFixed(2)}${c.s.monthly_budget_usd ? " из $" + c.s.monthly_budget_usd : ""}\n\nПанель: waylen.travel/agentapp`);
+}
+
+/* ---------- Задания владельца: найти партнёров и написать им ---------- */
+async function missions(c: Ctx) {
+  const { data: ms } = await c.db.from("missions").select("*").eq("status", "active").order("created_at");
+  for (const m of ms || []) {
+    const kind = ["clinic", "carrier", "blogger", "community", "other"].includes(m.kind) ? m.kind : "other";
+    const { count: foundN } = await c.db.from("partners").select("id", { count: "exact", head: true }).eq("mission_id", m.id);
+    const found = foundN || 0;
+    // 1. поиск: не чаще, чем задано, пока не набрали цель
+    if (found < Number(m.target || 0) && hoursAgo(m.last_search_at) >= 24 / Math.max(1, Number(m.searches_per_day) || 1) - 0.4) {
+      await c.db.from("missions").update({ last_search_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", m.id);
+      const known = c.partners.map((p) => (p.website || p.email || p.name)).filter(Boolean).slice(0, 300).join("; ");
+      const prompt = `Задание владельца: ${m.goal}
+Найди через веб-поиск 6–8 новых ${KN[kind]}${m.region ? ` — регион: ${m.region}` : ""}. Это задание важнее общих настроек: ищи именно то, что просит владелец.
+Нужны реальные организации с сайтом и, по возможности, публичной почтой (ищи почту на сайте, в контактах, в каталогах). Не повторяй уже известных: ${known || "(нет)"}. Не предлагай домены: ${(c.s.blocked_domains || []).join(", ") || "(нет)"}.
+Для каждого оцени rating 1–5, насколько партнёр подходит под задание, и кратко объясни в fit_note.
+Верни только JSON-массив: ${SEARCH_JSON.replace('"kind":""', `"kind":"${kind}"`)}`;
+      try {
+        const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), prompt, webSearch: 8, maxTokens: 8000 });
+        const arr: any[] = Array.isArray(r.json) ? r.json : (r.json?.partners || []);
+        const names = await savePartners(c, arr, kind, m.region || "", { mission_id: m.id, source: "Задание: " + m.title });
+        await c.run("partner_search", `Задание «${m.title}»: найдено новых ${names.length} (всего ${found + names.length} из ${m.target})`, names.join("\n") || r.text.slice(0, 800), true, r);
+        if (names.length) await c.notify(`Задание «${m.title}»: нашёл ${names.length}, всего ${found + names.length} из ${m.target}\n` + names.slice(0, 6).join("\n"));
+      } catch (err) { await c.run("partner_search", `Задание «${m.title}»: ошибка поиска`, String(err), false); }
+    }
+    // 2. письма найденным
+    if (m.write_letters && !isQuiet(c.s)) {
+      const { count: todayN } = await c.db.from("emails").select("id", { count: "exact", head: true }).eq("mission_id", m.id).eq("direction", "out").gte("created_at", dayStart());
+      let room = Math.max(0, Number(m.letters_per_day || 0) - (todayN || 0));
+      const acc = c.accounts.find((a) => a.status === "connected" && a.provider === "agentmail") || c.accounts.find((a) => a.status === "connected");
+      if (room && acc) {
+        const { data: cands } = await c.db.from("partners").select("*").eq("mission_id", m.id).eq("status", "found").not("email", "is", null).order("rating", { ascending: false }).limit(room * 2);
+        let written = 0;
+        for (const p of cands || []) {
+          if (!room) break;
+          const { data: has } = await c.db.from("emails").select("id").eq("partner_id", p.id).eq("direction", "out").limit(1);
+          if (has && has.length) continue;
+          if ((c.s.blocked_domains || []).some((b: string) => b === String(p.email).toLowerCase() || b === domainOf(p.email))) continue;
+          try {
+            const r = await claude(c.apiKey, { model: SONNET, system: c.companyContext(), maxTokens: 1200, prompt: `Напиши первое письмо потенциальному партнёру по заданию владельца.
+Задание: ${m.goal}
+${m.letter_brief ? "Что обязательно сказать в письме: " + m.letter_brief + "\n" : ""}Партнёр: ${p.name} (${KN[kind]}), ${p.country || m.region || ""}. Услуги: ${p.services || "-"}. Контакт: ${p.contact_person || "-"}. Почему подходит: ${p.fit_note || "-"}.
+Язык письма: тот, на котором говорит партнёр (Россия и СНГ — русский, иначе английский). 5–8 предложений, по делу, без воды и без обещаний, которых нет в базе знаний. Один конкретный следующий шаг в конце. Подпись «Команда Waylen Travel».
+Верни только JSON {"subject":"","body":""}` });
+            const j = r.json; if (!j?.body) throw new Error("пустой ответ");
+            const auto = c.s.send_mode === "auto";
+            await c.db.from("emails").insert({ account_id: acc.id, partner_id: p.id, mission_id: m.id, direction: "out", status: auto ? "approved" : "draft", folder: "draft", is_read: true, author: "agent", subject: j.subject || ("Сотрудничество с Waylen Travel"), body: j.body, from_addr: acc.address, to_addr: p.email });
+            written++; room--;
+            await c.run("reply_draft", `Задание «${m.title}»: письмо для ${p.name}`, j.body.slice(0, 1200), true, r);
+          } catch (err) { await c.run("reply_draft", `Задание «${m.title}»: не удалось написать ${p.name}`, String(err), false); }
+        }
+        if (written && c.s.send_mode !== "auto") await c.notify(`Задание «${m.title}»: готово писем на утверждение: ${written}. Панель: waylen.travel/agentapp`);
+      }
+    }
+    // 3. завершение: цель набрана и всем, кому можно, написали
+    if (found >= Number(m.target || 0)) {
+      const { count: pending } = await c.db.from("partners").select("id", { count: "exact", head: true }).eq("mission_id", m.id).eq("status", "found").not("email", "is", null);
+      if (!m.write_letters || !(pending || 0)) {
+        await c.db.from("missions").update({ status: "done", updated_at: new Date().toISOString() }).eq("id", m.id);
+        await c.notify(`Задание «${m.title}» выполнено: найдено ${found}${m.write_letters ? ", письма подготовлены" : ""}.`);
+      }
+    }
+  }
+}
+
+/* ---------- Вечерняя сводка в Telegram ---------- */
+async function evening(c: Ctx) {
+  if (!c.tgToken || !c.tgChat) return;
+  const h = localHour(c.s.timezone), target = Number(c.s.quiet_start ?? 22);
+  if (h !== target || hoursAgo(c.s.last_evening_at) < 20) return;
+  await c.db.from("agent_settings").update({ last_evening_at: new Date().toISOString() }).eq("id", 1);
+  const since = new Date(Date.now() - 864e5).toISOString();
+  const cnt = async (t: string, f: (q: any) => any) => { const { count } = await f(c.db.from(t).select("id", { count: "exact", head: true })); return count || 0; };
+  const sent = await cnt("emails", (q) => q.eq("folder", "sent").gte("sent_at", since));
+  const recv = await cnt("emails", (q) => q.eq("direction", "in").neq("folder", "spam").gte("created_at", since));
+  const drafts = await cnt("emails", (q) => q.eq("folder", "draft").neq("status", "approved"));
+  const open = await cnt("questions", (q) => q.eq("status", "open"));
+  const found = await cnt("partners", (q) => q.gte("created_at", since));
+  const { data: runs } = await c.db.from("agent_runs").select("cost_usd,kind").gte("created_at", since);
+  const cost = (runs || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0);
+  const { data: mruns } = await c.db.from("agent_runs").select("cost_usd").gte("created_at", monthStart());
+  const mcost = (mruns || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0);
+  await c.notify(`Итоги дня\n\nОтправлено писем: ${sent}\nПолучено: ${recv}\nНайдено партнёров: ${found}\nДействий агента: ${(runs || []).length}\nПотрачено за день: $${cost.toFixed(2)} (за месяц $${mcost.toFixed(2)}${c.s.monthly_budget_usd ? " из $" + c.s.monthly_budget_usd : ""})${drafts || open ? `\n\nЖдут вас: черновиков ${drafts}, вопросов ${open}` : "\n\nНичего не ждёт, можно отдыхать."}`);
 }
 
 /* ---------- Главный цикл ---------- */
@@ -518,9 +609,11 @@ Deno.serve(async (req) => {
     await processInbox(c);
     await sendQueued(c);
     await followUps(c);
+    await missions(c);
     await partnerSearch(c);
     await market(c);
     await digest(c);
+    await evening(c);
 
     return json(200, { ok: true, manual, log: c.log, spent_now: +c.spent.toFixed(4) });
   } catch (e) {
