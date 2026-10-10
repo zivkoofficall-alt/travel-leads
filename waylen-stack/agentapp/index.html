@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-title" content="Waylen">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Onest:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Onest:wght@600;700;800&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Onest:wght@600;700;800&display=swap"></noscript>
 <style>
   :root{
     --bg:#0D0E10; --card:#17191D; --card-2:#1F2227; --line:rgba(255,255,255,.08);
@@ -517,10 +517,11 @@
   #app.in,#login.in{animation:appin .5s cubic-bezier(.2,.7,.2,1) both;}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
 </style>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js" async onload="window.__tgInit && window.__tgInit()" onerror="window.__tgInit && window.__tgInit()"></script>
 <script>
-/* Telegram Mini App: полный экран, безопасные отступы, без закрытия свайпом */
-(function(){
+/* Telegram Mini App: полный экран, безопасные отступы, без закрытия свайпом. SDK грузится асинхронно: инициализация идёт, когда он пришёл, или через 2.5 с без него */
+window.__tgInit = function(){
+  if (window.__tgDone) return; window.__tgDone = true;
   var hashTg = /tgWebApp(Data|Platform)=/.test(location.hash);
   try{ var m0 = new URLSearchParams(location.hash.slice(1)).get('tgWebAppData'); if (m0) sessionStorage.setItem('wl_tgd', m0); }catch(e){}
   var W = window.Telegram && window.Telegram.WebApp;
@@ -553,7 +554,8 @@
     setTimeout(guard, 600); setTimeout(guard, 2500); setInterval(guard, 15000);
     function fs(){ safe(function(){ if (W.requestFullscreen && !W.isFullscreen){ W.requestFullscreen(); fsAsked = true; } }); }
     fs(); ap();
-    window.addEventListener('load', function(){ setTimeout(function(){ fs(); ap(); }, 300); setTimeout(ap, 1200); setTimeout(ap, 3000); });
+    function later(){ setTimeout(function(){ fs(); ap(); }, 300); setTimeout(ap, 1200); setTimeout(ap, 3000); }
+    if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
     window.addEventListener('resize', ap);
     return;
   }
@@ -582,8 +584,10 @@
   post('web_app_setup_closing_behavior', {need_confirmation:true});
   post('web_app_set_background_color', {color:'#0D0E10'}); post('web_app_set_header_color', {color:'#0D0E10'});
   function goFs(){ post('web_app_request_fullscreen'); post('web_app_request_safe_area'); post('web_app_request_content_safe_area'); }
-  goFs(); window.addEventListener('load', function(){ setTimeout(goFs, 300); });
-})();
+  goFs(); setTimeout(goFs, 300);
+};
+setTimeout(function(){ if (!window.__tgDone) window.__tgInit(); }, 2500);
+if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
 </script>
 </head>
 <body>
@@ -2008,7 +2012,7 @@
       else { clearSession(); sess = null; if (TGD) tgLogin().catch(reveal); else reveal(); }
     }).catch(function(){ reveal(); });
   } else { reveal(); }
-  setTimeout(function(){ var b = $('#boot'); if (b && !b.classList.contains('out') && $('#app').classList.contains('hidden')) reveal(); }, 15000);
+  setTimeout(function(){ var b = $('#boot'); if (b && !b.classList.contains('out')){ if (sess){ bootOut(); $('#app').classList.remove('hidden'); $('#view').innerHTML = '<div class="card err-box"><p>Данные загружаются дольше обычного. Проверьте интернет.</p><button class="pill" data-act="retry">Попробовать снова</button></div>'; } else reveal(); } }, 15000);
 })();
 </script>
 </body>
