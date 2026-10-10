@@ -219,7 +219,8 @@
     main#view{overflow-x:hidden;}
     html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;}
     #app{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
-    #app>.col{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;}
+    #app>.col{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none;}
+    #app>.col::-webkit-scrollbar{display:none;}
     .kbsec,.dsk{display:none !important;}
     .seg button{font-size:13px;padding:10px 8px;}
     .side{display:none;}
@@ -1683,7 +1684,11 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
   function render(anim){
     var v = $('#view');
     var map = {home:vHome, mail:vMail, partners:vPartners, agent:vAgent, settings:vSettings};
+    /* запоминаем прокрутку: вертикальную и горизонтальную у рядов фишек */
+    var y = gy(), chips = Array.prototype.map.call(v.querySelectorAll('.chips, .quick'), function(c){ return c.scrollLeft; });
     v.innerHTML = map[S.tab]();
+    Array.prototype.forEach.call(v.querySelectorAll('.chips, .quick'), function(c, i){ if (chips[i]) c.scrollLeft = chips[i]; var on = c.querySelector('.on'); if (on && !chips[i]){ var r = on.offsetLeft + on.offsetWidth - c.clientWidth; if (r > 0) c.scrollLeft = r + 12; } });
+    if (!anim) sy(y);
     hideTip(); renderNav();
     if (anim){ v.classList.remove('fade'); void v.offsetWidth; v.classList.add('fade'); animateNums(v); stagger(v); }
   }
@@ -1866,7 +1871,7 @@ if (window.Telegram && window.Telegram.WebApp) window.__tgInit();
     },
     't-done': function(d){ rest('PATCH','tasks?id=eq.' + d.id, {done:true}).then(function(){ closeSheet(); toast('Выполнено'); return reload(); }).catch(fail); },
     't-del': function(d){ rest('DELETE','tasks?id=eq.' + d.id).then(function(){ closeSheet(); return reload(); }).catch(fail); },
-    agtab: function(d){ S.agTab = d.id; render(true); },
+    agtab: function(d){ S.agTab = d.id; render(); },
     runf: function(d){ S.runFilter = d.id; S.page.runs = 0; render(); },
     rundays: function(d){ S.runDays = parseInt(d.id, 10); S.page.runs = 0; render(); },
     period: function(d){ S.days = parseInt(d.id, 10); render(); },
