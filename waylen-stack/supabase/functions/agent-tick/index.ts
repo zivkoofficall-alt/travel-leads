@@ -369,8 +369,10 @@ async function sendQueued(c: Ctx) {
         const r = await sendMail(a, e);
         if (r.ok) {
             await c.db.from("emails").update({ folder: "sent", status: "sent", sent_at: new Date().toISOString(), external_id: r.id || null }).eq("id", e.id);
-            if (e.partner_id)
-                await c.db.from("partners").update({ status: "contacted", status_changed_at: new Date().toISOString(), last_contact_at: new Date().toISOString() }).eq("id", e.partner_id).eq("status", "found");
+            if (e.partner_id) {
+                await c.db.from("partners").update({ last_contact_at: new Date().toISOString() }).eq("id", e.partner_id);
+                await c.db.from("partners").update({ status: "contacted", status_changed_at: new Date().toISOString() }).eq("id", e.partner_id).eq("status", "found");
+            }
             await c.run("send", `Отправлено: ${e.subject || "(без темы)"} → ${e.to_addr}`, "", true);
             room--;
             if (!room)
@@ -457,26 +459,38 @@ async function followUps(c: Ctx) {
     const connected = c.accounts.filter((a) => a.status === "connected");
     if (!connected.length)
         return;
-    const days = Number(c.s.followup_days || 4);
+    const days = Number(c.s.followup_days ?? 4);
+    if (!days)
+        return;
     const since = new Date(Date.now() - days * 864e5).toISOString();
     const { data: cands } = await c.db.from("partners").select("*").eq("status", "contacted").eq("is_demo", false).lte("last_contact_at", since).limit(5);
     for (const p of cands || []) {
-        if (!p.email)
+        if (!p.email || p.no_followup)
             continue;
-        if (pastContact(c, p.email, p.website).some((h) => h.direction === "in"))
+        const past = pastContact(c, p.email, p.website);
+        if (past.some((h) => h.direction === "in"))
             continue;
         const { data: hasIn } = await c.db.from("emails").select("id").eq("partner_id", p.id).eq("direction", "in").limit(1);
         if (hasIn && hasIn.length)
             continue;
-        const { data: hasDraft } = await c.db.from("emails").select("id").eq("partner_id", p.id).eq("folder", "draft").limit(1);
-        if (hasDraft && hasDraft.length)
+        if (past.some((h) => h.direction === "out" && h.folder === "draft"))
             continue;
-        const { data: last } = await c.db.from("emails").select("subject,body,account_id").eq("partner_id", p.id).eq("direction", "out").eq("folder", "sent").order("created_at", { ascending: false }).limit(1);
+        const addr = addrOf(p.email).replace(/[\\%_]/g, (ch) => "\\" + ch);
+        const { data: recent } = await c.db.from("emails").select("id").eq("direction", "out").ilike("to_addr", "%" + addr + "%").gte("created_at", since).limit(1);
+        if (recent && recent.length)
+            continue;
+        const sentList = past.filter((h) => h.direction === "out" && h.folder === "sent");
+        if (sentList.length >= 2)
+            continue;
+        const { data: last } = await c.db.from("emails").select("subject,body,account_id,created_at,sent_at").eq("direction", "out").eq("folder", "sent").ilike("to_addr", "%" + addr + "%").order("created_at", { ascending: false }).limit(1);
         const l = last?.[0];
         if (!l)
             continue;
+        const ago = Math.floor(hoursAgo(l.sent_at || l.created_at) / 24);
+        if (ago < days)
+            continue;
         try {
-            const r = await claude(c.apiKey, { model: HAIKU, system: c.companyContext(), prompt: `Напиши короткое вежливое напоминание партнёру ${p.name} (${p.kind}, ${p.country || ""}), который не ответил на наше письмо «${l.subject}» ${days} дней назад. Текст прошлого письма:\n${(l.body || "").slice(0, 1500)}\n\nВерни JSON {"subject":"","body":""}. Без давления, 4–6 предложений, подпись «Команда Waylen Travel».`, maxTokens: 700 });
+            const r = await claude(c.apiKey, { model: HAIKU, system: c.companyContext(), prompt: `Напиши короткое вежливое напоминание партнёру ${p.name} (${p.kind}, ${p.country || ""}), который не ответил на наше письмо «${l.subject}», отправленное ${ago} дн. назад. Текст прошлого письма:\n${(l.body || "").slice(0, 1500)}\n\nВерни JSON {"subject":"","body":""}. Без давления, 4–6 предложений, подпись «Команда Waylen Travel».`, maxTokens: 700 });
             const j = r.json;
             if (!j?.body)
                 continue;
