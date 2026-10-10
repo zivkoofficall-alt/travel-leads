@@ -911,7 +911,7 @@
     var out = [], today0 = new Date(); today0.setHours(0, 0, 0, 0); var eod = new Date(); eod.setHours(23, 59, 59, 999);
     D.questions.filter(function(x){ return x.status === 'open'; }).forEach(function(q){ var p = pById(q.partner_id); out.push({pr:0, k:'blue', i:'ask', t:q.question, s:'Вопрос агента' + (p ? ' · ' + p.name : ''), at:q.created_at, act:'q-open', id:q.id}); });
     D.emails.filter(function(e){ return e.folder === 'draft' && e.status !== 'approved'; }).forEach(function(e){ out.push({pr:1, k:'lime', i:'mail', t:'Утвердить: ' + (e.subject || '(без темы)'), s:'Черновик' + (e.author === 'agent' ? ' агента' : '') + ' · кому ' + who(e), at:e.created_at, act:'mail-open', id:e.id}); });
-    D.emails.filter(function(e){ return e.folder === 'inbox' && !e.is_read; }).forEach(function(e){ out.push({pr:2, k:'', i:'mail', dot:true, t:who(e), s:e.summary_ru || e.subject || '(без темы)', at:e.created_at, act:'mail-open', id:e.id}); });
+    D.emails.filter(function(e){ return e.folder === 'inbox' && !e.is_read && !sysAddr(e.from_addr); }).forEach(function(e){ out.push({pr:2, k:'', i:'mail', dot:true, t:who(e), s:e.summary_ru || e.subject || '(без темы)', at:e.created_at, act:'mail-open', id:e.id}); });
     followups().forEach(function(x){ out.push({pr:3, k:'warn', i:'bell', t:x.p.name, s:x.why, at:x.p.next_action_at || null, act:'p-open', id:x.p.id}); });
     D.tasks.filter(function(t){ return !t.done && (!t.due_at || new Date(t.due_at) <= eod); }).forEach(function(t){ var over = t.due_at && new Date(t.due_at) < today0, p = pById(t.partner_id); out.push({pr:4, k:over ? 'bad' : '', i:'check', t:t.title, s:(t.due_at ? (over ? 'Просрочено · ' + dshort(t.due_at) : 'Сегодня') : 'Задача') + (p ? ' · ' + p.name : ''), at:t.due_at, act:'t-open', id:t.id}); });
     return out.sort(function(a, b){ return a.pr - b.pr || new Date(b.at || 0) - new Date(a.at || 0); });
@@ -1052,7 +1052,7 @@
   function selIds(){ return Object.keys(S.sel); }
   function addrOnly(x){ var m = String(x || '').match(/[^\s<>"]+@[^\s<>"]+/); return (m ? m[0] : String(x || '')).toLowerCase(); }
   function counterpart(e){ return addrOnly(e.direction === 'in' ? e.from_addr : e.to_addr); }
-  function nameOf(e){ var p = pById(e.partner_id); if (p) return p.name; var raw = e.direction === 'in' ? e.from_addr : e.to_addr; var m = String(raw || '').match(/^"?([^"<]+?)"?\s*<[^>]+>/); return m ? m[1].trim() : (addrOnly(raw) || '—'); }
+  function nameOf(e){ var p = pById(e.partner_id); if (p) return p.name; if (e.direction === 'in' && /mailer-daemon|postmaster/i.test(e.from_addr || '')) return 'Ошибка доставки'; var raw = e.direction === 'in' ? e.from_addr : e.to_addr; var m = String(raw || '').match(/^"?([^"<]+?)"?\s*<[^>]+>/); return m ? m[1].trim() : (addrOnly(raw) || '—'); }
   function threadOf(e){
     var cp = counterpart(e); if (!cp) return [];
     return D.emails.filter(function(x){ return x.id !== e.id && x.folder !== 'draft' && counterpart(x) === cp; }).sort(function(a, b){ return new Date(tm(b)) - new Date(tm(a)); });
@@ -1062,6 +1062,7 @@
     var tag = '';
     if (e.folder === 'draft') tag = e.status === 'approved' ? '<span class="st queue">в очереди</span>' : (e.author === 'agent' ? '<span class="tag agent">агент</span>' : '');
     var lang = e.lang && e.lang !== 'ru' ? '<span class="lang">' + esc(e.lang.toUpperCase()) + '</span>' : '';
+    if (e.direction === 'in' && sysAddr(e.from_addr)) tag = '<span class="tag">система</span>';
     return '<button class="it' + (unread ? ' unread' : '') + '" data-act="' + (S.selMode ? 'sel-toggle' : 'mail-open') + '" data-id="' + esc(e.id) + '">' +
       (S.selMode ? '<span class="cb' + (S.sel[e.id] ? ' on' : '') + '">' + ic('check') + '</span>' : '') +
       '<div class="av' + (unread ? ' in' : '') + '">' + initial(nameOf(e)) + '</div><div class="mid"><div class="l1"><span>' + (unread ? '<i class="dot"></i>' : '') + esc(nameOf(e)) + '</span><span class="tm">' + ago(tm(e)) + '</span></div>' +
