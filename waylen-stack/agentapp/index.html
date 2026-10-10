@@ -56,6 +56,7 @@
     --danger:#C9343F; --fg:11,18,32; --bg-rgb:244,248,252;
     --acc:#2E78C0; --acc-rgb:46,120,192; --elev:0 10px 30px rgba(11,18,32,.07);
   }
+  html[data-theme="light"] .hb .ht,html[data-theme="light"] .ctry .bar{background:#EAF0F7;}
   html[data-theme="light"] .tabbar{box-shadow:0 12px 34px rgba(11,18,32,.12);}
   html[data-theme="light"] .tile:not(.lime),html[data-theme="light"] .card{box-shadow:var(--elev);}
   html[data-theme="light"] #toast{box-shadow:0 14px 40px rgba(11,18,32,.16);}
@@ -310,7 +311,7 @@
   .hb .hn{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .hb .ht{height:12px;background:var(--card-2);border-radius:4px;overflow:hidden;display:block;}
   .hb .ht i{display:block;height:100%;border-radius:0 4px 4px 0;}
-  .hb .hq{color:var(--muted);font-weight:700;font-size:13px;white-space:nowrap;}
+  .hb .hv{color:var(--muted);font-weight:700;font-size:13px;white-space:nowrap;}
   .ctry{padding:10px 0;border-top:1px solid var(--line);}
   .ctry:first-child{border-top:none;padding-top:4px;}
   .ctry-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:15px;font-weight:700;}
@@ -1371,7 +1372,7 @@
             mx = x.val; });
         return items.map(function (x) {
             var w = mx ? Math.max(x.val > 0 ? 2 : 0, x.val / mx * 100) : 0;
-            return '<div class="hb"><span class="hn" title="' + esc(x.name) + '">' + esc(x.name) + '</span><span class="ht"><i style="width:' + w.toFixed(1) + '%;background:' + (color || 'var(--lime)') + '"></i></span><span class="hq">' + esc(x.label) + '</span></div>';
+            return '<div class="hb"><span class="hn" title="' + esc(x.name) + '">' + esc(x.name) + '</span><span class="ht"><i style="width:' + w.toFixed(1) + '%;background:' + (color || 'var(--lime)') + '"></i></span><span class="hv">' + esc(x.label) + '</span></div>';
         }).join('');
     }
     function cbars(cs) {
