@@ -521,7 +521,10 @@
     safe(function(){ W.setBackgroundColor('#0D0E10'); });
     safe(function(){ W.setHeaderColor('#0D0E10'); });
     safe(function(){ W.setBottomBarColor('#0D0E10'); });
-    ['safeAreaChanged','contentSafeAreaChanged','fullscreenChanged','viewportChanged'].forEach(function(ev){ safe(function(){ W.onEvent(ev, ap); }); });
+    function guard(){ safe(function(){ W.disableVerticalSwipes(); }); safe(function(){ W.enableClosingConfirmation(); }); safe(function(){ if (W.isVerticalSwipesEnabled === true) W.disableVerticalSwipes(); }); }
+    ['safeAreaChanged','contentSafeAreaChanged','fullscreenChanged','viewportChanged'].forEach(function(ev){ safe(function(){ W.onEvent(ev, function(){ ap(); guard(); }); }); });
+    safe(function(){ W.onEvent('activated', guard); });
+    setTimeout(guard, 600); setTimeout(guard, 2500); setInterval(guard, 15000);
     function fs(){ safe(function(){ if (W.requestFullscreen && !W.isFullscreen){ W.requestFullscreen(); fsAsked = true; } }); }
     fs(); ap();
     window.addEventListener('load', function(){ setTimeout(function(){ fs(); ap(); }, 300); setTimeout(ap, 1200); setTimeout(ap, 3000); });
