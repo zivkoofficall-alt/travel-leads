@@ -3,11 +3,11 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const RATE_LIMIT_SECONDS = 60;
 function allowedOrigin(origin: string | null): boolean {
     if (!origin)
-        return true;
+        return false;
     try {
         const h = new URL(origin).hostname;
         return h === "waylen.travel" || h === "www.waylen.travel" ||
-            /^waylen-travel[a-z0-9-]*\.vercel\.app$/.test(h);
+            h === "waylen-travel.vercel.app" || /^waylen-travel(-[a-z0-9]+)*-zivkoofficall-alts-projects\.vercel\.app$/.test(h);
     }
     catch (_) {
         return false;
@@ -48,9 +48,10 @@ async function notifyTelegram(lead: Record<string, string>): Promise<boolean> {
         (lead.telegram ? `Telegram: ${lead.telegram}\n` : "") +
         (lead.pet ? `Питомец: ${lead.pet}\n` : "") +
         (lead.message ? `Комментарий: ${lead.message}\n` : "");
+    for (let attempt = 0; attempt < 2; attempt++) {
     try {
         const ctl = new AbortController();
-        const timer = setTimeout(() => ctl.abort(), 4000);
+        const timer = setTimeout(() => ctl.abort(), 5000);
         const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -58,11 +59,12 @@ async function notifyTelegram(lead: Record<string, string>): Promise<boolean> {
             signal: ctl.signal,
         });
         clearTimeout(timer);
-        return r.ok;
+        if (r.ok)
+            return true;
     }
-    catch (_) {
-        return false;
+    catch (_) { }
     }
+    return false;
 }
 Deno.serve(async (req) => {
     const origin = req.headers.get("origin");
@@ -79,7 +81,7 @@ Deno.serve(async (req) => {
         if (!body)
             return json(400, { ok: false, error: "invalid_json" }, origin);
         if ((body.company || "").toString().trim() !== "")
-            return json(200, { ok: true }, origin);
+            return json(200, { ok: true, notified: true }, origin);
         const name = (body.name || "").toString().trim();
         const contactTelegram = (body.contact_telegram || "").toString().trim();
         const contactPhone = (body.contact_phone || "").toString().trim();
@@ -93,8 +95,8 @@ Deno.serve(async (req) => {
             return json(400, { ok: false, error: "invalid_phone" }, origin);
         if (contactTelegram && !isValidTelegram(contactTelegram))
             return json(400, { ok: false, error: "invalid_telegram" }, origin);
-        const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-            req.headers.get("cf-connecting-ip") ||
+        const ip = req.headers.get("cf-connecting-ip") ||
+            req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
             "unknown";
         const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
         if (ip !== "unknown") {
@@ -107,11 +109,15 @@ Deno.serve(async (req) => {
                 .limit(1);
             if (rateErr) {
                 console.error("rate check error:", rateErr);
+                return json(503, { ok: false, error: "unexpected" }, origin);
             }
             else if (recent && recent.length > 0) {
                 return json(429, { ok: false, error: "rate_limited" }, origin);
             }
         }
+        const { count: burst } = await supabase.from("leads").select("id", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 600000).toISOString());
+        if ((burst || 0) >= 20)
+            return json(429, { ok: false, error: "rate_limited" }, origin);
         const row = {
             name: name.slice(0, 200),
             contact_telegram: contactTelegram ? contactTelegram.slice(0, 100) : null,

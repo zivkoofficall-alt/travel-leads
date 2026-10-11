@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
         if (!hash || !safeEq(sign, hash))
             return reply(req, 401, { ok: false });
         const age = Date.now() / 1000 - Number(params.get("auth_date") || 0);
-        if (!(age >= -60 && age < 86400))
+        if (!(age >= -60 && age < 3600))
             return reply(req, 401, { ok: false });
         let uid = "";
         try {

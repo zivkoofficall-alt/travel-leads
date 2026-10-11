@@ -718,7 +718,7 @@
   .msg .ctxp{display:block;font-size:11.5px;font-weight:700;opacity:.7;margin-bottom:4px;}
   .msg .pcard{margin-top:10px;border:1px solid rgba(var(--acc-rgb),.35);background:rgba(var(--acc-rgb),.07);border-radius:14px;padding:10px 12px;white-space:normal;}
   .msg .pcard>b{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--acc);margin-bottom:6px;}
-  .msg .pcard p{margin:0 0 6px;font-size:14px;line-height:1.4;color:var(--text);}
+  .msg .pcard p{white-space:pre-wrap;margin:0 0 6px;font-size:14px;line-height:1.4;color:var(--text);}
   .msg .pcard .pa{display:flex;gap:8px;margin-top:8px;}
   .msg .pcard .pa button{font-size:13px;font-weight:800;padding:8px 14px;border-radius:999px;background:var(--lime);color:var(--lime-ink);}
   .msg .pcard .pa button.no{background:none;border:1px solid var(--line);color:var(--muted);}
@@ -1000,7 +1000,7 @@
     var FOLD = { threads: 'Диалоги', inbox: 'Входящие', sent: 'Исходящие', draft: 'Черновики', spam: 'Спам' };
     var TABS = [['home', 'Главная', 'home'], ['mail', 'Почта', 'mail'], ['partners', 'Партнёры', 'users'], ['agent', 'Агент', 'bolt'], ['settings', 'Настройки', 'gear']];
     var sess = null, D = {}, S = { tab: (function () { try {
-            return localStorage.getItem('wl_tab') || 'home';
+            var t = localStorage.getItem('wl_tab'); return /^(home|mail|partners|agent|settings)$/.test(t || '') ? t : 'home';
         }
         catch (e) {
             return 'home';
@@ -1027,7 +1027,18 @@
         return fetch(BASE + path, { method: body ? 'POST' : 'GET', headers: h, body: body ? JSON.stringify(body) : undefined })
             .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, data: j }; }); });
     }
+    var refreshP = null;
     function refresh() {
+        if (refreshP)
+            return refreshP;
+        refreshP = refresh0().then(function (x) { refreshP = null; return x; }, function (e) { refreshP = null; throw e; });
+        return refreshP;
+    }
+    function fnPost(name, body) {
+        function go() { return fetch(BASE + '/functions/v1/' + name, { method: 'POST', headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) }); }
+        return go().then(function (r) { return r.status === 401 ? refresh().then(go) : r; });
+    }
+    function refresh0() {
         return authApi('/auth/v1/token?grant_type=refresh_token', { refresh_token: sess.refresh_token }).then(function (r) {
             if (!r.ok || !r.data.access_token) {
                 logout();
@@ -1058,18 +1069,22 @@
     }
     var CACHE_KEY = 'wl_snapshot_v1';
     function applySnap(j) {
+        (j.partners || []).forEach(function (p) { if (!PST[p.status]) p.status = 'found'; p.rating = p.rating == null ? null : Math.max(0, Math.min(5, parseInt(p.rating, 10) || 0)); if (p.fit_score != null) p.fit_score = Math.max(0, Math.min(100, Number(p.fit_score) || 0)); if (p.clients_sent != null) p.clients_sent = Number(p.clients_sent) || 0; });
+        (j.missions || []).forEach(function (m) { m.target = Math.max(1, parseInt(m.target, 10) || 1); m.seq_steps = Math.max(1, Math.min(3, parseInt(m.seq_steps, 10) || 1)); });
+        (j.knowledge || []).forEach(function (k) { k.content = String(k.content == null ? '' : k.content); k.topic = String(k.topic == null ? '' : k.topic); });
+        (j.runs || []).forEach(function (r) { r.tokens_in = Number(r.tokens_in) || 0; r.tokens_out = Number(r.tokens_out) || 0; });
         var HID = softDel.hid || {};
         D.partners = (j.partners || []).filter(function (x) { return !HID[x.id]; });
         D.emails = (j.emails || []).filter(function (x) { return !HID[x.id]; });
         D.questions = j.questions || [];
         D.runs = j.runs || [];
-        D.knowledge = j.knowledge || [];
-        D.templates = j.templates || [];
+        D.knowledge = (j.knowledge || []).filter(function (x) { return !HID[x.id]; });
+        D.templates = (j.templates || []).filter(function (x) { return !HID[x.id]; });
         D.accounts = j.accounts || [];
         D.settings = j.settings || {};
         D.secrets = j.secrets || [];
-        D.tasks = j.tasks || [];
-        D.insights = j.insights || [];
+        D.tasks = (j.tasks || []).filter(function (x) { return !HID[x.id]; });
+        D.insights = (j.insights || []).filter(function (x) { return !HID[x.id]; });
         D.missions = j.missions || [];
         D.mcost = j.mcost || {};
     }
@@ -1181,13 +1196,19 @@
         closeSheet();
         render();
         var done = false, p = {};
-        var clear = function () { done = true; clearTimeout(p.t); softDel.p = null; ids.forEach(function (i) { delete hid[i]; }); };
-        p.go = function () { if (done) return; clear(); rest('DELETE', table + '?' + inList(ids)).then(function () { return reload(); }).catch(fail); };
+        var clear = function () { done = true; clearTimeout(p.t); softDel.p = null; };
+        var unhide = function () { ids.forEach(function (i) { delete hid[i]; }); };
+        p.go = function (bg) {
+            if (done) return; clear();
+            if (bg) { try { fetch(BASE + '/rest/v1/' + table + '?' + inList(ids), { method: 'DELETE', keepalive: true, headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Prefer': 'return=minimal' } }); } catch (e) { } return; }
+            rest('DELETE', table + '?' + inList(ids)).then(function () { unhide(); return reload(); }).catch(function (e) { unhide(); D[table] = D[table].concat(removed); render(); fail(e); });
+        };
         p.t = setTimeout(p.go, 5200);
         softDel.p = p;
-        toast(msg, 'ok', { action: { label: 'Отменить', fn: function () { if (done) return; clear(); D[table] = D[table].concat(removed); render(); toast('Возвращено'); } } });
+        toast(msg, 'ok', { action: { label: 'Отменить', fn: function () { if (done) return; clear(); D[table] = D[table].concat(removed); render(); unhide(); toast('Возвращено'); } } });
     }
-    window.addEventListener('pagehide', function () { if (softDel.p) softDel.p.go(); });
+    window.addEventListener('pagehide', function () { if (softDel.p) softDel.p.go(true); });
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden' && softDel.p) softDel.p.go(true); });
     function toast(t, kind, opts) {
         opts = opts || {};
         var k = kind === true || kind === 'bad' ? 'bad' : (kind === 'info' || kind === 'wait' ? kind : 'ok');
@@ -1376,7 +1397,7 @@
         chRender();
         HAP.tap();
         $('#ch-sub').textContent = 'думает…';
-        fetch(BASE + '/functions/v1/agent-chat', { method: 'POST', headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, context: CH.ctx ? { partner_id: CH.ctx.partner_id || null, email_id: CH.ctx.email_id || null } : null }) })
+        fnPost('agent-chat', { message: text, context: CH.ctx ? { partner_id: CH.ctx.partner_id || null, email_id: CH.ctx.email_id || null } : null })
             .then(function (r) { return r.json(); })
             .then(function (j) {
             CH.busy = false;
@@ -1403,7 +1424,7 @@
         m.pending_state = yes ? 'running' : 'cancelled';
         chRender();
         yes ? HAP.tap() : HAP.soft();
-        fetch(BASE + '/functions/v1/agent-chat', { method: 'POST', headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'confirm', id: m.id, yes: !!yes }) })
+        fnPost('agent-chat', { mode: 'confirm', id: m.id, yes: !!yes })
             .then(function (r) { return r.json(); })
             .then(function (j) {
             if (!j || !j.ok) { m.pending_state = 'wait'; toast((j && j.error) || 'Не получилось', true); chRender(); return; }
@@ -1486,7 +1507,7 @@
     function starI(on) { return '<svg class="i" viewBox="0 0 24 24"' + (on ? ' style="fill:currentColor"' : '') + '><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>'; }
     function fill(t, p) {
         p = p || {};
-        return String(t || '').replace(/\{\{\s*имя\s*\}\}/gi, p.contact_person || p.name || '').replace(/\{\{\s*компания\s*\}\}/gi, p.name || '').replace(/\{\{\s*страна\s*\}\}/gi, p.country || '');
+        return String(t || '').replace(/\{\{\s*имя\s*\}\}/gi, function () { return p.contact_person || p.name || ''; }).replace(/\{\{\s*компания\s*\}\}/gi, function () { return p.name || ''; }).replace(/\{\{\s*страна\s*\}\}/gi, function () { return p.country || ''; });
     }
     function ratingOf(p) { if (p.rating)
         return p.rating; if (p.fit_score != null)
@@ -2039,7 +2060,7 @@
         return (D.templates || []).filter(function (t) { return t.body; }).slice(0, 6).concat(base);
     }
     function tsumLoad(pid, to) {
-        fetch(BASE + '/functions/v1/agent-chat', { method: 'POST', headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'tsum', partner_id: pid || null, to: to }) }).then(function (x) { return x.json(); }).then(function (r) {
+        fnPost('agent-chat', { mode: 'tsum', partner_id: pid || null, to: to }).then(function (x) { return x.json(); }).then(function (r) {
             var el = $('#tsum_t'), box = $('#tsum');
             if (!el) return;
             if (r && r.ok) { el.textContent = r.summary; var p = pid ? pById(pid) : null; if (p) { p.thread_summary = r.summary; p.thread_summary_at = new Date().toISOString(); } if (box) { var n = box.querySelector('.sub'); if (n) n.remove(); } }
@@ -2327,8 +2348,8 @@
         var prevE = id ? byId(D.emails, id) : null;
         if (prevE && prevE.author === 'agent' && !prevE.orig_body && (prevE.body || '') !== body)
             row.orig_body = prevE.body || '';
-        var req = id ? rest('PATCH', 'emails?id=eq.' + id, row) : rest('POST', 'emails', row);
-        req.then(function () { return status === 'approved' ? markContacted(row.partner_id) : null; }).then(function () { closeSheet(); toast(status === 'approved' ? 'Письмо в очереди, уйдёт в течение 30 минут' : 'Черновик сохранён'); S.tab = 'mail'; S.folder = 'draft'; return reload(); }).catch(function () { toast('Не получилось сохранить'); });
+        var req = id ? rest('PATCH', 'emails?id=eq.' + id + '&folder=eq.draft&status=neq.sent', row, 'return=representation').then(function (r) { if (!r || !r.length) throw new Error('gone'); }) : rest('POST', 'emails', row);
+        req.then(function () { return status === 'approved' ? markContacted(row.partner_id) : null; }).then(function () { closeSheet(); toast(status === 'approved' ? 'Письмо в очереди, уйдёт в течение 30 минут' : 'Черновик сохранён'); S.tab = 'mail'; S.folder = 'draft'; return reload(); }).catch(function (e) { if (String(e && e.message) === 'gone') { closeSheet(); toast('Это письмо уже отправлено или удалено — изменения не сохранены', true); reload(); } else toast('Не получилось сохранить'); });
     }
     function isBlocked(addr) { addr = String(addr || '').toLowerCase(); var dom = domainOf(addr); return (D.settings.blocked_domains || []).some(function (b) { return b === addr || b === dom; }); }
     function markContacted(pid) {
@@ -2415,6 +2436,7 @@
         }).join('') + '</div>' + pp.html;
     }
     function partnerSheet(id, pre) {
+        S.pOrig = id && pById(id) ? JSON.parse(JSON.stringify(pById(id))) : null;
         var p = id ? pById(id) : Object.assign({ status: 'found', kind: 'clinic', priority: 'normal' }, pre || {});
         if (!p)
             return;
@@ -3040,7 +3062,7 @@
     function tabIdx(t) { for (var i = 0; i < TABS.length; i++)
         if (TABS[i][0] === t)
             return i; return 0; }
-    function setTab(t) { var ch = S.tab !== t; try {
+    function setTab(t) { if (!/^(home|mail|partners|agent|settings)$/.test(t || '')) t = 'home'; var ch = S.tab !== t; try {
         localStorage.setItem('wl_tab', t);
     }
     catch (e) { } render.dir = ch ? (tabIdx(t) > tabIdx(S.tab) ? 'r' : 'l') : ''; S.tab = t; S.selMode = false; S.sel = {}; S.pSel = false; S.psel = {}; S.page = {}; S.queueAll = false; render(ch); sy(0); }
@@ -3095,7 +3117,7 @@
         'chat-ok': function (d) { chConfirm(+d.i, true); },
         'chat-no': function (d) { chConfirm(+d.i, false); },
         'chat-clear': function () { if (!CH.msgs.length)
-            return; HAP.hard(); rest('DELETE', 'chat_messages?id=not.is.null').then(function () { CH.msgs = []; chRender(); toast('История очищена'); }).catch(fail); },
+            return; if (!CH.clr || Date.now() - CH.clr > 3000) { CH.clr = Date.now(); HAP.soft(); $('#ch-sub').textContent = 'Нажмите корзину ещё раз, чтобы удалить всю историю'; return; } CH.clr = 0; $('#ch-sub').textContent = 'спросите о делах или поручите задачу'; HAP.hard(); rest('DELETE', 'chat_messages?id=not.is.null').then(function () { CH.msgs = []; chRender(); toast('История очищена'); }).catch(fail); },
         'q-open': function (d) { qSheet(d.id); },
         'm-report': function (d) {
             var m = byId(D.missions, d.id);
@@ -3227,9 +3249,9 @@
         'th-tr': function (d, el) {
             var t = S.th || {}, ta = $('#th_body');
             if (!ta || !ta.value.trim()) { toast('Сначала напишите ответ по-русски'); return; }
-            if (el.dataset.orig) { ta.value = el.dataset.orig; delete el.dataset.orig; el.textContent = 'На ' + String(t.lang || '').toUpperCase(); return; }
+            if (el.dataset.orig) { ta.value = el.dataset.orig; delete el.dataset.orig; t.translated = false; el.textContent = 'На ' + String(t.lang || '').toUpperCase(); return; }
             el.disabled = true; var old = el.textContent; el.textContent = 'Перевожу…';
-            fetch(BASE + '/functions/v1/agent-chat', { method: 'POST', headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'translate', text: withSig(ta.value), lang: t.lang }) }).then(function (x) { return x.json(); }).then(function (r) {
+            fnPost('agent-chat', { mode: 'translate', text: withSig(ta.value), lang: t.lang }).then(function (x) { return x.json(); }).then(function (r) {
                 el.disabled = false;
                 if (!r || !r.ok) { el.textContent = old; toast((r && r.error) || 'Не получилось перевести', true); return; }
                 el.dataset.orig = ta.value; ta.value = r.text; el.textContent = 'Вернуть русский';
@@ -3241,7 +3263,7 @@
             var t = S.th || {};
             if (!t.to) return;
             el.disabled = true; var old = el.innerHTML; el.textContent = 'Агент пишет…';
-            fetch(BASE + '/functions/v1/agent-chat', { method: 'POST', headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + sess.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'draft', to: t.to, partner_id: t.pid || null }) }).then(function (x) { return x.json(); }).then(function (r) {
+            fnPost('agent-chat', { mode: 'draft', to: t.to, partner_id: t.pid || null }).then(function (x) { return x.json(); }).then(function (r) {
                 el.disabled = false; el.innerHTML = old;
                 if (!r || !r.ok) { toast((r && r.error) || 'Агент не смог написать ответ', true); return; }
                 var ta = $('#th_body'); if (ta) { ta.value = r.body || ''; ta.focus(); }
@@ -3255,7 +3277,7 @@
         'mail-toggle': function (d) { var e = byId(D.emails, d.id); if (!e)
             return; rest('PATCH', 'emails?id=eq.' + d.id, { is_read: !e.is_read }).then(function () { e.is_read = !e.is_read; toast(e.is_read ? 'Прочитано' : 'Отмечено непрочитанным'); render(); }).catch(fail); },
         'mail-unread': function (d) { rest('PATCH', 'emails?id=eq.' + d.id, { is_read: false }).then(function () { closeSheet(); toast('Отмечено непрочитанным'); return reload(); }).catch(fail); },
-        unapprove: function (d) { rest('PATCH', 'emails?id=eq.' + d.id, { status: 'draft' }).then(function () { closeSheet(); toast('Убрано из очереди'); return reload(); }).catch(fail); },
+        unapprove: function (d) { rest('PATCH', 'emails?id=eq.' + d.id + '&folder=eq.draft&status=eq.approved', { status: 'draft' }, 'return=representation').then(function (r) { closeSheet(); toast(r && r.length ? 'Убрано из очереди' : 'Письмо уже отправлено', !(r && r.length)); return reload(); }).catch(fail); },
         'mail-partner': function (d) { var e = byId(D.emails, d.id); closeSheet(); partnerSheet('', { name: nameOf(e), email: addrOnly(e.from_addr), source: 'Письмо', status: 'replied' }); },
         'mail-move': function (d) { var e = byId(D.emails, d.id), from = e && e.folder; rest('PATCH', 'emails?id=eq.' + d.id, { folder: d.to }).then(function () { closeSheet(); toast(d.to === 'spam' ? 'Перенесено в спам' : 'Возвращено во входящие', 'ok', from ? { action: { label: 'Отменить', fn: function () { rest('PATCH', 'emails?id=eq.' + d.id, { folder: from }).then(function () { toast('Возвращено'); return reload(); }).catch(fail); } } } : null); return reload(); }).catch(fail); },
         'mail-del': function (d) { softDel('emails', [d.id], 'Письмо удалено'); },
@@ -3265,8 +3287,9 @@
         approve: function (d) { var e = byId(D.emails, d.id); if (e && isBlocked(e.to_addr)) {
             toast('Адрес в чёрном списке. Уберите его в настройках', true);
             return;
-        } rest('PATCH', 'emails?id=eq.' + d.id, { status: 'approved' }).then(function () { return markContacted(e && e.partner_id); }).then(function () { closeSheet(); toast('Письмо в очереди'); return reload(); }).catch(fail); },
+        } rest('PATCH', 'emails?id=eq.' + d.id + '&folder=eq.draft&status=eq.draft', { status: 'approved' }, 'return=representation').then(function (r) { if (!r || !r.length) { closeSheet(); toast('Этот черновик уже утверждён или отправлен', true); return reload(); } return Promise.resolve(markContacted(e && e.partner_id)).then(function () { closeSheet(); toast('Письмо в очереди', 'ok', { action: { label: 'Отменить', fn: function () { rest('PATCH', 'emails?id=eq.' + d.id + '&folder=eq.draft&status=eq.approved', { status: 'draft' }, 'return=representation').then(function (x) { toast(x && x.length ? 'Возвращено в черновики' : 'Уже отправлено', !(x && x.length)); return reload(); }).catch(fail); } } }); return reload(); }); }).catch(fail); },
         'approve-all': function () {
+            if (S.tab !== 'mail') S.mailAcc = 'all';
             var n = D.emails.filter(function (e) { return e.folder === 'draft' && e.status !== 'approved' && (S.mailAcc === 'all' || e.account_id === S.mailAcc); }).length;
             var list = D.emails.filter(function (e) { return e.folder === 'draft' && e.status !== 'approved' && (S.mailAcc === 'all' || e.account_id === S.mailAcc); });
             openSheet('Утвердить все черновики?', '<p class="lead">В очередь встанет писем: ' + n + '. Агент отправит их при следующих запусках, с учётом дневного лимита.</p><div class="list" style="margin:4px 0 16px">' + list.slice(0, 12).map(function (e) { return '<button class="it" data-act="mail-open" data-id="' + esc(e.id) + '"><div class="mid"><div class="l1"><span>' + esc(who(e)) + '</span></div><div class="l3">' + esc(e.subject || '(без темы)') + '</div></div></button>'; }).join('') + (list.length > 12 ? '<div class="it"><div class="mid"><div class="l3">и ещё ' + (list.length - 12) + '</div></div></div>' : '') + '</div><div class="acts"><button class="pill" data-act="approve-go">Утвердить все</button><button class="pill ghost" data-act="close">Отмена</button></div>');
@@ -3365,7 +3388,7 @@
             }
             up('agent_secrets', { name: d.id, value: v, updated_at: now }, 'name').then(function () { return up('agent_secrets_meta', { name: d.id, last4: l4, updated_at: now }, 'name'); }).then(function () { el.value = ''; toast('Ключ сохранён'); return reload(); }).catch(function () { toast('Не получилось сохранить ключ'); });
         },
-        'ins-del': function (d) { rest('DELETE', 'insights?id=eq.' + d.id).then(function () { return reload(); }).catch(fail); },
+        'ins-del': function (d) { softDel('insights', [d.id], 'Удалено'); },
         'p-quick': function (d, el) { var sl = document.getElementById('p_st'); if (sl)
             sl.value = d.id; Array.prototype.forEach.call(el.parentNode.children, function (b) { b.className = b === el ? 'on st ' + d.id : ''; }); },
         'p-rate': function (d, el) { var box = el.parentNode; var cur = box.dataset.v === d.id; box.dataset.v = cur ? '0' : d.id; Array.prototype.forEach.call(box.children, function (b) { b.classList.toggle('on', !cur && b.dataset.id === d.id); }); },
@@ -3373,9 +3396,15 @@
         'p-save': function (d) {
             var se = $('#p_star'), nad = val('p_nad');
             var row = { name: val('p_name'), kind: val('p_kind'), status: val('p_st'), priority: val('p_prio') || 'normal', starred: !!(se && se.dataset.on === '1'), country: val('p_country') || null, contact_person: val('p_person') || null, email: val('p_email') || null, website: val('p_site') || null, next_action: val('p_na') || null, next_action_at: nad ? new Date(nad + 'T09:00:00').toISOString() : null, notes: val('p_notes') || null, services: val('p_serv') || null, terms: val('p_terms') || null, countries: val('p_countries') || null, languages: val('p_lang') || null, source: val('p_source') || null, source_url: val('p_srcurl') || null, clients_sent: val('p_cl') === '' ? null : Math.max(0, parseInt(val('p_cl'), 10) || 0), revenue_usd: val('p_rev') === '' ? null : Math.max(0, parseFloat(String(val('p_rev')).replace(',', '.')) || 0), tags: (function (v) { var a = v.split(',').map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean); return a.length ? a.filter(function (x, i) { return a.indexOf(x) === i; }).slice(0, 12) : null; })(val('p_tags')), rating: parseInt(($('#p_rate') || { dataset: {} }).dataset.v, 10) || null };
-            var prev = d.id ? pById(d.id) : null;
+            var prev = d.id ? (S.pOrig && S.pOrig.id === d.id ? S.pOrig : pById(d.id)) : null;
             if (!prev || prev.status !== row.status)
                 row.status_changed_at = new Date().toISOString();
+            var patch = row;
+            if (prev) {
+                var nz = function (v) { return v === '' || v === undefined ? null : v; };
+                patch = {};
+                Object.keys(row).forEach(function (k) { if (JSON.stringify(nz(row[k])) !== JSON.stringify(nz(prev[k]))) patch[k] = row[k]; });
+            }
             if (row.source_url && !/^https?:\/\//.test(row.source_url))
                 row.source_url = 'https://' + row.source_url;
             if (!row.name) {
@@ -3393,9 +3422,12 @@
                     return;
                 }
             }
-            (d.id ? rest('PATCH', 'partners?id=eq.' + d.id, row).then(function () { return d.id; }) : rest('POST', 'partners', row, 'return=representation').then(function (r) { return r && r[0] && r[0].id; })).then(function (pid) {
-                if (pid && row.email)
-                    return rest('PATCH', 'emails?partner_id=is.null&or=(from_addr.ilike.*' + encodeURIComponent(row.email) + '*,to_addr.ilike.*' + encodeURIComponent(row.email) + '*)', { partner_id: pid }).catch(function () { });
+            (d.id ? (Object.keys(patch).length ? rest('PATCH', 'partners?id=eq.' + d.id, patch) : Promise.resolve()).then(function () { return d.id; }) : rest('POST', 'partners', row, 'return=representation').then(function (r) { return r && r[0] && r[0].id; })).then(function (pid) {
+                var em = String(row.email || '').trim().toLowerCase();
+                if (pid && /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(em) && (!prev || (prev.email || '').toLowerCase() !== em)) {
+                    var x = encodeURIComponent(em.replace(/[\\_%]/g, '\\$&'));
+                    return rest('PATCH', 'emails?partner_id=is.null&or=(from_addr.ilike.' + x + ',to_addr.ilike.' + x + ',from_addr.ilike.*%3C' + x + '%3E,to_addr.ilike.*%3C' + x + '%3E)', { partner_id: pid }).catch(function () { });
+                }
             }).then(function () { closeSheet(); toast('Сохранено'); return reload(); }).catch(function (e) { toast(/duplicate|23505/.test(String(e.message)) ? 'Такой партнёр уже есть' : 'Не получилось'); });
         },
         'p-del': function (d) { var p = pById(d.id); softDel('partners', [d.id], 'Партнёр «' + (p ? p.name : '') + '» удалён'); },
@@ -3417,7 +3449,7 @@
             composeSheet({ account_id: D.accounts[0] && D.accounts[0].id, partner_id: p.id, to_addr: p.email, subject: subj, body: fill(body, p) });
         },
         't-done': function (d) { rest('PATCH', 'tasks?id=eq.' + d.id, { done: true }).then(function () { closeSheet(); toast('Выполнено', 'ok', { action: { label: 'Отменить', fn: function () { rest('PATCH', 'tasks?id=eq.' + d.id, { done: false }).then(reload).catch(fail); } } }); return reload(); }).catch(fail); },
-        't-del': function (d) { rest('DELETE', 'tasks?id=eq.' + d.id).then(function () { closeSheet(); return reload(); }).catch(fail); },
+        't-del': function (d) { softDel('tasks', [d.id], 'Задача удалена'); },
         agtab: function (d) { var into = !S.agTab && d.id; S.agTab = d.id; render.dir = into ? 'r' : (!d.id ? 'l' : ''); render(true); if (into || !d.id) sy(0); },
         runf: function (d) { S.runFilter = d.id; S.page.runs = 0; render(); },
         rundays: function (d) { S.runDays = parseInt(d.id, 10); S.page.runs = 0; render(); },
@@ -3427,13 +3459,13 @@
             toast('Заполните тему и текст');
             return;
         } (d.id ? rest('PATCH', 'knowledge?id=eq.' + d.id, row) : rest('POST', 'knowledge', row)).then(function () { closeSheet(); toast('Сохранено'); return reload(); }).catch(fail); },
-        'kb-del': function (d) { rest('DELETE', 'knowledge?id=eq.' + d.id).then(function () { closeSheet(); return reload(); }).catch(fail); },
+        'kb-del': function (d) { softDel('knowledge', [d.id], 'Запись удалена из базы знаний'); },
         'tpl-new': function () { tplSheet(''); }, 'tpl-open': function (d) { tplSheet(d.id); },
         'tpl-save': function (d) { var row = { title: val('t_title'), subject: val('t_sub') || null, body: val('t_body') }; if (!row.title || !row.body) {
             toast('Заполните название и текст');
             return;
         } (d.id ? rest('PATCH', 'templates?id=eq.' + d.id, row) : rest('POST', 'templates', row)).then(function () { closeSheet(); toast('Сохранено'); return reload(); }).catch(fail); },
-        'tpl-del': function (d) { rest('DELETE', 'templates?id=eq.' + d.id).then(function () { closeSheet(); return reload(); }).catch(fail); },
+        'tpl-del': function (d) { softDel('templates', [d.id], 'Шаблон удалён'); },
         mode: function (d, el) { D.settings.send_mode = d.id; Array.prototype.forEach.call(el.parentNode.children, function (b) { b.classList.toggle('on', b === el); }); },
         fk: function (d, el) { var a = (D.settings.focus_kinds || []).slice(), i = a.indexOf(d.id); if (i > -1)
             a.splice(i, 1);
@@ -3704,7 +3736,7 @@
         var btn = $('#sendBtn');
         btn.disabled = true;
         setMsg('Отправляем письмо…');
-        authApi('/auth/v1/otp?redirect_to=' + encodeURIComponent(location.origin + '/agentapp'), { email: email, create_user: true }).then(function (r) {
+        authApi('/auth/v1/otp?redirect_to=' + encodeURIComponent(location.origin + '/agentapp'), { email: email, create_user: false }).then(function (r) {
             btn.disabled = false;
             if (!r.ok) {
                 setMsg(r.status === 429 ? 'Слишком часто. Подождите минуту и повторите.' : 'Не получилось отправить письмо. Попробуйте позже.', true);
@@ -3748,7 +3780,7 @@
     var LOGID = Math.random().toString(36).slice(2) + Date.now().toString(36), logSent = 0;
     setInterval(function () {
         var L = window.__tgLog;
-        if (!sess || !L || L.length <= logSent)
+        if (!sess || !L || L.length <= logSent || !/[?&]qa=1/.test(location.search))
             return;
         var part = L.slice(logSent), n = L.length;
         rest('POST', 'client_logs', { session: LOGID, events: part, meta: { from: logSent } }).then(function () { logSent = n; }).catch(function () { });
@@ -3800,7 +3832,7 @@
         }
         catch (e) { }
         authApi('/auth/v1/user', null, at).then(function (r) {
-            if (r.ok && r.data.email) {
+            if (r.ok && r.data.id === '1e070b66-c1a5-4865-b98f-3e0b12aca8e6' && r.data.email === 'zivkoofficall@gmail.com') {
                 sess = { access_token: at, refresh_token: rt, email: r.data.email };
                 saveSession(sess);
                 enter();

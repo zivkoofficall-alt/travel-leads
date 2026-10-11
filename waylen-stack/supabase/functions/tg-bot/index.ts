@@ -16,12 +16,19 @@ async function tg(token: string, method: string, payload: Record<string, unknown
         clearTimeout(t);
     }
 }
+function safeEq(a: string, b: string): boolean {
+    if (typeof a !== "string" || typeof b !== "string" || !a || !b) return false;
+    const x = new TextEncoder().encode(a), y = new TextEncoder().encode(b);
+    let d = x.length ^ y.length;
+    for (let i = 0; i < Math.max(x.length, y.length); i++) d |= (x[i] || 0) ^ (y[i] || 0);
+    return d === 0;
+}
 function ok() { return new Response("ok", { status: 200 }); }
 function draftKb(id: string) {
     return { inline_keyboard: [[{ text: "Утвердить", callback_data: "ap:" + id }, { text: "Удалить", callback_data: "dl:" + id }], [{ text: "Открыть панель", url: PANEL }]] };
 }
 function draftText(e: any, who: string) {
-    return `Черновик для ${who}\n«${e.subject || "(без темы)"}»\n\n${String(e.body || "").slice(0, 2500)}${e.risk_note ? "\n\nПроверьте: " + e.risk_note : ""}`;
+    return `Черновик для ${who}\nКому: ${e.to_addr || "—"}\n«${String(e.subject || "(без темы)").slice(0, 200)}»\n\n${String(e.body || "").slice(0, 2500)}${e.risk_note ? "\n\nПроверьте: " + String(e.risk_note).slice(0, 300) : ""}`.slice(0, 3900);
 }
 Deno.serve(async (req) => {
     if (req.method !== "POST")
@@ -32,7 +39,7 @@ Deno.serve(async (req) => {
     for (const s of secrets || [])
         sec[s.name] = s.value;
     const ak = req.headers.get("x-agent-key");
-    if (ak && sec.cron_key && ak === sec.cron_key) {
+    if (ak && safeEq(ak, sec.cron_key || "")) {
         if (!sec.telegram_bot_token || !sec.tg_webhook_secret)
             return new Response(JSON.stringify({ ok: false, error: "no token" }), { status: 200 });
         const url = Deno.env.get("SUPABASE_URL") + "/functions/v1/tg-bot";
@@ -41,7 +48,7 @@ Deno.serve(async (req) => {
         const info = await tg(sec.telegram_bot_token, "getWebhookInfo", {});
         return new Response(JSON.stringify({ ok: !!set?.ok, set: set?.description || null, url_ok: info?.result?.url === url, pending: info?.result?.pending_update_count ?? null, last_error: info?.result?.last_error_message || null }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
-    if (!sec.tg_webhook_secret || req.headers.get("x-telegram-bot-api-secret-token") !== sec.tg_webhook_secret)
+    if (!safeEq(req.headers.get("x-telegram-bot-api-secret-token") || "", sec.tg_webhook_secret || ""))
         return new Response("", { status: 401 });
     const token = sec.telegram_bot_token, chat = String(sec.telegram_chat_id || "");
     if (!token || !chat)
@@ -123,9 +130,13 @@ Deno.serve(async (req) => {
         const { data } = await db.from("questions").select("id,question").eq("tg_msg_id", replyTo).eq("status", "open").limit(1);
         q = data?.[0] || null;
     }
-    if (!q) {
-        const { data } = await db.from("questions").select("id,question").eq("status", "open").not("tg_msg_id", "is", null).order("created_at", { ascending: false }).limit(1);
-        q = data?.[0] || null;
+    if (!q && !replyTo) {
+        const { data } = await db.from("questions").select("id,question").eq("status", "open").not("tg_msg_id", "is", null).order("created_at", { ascending: false }).limit(2);
+        q = data && data.length === 1 ? data[0] : null;
+        if (data && data.length > 1) {
+            await tg(token, "sendMessage", { chat_id: chat, text: "Открытых вопросов несколько — ответьте на нужный вопрос через «Ответить» (reply), чтобы я не перепутал." });
+            return ok();
+        }
     }
     if (!q) {
         await tg(token, "sendMessage", { chat_id: chat, text: "Открытых вопросов нет.\n/status — состояние агента\n/drafts — черновики с кнопками" });

@@ -1,2 +1,7 @@
 node_modules
 dist
+.env*
+.vercel
+supabase/.temp
+supabase/.branches
+*.pem

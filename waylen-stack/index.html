@@ -2207,13 +2207,6 @@ ym(113549896, 'init', { ssr: true, webvisor: true, clickmap: true, ecommerce: "d
                         ym(113549896, 'reachGoal', 'lead_sent');
                 }
                 catch (e) { }
-                if (!(result.data && result.data.notified === true)) {
-                    fetch('/api/notify-telegram', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: name, contact_phone: phone, contact_telegram: telegram, pet: pet, message: message })
-                    }).catch(function () { });
-                }
             })
                 .catch(function (err) { showError((err && err.message) || GENERIC_ERR); })
                 .finally(function () {
