@@ -158,7 +158,7 @@
   .agline{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;color:var(--muted);text-align:left;}
   .agline b{color:var(--text);font-weight:700;}
   .agline svg.i{width:16px;height:16px;color:var(--faint);}
-  .st3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px;}
+  .st3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px;margin-bottom:16px;}
   .st3 button{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 12px;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:92px;justify-content:space-between;}
   .st3 button.hot{background:var(--lime);color:var(--lime-ink);border-color:transparent;}
   .st3 .v{font-family:var(--font-head);font-weight:800;font-size:28px;line-height:1;font-variant-numeric:tabular-nums;}
@@ -1786,7 +1786,10 @@
     function sysAlerts() {
         var a = [], b = budgetInfo(), now = Date.now(), st = D.settings || {};
         var errs = D.runs.filter(function (r) { return !r.ok && now - new Date(r.created_at).getTime() < 864e5; }).length;
-        if (errs)
+        var noCred = D.runs.some(function (r) { return r.kind === 'budget' && /^Закончились средства/.test(r.summary || '') && now - new Date(r.created_at).getTime() < 6 * 36e5; });
+        if (noCred)
+            a.push({ c: 'bad', t: 'На балансе Claude API закончились деньги — агент на паузе. Пополните баланс в console.anthropic.com', tab: 'agent', arg: 'err' });
+        else if (errs)
             a.push({ c: 'bad', t: 'Ошибок агента за сутки: ' + errs, tab: 'agent', arg: 'err' });
         if (b.budget && b.pct >= 100)
             a.push({ c: 'bad', t: 'Месячный лимит расходов исчерпан: ' + usd(b.cost) + ' из ' + usd(b.budget) + '. Агент остановлен', tab: 'agent', arg: 'cost' });

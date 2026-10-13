@@ -88,7 +88,8 @@ interface ClaudeResult {
     cost: number;
     model: string;
 }
-let HARD_END = 0, STOP_NEW = 0, BUDGET_LEFT = Infinity, SPENT_TICK = 0;
+let HARD_END = 0, STOP_NEW = 0, BUDGET_LEFT = Infinity, SPENT_TICK = 0, NO_CREDIT = false;
+const NO_CREDIT_MSG = "нет средств на балансе Claude API";
 function safeEq(a: string, b: string): boolean {
     if (typeof a !== "string" || typeof b !== "string" || !a || !b) return false;
     const x = new TextEncoder().encode(a), y = new TextEncoder().encode(b);
@@ -111,6 +112,8 @@ async function claude(apiKey: string, opts: {
         body.tools = [{ type: "web_search_20250305", name: "web_search", max_uses: opts.webSearch }];
     if (STOP_NEW && Date.now() > STOP_NEW)
         throw new Error("время запуска вышло, продолжу в следующий раз");
+    if (NO_CREDIT)
+        throw new Error(NO_CREDIT_MSG);
     if (SPENT_TICK >= BUDGET_LEFT)
         throw new Error("месячный лимит расходов исчерпан");
     const ctl = new AbortController();
@@ -127,8 +130,14 @@ async function claude(apiKey: string, opts: {
         clearTimeout(timer);
     }
     const data = await r.json().catch(() => ({}));
-    if (!r.ok)
-        throw new Error("Claude API " + r.status + ": " + (data?.error?.message || "").slice(0, 300));
+    if (!r.ok) {
+        const em = String(data?.error?.message || "");
+        if (/credit balance|billing/i.test(em)) {
+            NO_CREDIT = true;
+            throw new Error(NO_CREDIT_MSG);
+        }
+        throw new Error("Claude API " + r.status + ": " + em.slice(0, 300));
+    }
     const text = (data.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n");
     const u = data.usage || {};
     const tokensIn = (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0);
@@ -171,6 +180,8 @@ class Ctx {
     constructor(db: Db, s: Settings) { this.db = db; this.s = s; }
     async run(kind: string, summary: string, details: string, ok: boolean, r?: ClaudeResult) {
         this.log.push((ok ? "✓ " : "✗ ") + summary);
+        if (!ok && NO_CREDIT && details.includes(NO_CREDIT_MSG))
+            return;
         if (r)
             this.spent += r.cost;
         await this.db.from("agent_runs").insert({ kind, summary: summary.slice(0, 300), details: details.slice(0, 4000), ok, cost_usd: r ? +r.cost.toFixed(5) : 0, model: r?.model || null, tokens_in: r?.tokensIn || null, tokens_out: r?.tokensOut || null, mission_id: this.mission });
@@ -500,7 +511,7 @@ ${(e.body || "").slice(0, 6000)}
             await c.db.from("emails").update({ agent_seen: true }).eq("id", e.id);
         }
         catch (err) {
-            const later = /время запуска|лимит расходов/.test(String(err));
+            const later = /время запуска|лимит расходов|нет средств/.test(String(err));
             if (later)
                 await c.db.from("emails").update({ agent_seen: false }).eq("id", e.id);
             else
@@ -935,6 +946,7 @@ Deno.serve(async (req) => {
         const spent = (runs || []).reduce((sum, r) => sum + Number(r.cost_usd || 0), 0);
         const budget = Number(s.monthly_budget_usd || 0);
         SPENT_TICK = 0;
+        NO_CREDIT = false;
         BUDGET_LEFT = budget ? Math.max(0, budget - spent) : Infinity;
         HARD_END = Date.now() + 135000;
         STOP_NEW = Date.now() + 100000;
@@ -962,6 +974,14 @@ Deno.serve(async (req) => {
         await partnerSearch(c);
         await c.step("Собирает новости рынка");
         await market(c);
+        if (NO_CREDIT) {
+            await db.from("agent_settings").update({ paused_until: new Date(Date.now() + 3 * 36e5).toISOString() }).eq("id", 1);
+            const { data: was } = await db.from("agent_runs").select("id").eq("kind", "budget").like("summary", "Закончились средства%").gte("created_at", new Date(Date.now() - 12 * 36e5).toISOString()).limit(1);
+            await c.run("budget", "Закончились средства на балансе Claude API — агент на паузе 3 часа", "Пополните баланс в console.anthropic.com (Plans & Billing). После пополнения нажмите «Продолжить» в панели.", false);
+            if (!was || !was.length)
+                await c.notify("На балансе Claude API закончились деньги, агент поставлен на паузу на 3 часа.\n\nПополните баланс: console.anthropic.com → Plans & Billing. Затем снимите паузу в панели www.waylen.travel/agentapp");
+            return json(200, { ok: true, skipped: "no_credit", log: c.log });
+        }
         await digest(c);
         await evening(c);
         return json(200, { ok: true, manual, log: c.log, spent_now: +c.spent.toFixed(4) });

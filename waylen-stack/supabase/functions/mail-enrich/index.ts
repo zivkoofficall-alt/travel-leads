@@ -70,7 +70,9 @@ Deno.serve(async (req) => {
     }
     if (!sec.anthropic_api_key)
         return json(200, { ok: true, skipped: "no_key" });
-    const { data: st } = await db.from("agent_settings").select("monthly_budget_usd").eq("id", 1).single();
+    const { data: st } = await db.from("agent_settings").select("monthly_budget_usd,paused_until").eq("id", 1).single();
+    if (st?.paused_until && new Date(st.paused_until).getTime() > Date.now())
+        return json(200, { ok: true, skipped: "paused" });
     const ms = new Date();
     const monthStart = new Date(Date.UTC(ms.getUTCFullYear(), ms.getUTCMonth(), 1)).toISOString();
     const { data: runs } = await db.from("agent_runs").select("cost_usd").gte("created_at", monthStart);
@@ -84,7 +86,7 @@ Deno.serve(async (req) => {
     const { data: mails } = await db.from("emails").select("id,subject,body,direction,external_id,account_id,from_addr,to_addr").neq("folder", "draft").is("enriched_at", null).order("created_at", { ascending: false }).limit(BATCH);
     if (!mails || !mails.length)
         return json(200, { ok: true, done: 0, left: 0 });
-    let done = 0, cost = 0, tin = 0, tout = 0, failed = 0, fetched = 0;
+    let done = 0, cost = 0, tin = 0, tout = 0, failed = 0, fetched = 0, noCredit = false;
     const work = async (m: any) => {
         let body = String(m.body || "");
         const acc = accOf[m.account_id];
@@ -99,6 +101,8 @@ Deno.serve(async (req) => {
             }
             catch (_) { }
         }
+        if (noCredit)
+            return;
         const text = body.slice(0, 9000);
         const who = m.direction === "out" ? "Это ИСХОДЯЩЕЕ письмо: его написали мы (Waylen Travel, сервис перевозки питомцев) партнёру или клиенту." : "Это ВХОДЯЩЕЕ письмо от партнёра, клиента или сервиса нам (Waylen Travel).";
         const prompt = `${who} Проанализируй его и верни только JSON:
@@ -117,8 +121,13 @@ ${text || "(пусто)"}`;
             const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", signal: ctl.signal, headers: { "x-api-key": sec.anthropic_api_key, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model: HAIKU, max_tokens: 3000, messages: [{ role: "user", content: prompt }] }) });
             clearTimeout(t);
             const d = await r.json().catch(() => ({}));
-            if (!r.ok)
+            if (!r.ok) {
+                if (/credit balance|billing/i.test(String(d?.error?.message || ""))) {
+                    noCredit = true;
+                    return;
+                }
                 throw new Error("Claude " + r.status + " " + (d?.error?.message || ""));
+            }
             const out = (d.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n");
             const j = extractJson(out) || {};
             const u = d.usage || {};
@@ -149,6 +158,13 @@ ${text || "(пусто)"}`;
     };
     for (let i = 0; i < mails.length; i += 5)
         await Promise.all(mails.slice(i, i + 5).map(work));
+    if (noCredit) {
+        await db.from("agent_settings").update({ paused_until: new Date(Date.now() + 3 * 36e5).toISOString() }).eq("id", 1);
+        const { data: was } = await db.from("agent_runs").select("id").eq("kind", "budget").like("summary", "Закончились средства%").gte("created_at", new Date(Date.now() - 3 * 36e5).toISOString()).limit(1);
+        if (!was || !was.length)
+            await db.from("agent_runs").insert({ kind: "budget", summary: "Закончились средства на балансе Claude API — агент на паузе 3 часа", details: "Пополните баланс в console.anthropic.com (Plans & Billing).", ok: false, cost_usd: 0 });
+        return json(200, { ok: true, skipped: "no_credit", done });
+    }
     if (done || failed)
         await db.from("agent_runs").insert({ kind: "mail_check", summary: `Перевод и краткое содержание: писем ${done}${fetched ? ", полный текст догружен для " + fetched : ""}${failed ? ", ошибок " + failed : ""}`, details: "", ok: failed === 0, cost_usd: +cost.toFixed(5), model: HAIKU, tokens_in: tin, tokens_out: tout });
     const { count } = await db.from("emails").select("id", { count: "exact", head: true }).neq("folder", "draft").is("enriched_at", null);
