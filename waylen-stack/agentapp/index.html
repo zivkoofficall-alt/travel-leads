@@ -1505,10 +1505,28 @@
         return (h / 24).toFixed(1) + ' дн';
     }
     function starI(on) { return '<svg class="i" viewBox="0 0 24 24"' + (on ? ' style="fill:currentColor"' : '') + '><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>'; }
-    function fill(t, p) {
-        p = p || {};
-        return String(t || '').replace(/\{\{\s*имя\s*\}\}/gi, function () { return p.contact_person || p.name || ''; }).replace(/\{\{\s*компания\s*\}\}/gi, function () { return p.name || ''; }).replace(/\{\{\s*страна\s*\}\}/gi, function () { return p.country || ''; });
+    function cityOf(p) {
+        if (!p) return '';
+        if (p.city) return p.city;
+        var m = p.mission_id ? byId(D.missions || [], p.mission_id) : null;
+        var rg = m && m.region ? String(m.region).split(',')[0].trim() : '';
+        if (rg && rg.toLowerCase() !== String(p.country || '').split(',')[0].trim().toLowerCase()) return rg;
+        var c = String(p.country || '');
+        return c.indexOf(',') > -1 ? c.split(',').slice(1).join(',').trim() : '';
     }
+    function lastSentDate(p, to) {
+        var a = String(to || (p && p.email) || '').toLowerCase(), best = 0;
+        D.emails.forEach(function (e) { if (e.folder !== 'sent') return; if (!((p && e.partner_id === p.id) || (a && String(e.to_addr || '').toLowerCase() === a))) return; var t = new Date(e.sent_at || tm(e)).getTime(); if (t > best) best = t; });
+        return best ? new Date(best).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : '';
+    }
+    function fill(t, p, to) {
+        p = p || {};
+        var V = { 'имя': p.contact_person || p.name || '', 'компания': p.name || '', 'страна': String(p.country || '').split(',')[0].trim(), 'город': cityOf(p), 'дата': lastSentDate(p.id ? p : null, to || p.email) };
+        return String(t || '').replace(/\{\{\s*([а-яёa-z_]+)\s*\}\}/gi, function (m, k) { var v = V[String(k).toLowerCase()]; return v ? v : m; });
+    }
+    function holes(s) { var m = String(s || '').match(/\{\{[^{}]{1,40}\}\}/g); return m ? m.filter(function (x, i) { return m.indexOf(x) === i; }) : []; }
+    function holesMsg(h) { return 'Заполните в тексте: ' + h.join(', '); }
+    function markHole(el) { if (!el) return; var i = el.value.search(/\{\{[^{}]{1,40}\}\}/); if (i < 0) return; var m = el.value.slice(i).match(/^\{\{[^{}]{1,40}\}\}/)[0]; try { el.focus(); el.setSelectionRange(i, i + m.length); } catch (_) { } }
     function ratingOf(p) { if (p.rating)
         return p.rating; if (p.fit_score != null)
         return Math.max(1, Math.min(5, Math.round(p.fit_score / 20))); return 0; }
@@ -1668,7 +1686,7 @@
         'Страны (через запятую)': 'Где искать партнёров при общем поиске.',
         'Типы партнёров': 'Кого искать при общем поиске.',
         'Письма найденным': 'Если включено — агент сам пишет первое письмо каждому найденному партнёру с почтой. Черновики ждут утверждения.',
-        'Шаблон': 'Заготовка письма. Поля {{имя}}, {{город}}, {{дата}} замените перед отправкой.',
+        'Шаблон': 'Заготовка письма. {{имя}}, {{компания}}, {{страна}}, {{город}} и {{дата}} (дата нашего прошлого письма) подставляются из карточки партнёра. Что не известно — выделится, впишите вручную.',
         'Ящик отправителя': 'С какого ящика уйдёт письмо.'
     };
     var AGTH = { ms: 'Поручения агенту: кого найти, где, сколько и писать ли письма. Поиск идёт по расписанию, черновики писем ждут вашего утверждения.', runs: 'Журнал всех действий агента с результатом и стоимостью каждого.', mkt: 'Новости, направления и идеи. Обновляется раз в сутки, ≈ $0.3 за обновление.', an: 'Воронка, оценки партнёров и динамика по неделям — всё считается по данным панели.', cost: 'На что уходят деньги: по дням, моделям и видам работы.', kb: 'Факты о компании и условиях. Только отсюда агент берёт цифры и обещания для писем; ответы на его вопросы попадают сюда сами.', tpl: 'Заготовки писем для ручной отправки. {{имя}}, {{город}}, {{дата}} замените перед отправкой.' };
@@ -2325,7 +2343,7 @@
             '<div class="fld"><label>Тема</label><input id="c_sub" value="' + esc(pre.subject || '') + '"></div>' +
             '<div class="fld"><label>Текст</label><textarea id="c_body" autofocus style="min-height:170px">' + esc(pre.body || '') + '</textarea></div>' +
             '<div class="acts sticky"><button class="pill" data-act="c-send" data-id="' + esc(pre.id || '') + '" data-p="' + esc(pre.partner_id || '') + '">Отправить</button><button class="pill ghost" data-act="c-save" data-id="' + esc(pre.id || '') + '" data-p="' + esc(pre.partner_id || '') + '">Сохранить черновик</button></div>' +
-            '<p class="sub">«Отправить» ставит письмо в очередь: агент отправит его при следующем запуске, в течение 30 минут. В шаблонах {{имя}}, {{компания}} и {{страна}} подставляются сами.</p></div>');
+            '<p class="sub">«Отправить» ставит письмо в очередь: агент отправит его при следующем запуске, в течение 30 минут. В шаблонах {{имя}}, {{компания}}, {{страна}}, {{город}} и {{дата}} подставляются сами, если они известны. Незаполненное поле выделится, и отправить письмо с ним нельзя.</p></div>');
     }
     function saveCompose(id, pid, status) {
         var to = val('c_to'), sub = val('c_sub'), body = val('c_body'), acc = val('c_acc');
@@ -2340,6 +2358,12 @@
         var dom = domainOf(to), blocked = (D.settings.blocked_domains || []).some(function (b) { return b === to.toLowerCase() || b === dom; });
         if (blocked && status === 'approved') {
             toast('Адрес в чёрном списке. Уберите его в настройках');
+            return;
+        }
+        var hl = holes(sub + ' ' + body);
+        if (hl.length && status === 'approved') {
+            toast(holesMsg(hl), true);
+            markHole(document.getElementById('c_body'));
             return;
         }
         var a = aById(acc), pm = partnerByMail(to);
@@ -3238,6 +3262,7 @@
             var t = S.th || {}, body = val('th_body');
             if (!body) { toast('Напишите текст ответа'); return; }
             if (!t.to || !validMail(t.to)) { toast('Нет адреса получателя'); return; }
+            if (holes(body).length) { toast(holesMsg(holes(body)), true); markHole($('#th_body')); return; }
             if (isBlocked(t.to)) { toast('Адрес в чёрном списке. Уберите его в настройках', true); return; }
             var a = aById(t.acc);
             rest('POST', 'emails', { account_id: t.acc || null, partner_id: t.pid || null, direction: 'out', status: 'approved', folder: 'draft', subject: t.subj || 'Waylen Travel', body: t.translated ? body : withSig(body), from_addr: a ? a.address : null, to_addr: t.to, is_read: true, author: 'owner' }).then(function () { return markContacted(t.pid); }).then(function () { closeSheet(); toast('Письмо в очереди, уйдёт в течение 30 минут'); return reload(); }).catch(fail);
@@ -3246,8 +3271,8 @@
             var t = quickTpls()[+d.id], ta = $('#th_body');
             if (!t || !ta) return;
             var p = S.th && S.th.pid ? pById(S.th.pid) : null;
-            ta.value = (ta.value ? ta.value.replace(/\s+$/, '') + '\n\n' : '') + (p ? fill(t.body, p) : t.body);
-            ta.focus();
+            ta.value = (ta.value ? ta.value.replace(/\s+$/, '') + '\n\n' : '') + fill(t.body, p, S.th && S.th.to);
+            if (holes(ta.value).length) { toast(holesMsg(holes(ta.value))); markHole(ta); } else ta.focus();
         },
         'th-tr': function (d, el) {
             var t = S.th || {}, ta = $('#th_body');
@@ -3290,6 +3315,9 @@
         approve: function (d) { var e = byId(D.emails, d.id); if (e && isBlocked(e.to_addr)) {
             toast('Адрес в чёрном списке. Уберите его в настройках', true);
             return;
+        } if (e && holes((e.subject || '') + ' ' + (e.body || '')).length) {
+            toast(holesMsg(holes((e.subject || '') + ' ' + (e.body || ''))) + '. Откройте черновик и исправьте', true);
+            return;
         } rest('PATCH', 'emails?id=eq.' + d.id + '&folder=eq.draft&status=eq.draft', { status: 'approved' }, 'return=representation').then(function (r) { if (!r || !r.length) { closeSheet(); toast('Этот черновик уже утверждён или отправлен', true); return reload(); } return Promise.resolve(markContacted(e && e.partner_id)).then(function () { closeSheet(); toast('Письмо в очереди', 'ok', { action: { label: 'Отменить', fn: function () { rest('PATCH', 'emails?id=eq.' + d.id + '&folder=eq.draft&status=eq.approved', { status: 'draft' }, 'return=representation').then(function (x) { toast(x && x.length ? 'Возвращено в черновики' : 'Уже отправлено', !(x && x.length)); return reload(); }).catch(fail); } } }); return reload(); }); }).catch(fail); },
         'approve-all': function () {
             if (S.tab !== 'mail') S.mailAcc = 'all';
@@ -3299,17 +3327,17 @@
         },
         'approve-go': function () {
             var skip = 0, ids = D.emails.filter(function (e) { if (!(e.folder === 'draft' && e.status !== 'approved' && (S.mailAcc === 'all' || e.account_id === S.mailAcc)))
-                return false; if (isBlocked(e.to_addr)) {
+                return false; if (isBlocked(e.to_addr) || holes((e.subject || '') + ' ' + (e.body || '')).length) {
                 skip++;
                 return false;
             } return true; }).map(function (e) { return e.id; });
             if (!ids.length) {
                 closeSheet();
                 if (skip)
-                    toast('Все адреса в чёрном списке', true);
+                    toast('Нечего утверждать: в черновиках незаполненные поля {{…}} или адреса из чёрного списка', true);
                 return;
             }
-            rest('PATCH', 'emails?' + inList(ids), { status: 'approved' }).then(function () { closeSheet(); toast('Утверждено: ' + ids.length); return reload(); }).catch(fail);
+            rest('PATCH', 'emails?' + inList(ids), { status: 'approved' }).then(function () { closeSheet(); toast('Утверждено: ' + ids.length + (skip ? '. Пропущено ' + skip + ': незаполненные поля или чёрный список' : '')); return reload(); }).catch(fail);
         },
         'read-all': function () {
             var ids = D.emails.filter(function (e) { return e.folder === 'inbox' && !e.is_read && (S.mailAcc === 'all' || e.account_id === S.mailAcc); }).map(function (e) { return e.id; });
@@ -3721,8 +3749,10 @@
             var t = byId(D.templates, ev.target.value), p = partnerByMail(val('c_to'));
             if (t) {
                 if (!val('c_sub'))
-                    document.getElementById('c_sub').value = fill(t.subject || '', p);
-                document.getElementById('c_body').value = fill(t.body, p);
+                    document.getElementById('c_sub').value = fill(t.subject || '', p, val('c_to'));
+                document.getElementById('c_body').value = fill(t.body, p, val('c_to'));
+                var hb = holes(val('c_sub') + ' ' + val('c_body'));
+                if (hb.length) { toast(holesMsg(hb)); markHole(document.getElementById('c_body')); }
             }
         }
     });
