@@ -74,8 +74,13 @@ Deno.serve(async (req) => {
             return ok();
         }
         if (act === "ap") {
-            const { data: e } = await db.from("emails").select("id,to_addr").eq("id", id).single();
-            if (e && (await db.from("agent_settings").select("blocked_domains").eq("id", 1).single()).data?.blocked_domains?.some((b: string) => { const t = String(e.to_addr || "").toLowerCase().replace(/^.*<|>.*$/g, "").trim(); return t === b || t.split("@").pop() === b; })) {
+            const { data: e } = await db.from("emails").select("id,to_addr,subject,body").eq("id", id).single();
+            const hl = e ? (String(e.subject || "") + " " + String(e.body || "")).match(/\{\{[^{}]{1,40}\}\}/g) : null;
+            if (hl && hl.length) {
+                await done("Не утверждено: в тексте остались незаполненные поля " + [...new Set(hl)].join(", ") + ". Исправьте в панели", "Есть незаполненные поля");
+                return ok();
+            }
+            if (e &&(await db.from("agent_settings").select("blocked_domains").eq("id", 1).single()).data?.blocked_domains?.some((b: string) => { const t = String(e.to_addr || "").toLowerCase().replace(/^.*<|>.*$/g, "").trim(); return t === b || t.split("@").pop() === b; })) {
                 await done("Не утверждено: адрес в чёрном списке", "Адрес в чёрном списке");
                 return ok();
             }
